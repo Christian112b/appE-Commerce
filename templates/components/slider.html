@@ -1,0 +1,42 @@
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-slider">
+            <div class="hero-slide active">
+
+                <div class="hero-bg"
+                    style="background-image: url('{{ url_for('static', filename='assets/productos.jpg') }}')"></div>
+
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Tradición y Frescura</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">92 años llevando sabor desde San Luis Potosí</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Explorar Productos</a>
+                </div>
+
+            </div>
+            <div class="hero-slide">
+                <div class="hero-bg"
+                    style="background-image: url('{{ url_for('static', filename='assets/productos1.jpg') }}')"></div>
+
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Chocolates con Sabor Irresistible</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">Descubre nuestra deliciosa y surtida variedad</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Ver Catálogo</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-bg"
+                    style="background-image: url('{{ url_for('static', filename='assets/tienda.jpeg') }}')"></div>
+
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Dulzura para Cada Ocasión</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">Para el antojo, para enamorar, para regalar</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Comprar Ahora</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-controls">
+            <button class="hero-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="hero-next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="hero-indicators"></div>
+    </section>

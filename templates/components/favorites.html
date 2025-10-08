@@ -1,0 +1,153 @@
+    <!-- Favoritos Section -->
+    <section class="favoritos" id="favoritos">
+        <div class="container">
+            <h2 class="section-title">Los Favoritos y Consentidos</h2>
+            <p class="section-description">Contamos con una gran variedad de ricos dulces y chocolates que encantan a
+                chicos y grandes desde hace más de 92 años</p>
+            <div class="carousel-container">
+                <button class="carousel-btn carousel-prev"><i class="fas fa-chevron-left"></i></button>
+                <div class="favoritos-carousel" id="favoritosCarousel">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/presentaciones_tablillas_bolsas/02Tornillo.jpg') }}" alt="Tornillo">
+
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="1" data-name="Tornillo" data-price="25.00"
+                                    data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/02Tornillo.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Tornillo</h3>
+                            <p>Delicioso chocolate macizo con leche</p>
+                            <div class="product-price">$25.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/presentaciones_tablillas_bolsas/09PrincesaSurtida.jpg') }}" alt="Princesa Surtida">
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="2" data-name="Princesa Surtida"
+                                    data-price="30.00"
+                                    data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/09PrincesaSurtida.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Princesa Surtida</h3>
+                            <p>Bombón de chocolate amargo relleno de fondant y jalea</p>
+                            <div class="product-price">$30.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/presentaciones_tablillas_bolsas/DUQUESA-PRESENTACIONES.jpg') }}" alt="Duquesa Presentaciones">
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="3" data-name="Duquesa" data-price="28.00"
+                                    data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/DUQUESA-PRESENTACIONES.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Duquesa</h3>
+                            <p>Irresistible sandwich de galleta con jalea y chocolate</p>
+                            <div class="product-price">$28.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/chocolates_envueltos_semillas/Esponja-Natural.jpg') }}" alt="Esponja">
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="4" data-name="Esponja Natural"
+                                    data-price="22.00"
+                                    data-image="img/Chocolates envueltos, sin envolver y semillas cubiertas/Esponja-Natural.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Esponja Natural</h3>
+                            <p>Suave malvavisco cubierto de chocolate amargo</p>
+                            <div class="product-price">$22.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/chocolates_envueltos_semillas/figura.png') }}" alt="Figura">
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="5" data-name="Figuras" data-price="20.00"
+                                    data-image="img/Chocolates envueltos, sin envolver y semillas cubiertas/figura.png">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Figuras</h3>
+                            <p>Tradicional chocolate macizo semiamargo</p>
+                            <div class="product-price">$20.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/caramelos_chiclosos_jaleas_gomitas/Menta-Blanca.jpg') }}">
+
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="6" data-name="Menta Blanca"
+                                    data-price="18.00"
+                                    data-image="img/Caramelos, chiclosos, jaleas y gomitas/Menta-Blanca.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Menta Blanca</h3>
+                            <p>Delicioso caramelo aireado sabor menta</p>
+                            <div class="product-price">$18.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/temporalidades/nuez-encanelada.png') }}" alt="Nuez Encanelada">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="7" data-name="Nuez Encanelada"
+                                    data-price="35.00" data-image="img/Temporalidades/nuez-encanelada.png">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Nuez Encanelada</h3>
+                            <p>Sabrosa nuez cubierta con jarabe de cajeta y canela</p>
+                            <div class="product-price">$35.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename='assets/caramelos_chiclosos_jaleas_gomitas/Purupura-y-Oro-Envuelto.jpg') }}" alt="Púrpura y Oro">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="8" data-name="Púrpura y Oro"
+                                    data-price="32.00"
+                                    data-image="img/Caramelos, chiclosos, jaleas y gomitas/Purupura-y-Oro-Envuelto.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Púrpura y Oro</h3>
+                            <p>Exquisito chocolate crocante relleno de cacahuate</p>
+                            <div class="product-price">$32.00</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn carousel-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
