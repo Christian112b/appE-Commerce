@@ -1,7 +1,7 @@
-Bot
-videos promocionales
+Bot ✅ (COMPLETADO)
+videos promocionales ✅ (COMPLETADO)
 links de redes sociales
-nosotros (no son de la poli)
-IVA en el carrito de compras
-boton de eliminar en el carrito bote de basura
-validacion de formulario en proceso de compra
+nosotros (no son de la poli) ✅ (COMPLETADO - Referencias eliminadas + Historia extendida)
+IVA en el carrito de compras ✅ (COMPLETADO - IVA 16% calculado y mostrado)
+boton de eliminar en el carrito bote de basura ✅ (COMPLETADO - Icono trash mejorado)
+validacion de formulario en proceso de compra ✅ (COMPLETADO - Validaciones HTML5 implementadas)
