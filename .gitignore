@@ -1,0 +1,52 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs y Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Node.js (si se usa en el futuro)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+logs/
+
+# Temporales
+*.tmp
+*.temp
+.cache/
+
+# Archivos de backup
+*.bak
+*.backup
+*~
+
+# Archivos de sistema
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Archivos de configuración personal
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build y distribución (para futuro)
+dist/
+build/
+*.min.js
+*.min.css
+

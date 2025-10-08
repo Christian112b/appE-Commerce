@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - Chocolates Costanzo</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fixes específicos para inputs bloqueados */
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            background: white !important;
+            position: relative !important;
+            z-index: 100 !important;
+            cursor: text !important;
+        }
+        
+        .login-form input:focus {
+            pointer-events: auto !important;
+            user-select: text !important;
+            cursor: text !important;
+        }
+        
+        /* Asegurar que no haya elementos bloqueando */
+        .login-container,
+        .login-card,
+        .login-form,
+        .form-group {
+            pointer-events: auto !important;
+        }
+        
+        /* Background shapes no deben interferir */
+        .login-background,
+        .bg-shape {
+            pointer-events: none !important;
+        }
+        
+        /* Forzar que los inputs sean interactivos */
+        #username,
+        #password {
+            pointer-events: auto !important;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            background: white !important;
+            z-index: 1000 !important;
+        }
+        
+        /* Asegurar que el formulario sea interactivo */
+        #loginForm {
+            pointer-events: auto !important;
+        }
+        
+        /* Debug visual - temporal */
+        .login-form input {
+            border: 3px solid red !important;
+        }
+        
+        .login-form input:focus {
+            border: 3px solid green !important;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="../img/costanzo.png" alt="Chocolates Costanzo" class="login-logo">
+                <h1>Panel de Administración</h1>
+                <p>Chocolates Costanzo</p>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Usuario
+                    </label>
+                    <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Contraseña
+                    </label>
+                    <div class="password-input">
+                        <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="remember">
+                        <span>Recordar sesión</span>
+                    </label>
+                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+                
+                <div class="login-footer">
+                    <p>Credenciales de prueba:</p>
+                    <p><strong>Usuario:</strong> admin | <strong>Contraseña:</strong> costanzo2024</p>
+                </div>
+            </form>
+            
+            <div class="back-to-site">
+                <a href="../index.html">
+                    <i class="fas fa-arrow-left"></i> Volver al sitio web
+                </a>
+            </div>
+        </div>
+        
+        <div class="login-background">
+            <div class="bg-shape shape-1"></div>
+            <div class="bg-shape shape-2"></div>
+            <div class="bg-shape shape-3"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // Login form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Login page loaded - checking inputs...');
+            
+            const loginForm = document.getElementById('loginForm');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            // Verificar que los inputs existan
+            if (!usernameInput || !passwordInput) {
+                console.error('❌ Inputs not found!');
+                return;
+            }
+            
+            // Verificar que los inputs sean interactivos
+            console.log('✅ Username input found:', usernameInput);
+            console.log('✅ Password input found:', passwordInput);
+            
+            // Test de interacción
+            usernameInput.addEventListener('focus', function() {
+                console.log('✅ Username input focused');
+            });
+            
+            passwordInput.addEventListener('focus', function() {
+                console.log('✅ Password input focused');
+            });
+            
+            usernameInput.addEventListener('input', function() {
+                console.log('✅ Username typing:', this.value);
+            });
+            
+            passwordInput.addEventListener('input', function() {
+                console.log('✅ Password typing:', this.value);
+            });
+            
+            // Verificar si ya hay sesión activa
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                window.location.href = 'dashboard.html';
+            }
+            
+            // Login form submit
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('🔐 Login attempt...');
+                
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const remember = document.querySelector('input[name="remember"]').checked;
+                
+                console.log('Username:', username);
+                console.log('Password:', password);
+                
+                // Validar credenciales
+                if (username === 'admin' && password === 'costanzo2024') {
+                    console.log('✅ Login successful!');
+                    
+                    // Guardar sesión
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    localStorage.setItem('adminUsername', username);
+                    
+                    if (remember) {
+                        localStorage.setItem('rememberMe', 'true');
+                    }
+                    
+                    // Mostrar loading
+                    const submitBtn = loginForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+                    submitBtn.disabled = true;
+                    
+                    // Redireccionar
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    console.log('❌ Login failed');
+                    showError('Usuario o contraseña incorrectos');
+                }
+            });
+        });
+        
+        function showError(message) {
+            // Remover errores previos
+            const existingError = document.querySelector('.login-error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Crear elemento de error
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'login-error';
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <span>${message}</span>
+            `;
+            
+            errorDiv.style.cssText = `
+                background: rgba(231, 76, 60, 0.1);
+                color: #e74c3c;
+                padding: 1rem;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                animation: shake 0.5s ease;
+                pointer-events: none;
+            `;
+            
+            // Insertar antes del formulario
+            const form = document.getElementById('loginForm');
+            form.insertBefore(errorDiv, form.firstChild);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 3000);
+        }
+        
+        // Agregar animación de shake
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Hacer función global
+        window.togglePassword = togglePassword;
+    </script>
+</body>
+</html>
