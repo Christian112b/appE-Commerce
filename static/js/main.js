@@ -554,7 +554,7 @@ function setupLoadingScreen() {
     loader.className = 'page-loader';
     loader.innerHTML = `
         <div class="loader-content">
-            <img src="img/costanzo.png" alt="Chocolates Costanzo" class="loader-logo">
+            <img src="{{ url_for('static', filename='assets/costanzo.png') }}" alt="Chocolates Costanzo">
             <div class="loader-spinner"></div>
             <p>Cargando dulzura...</p>
         </div>
