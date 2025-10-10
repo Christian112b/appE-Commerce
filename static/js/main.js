@@ -550,16 +550,18 @@ function injectAnimations() {
 // Loading Screen (opcional)
 // ========================
 function setupLoadingScreen() {
+    const logoPath = document.getElementById('loader-logo-path')?.dataset.src || 'static/assets/costanzo.png';
+
     const loader = document.createElement('div');
     loader.className = 'page-loader';
     loader.innerHTML = `
         <div class="loader-content">
-            <img src="img/costanzo.png" alt="Chocolates Costanzo" class="loader-logo">
+            <img src="${logoPath}" alt="Chocolates Costanzo" class="loader-logo">
             <div class="loader-spinner"></div>
             <p>Cargando dulzura...</p>
         </div>
     `;
-    
+
     loader.style.cssText = `
         position: fixed;
         top: 0;
@@ -573,20 +575,20 @@ function setupLoadingScreen() {
         z-index: 99999;
         transition: opacity 0.5s ease;
     `;
-    
+
     const loaderContent = `
         <style>
             .loader-content {
                 text-align: center;
             }
-            
+
             .loader-logo {
                 width: 120px;
                 height: auto;
                 margin-bottom: 2rem;
                 animation: pulse 2s ease-in-out infinite;
             }
-            
+
             .loader-spinner {
                 width: 50px;
                 height: 50px;
@@ -596,23 +598,27 @@ function setupLoadingScreen() {
                 animation: spin 1s linear infinite;
                 margin: 0 auto 1rem;
             }
-            
+
             .loader-content p {
                 color: #8B4513;
                 font-size: 1.2rem;
                 font-weight: 600;
             }
-            
+
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
+
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.05); opacity: 0.8; }
+            }
         </style>
     `;
-    
+
     document.head.insertAdjacentHTML('beforeend', loaderContent);
     document.body.insertBefore(loader, document.body.firstChild);
-    
-    // Ocultar después de cargar
+
     window.addEventListener('load', () => {
         setTimeout(() => {
             loader.style.opacity = '0';
@@ -622,6 +628,7 @@ function setupLoadingScreen() {
         }, 800);
     });
 }
+
 
 // ========================
 // Inicialización
