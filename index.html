@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chocolates Costanzo - Tradición y Sabor desde 1932</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <img src="img/costanzo.png" alt="Chocolates Costanzo">
+                    <span>Chocolates Costanzo</span>
+                </div>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+                    <li><a href="#productos" class="nav-link">Productos</a></li>
+                    <li><a href="#favoritos" class="nav-link">Favoritos</a></li>
+                    <li><a href="#historia" class="nav-link">Historia</a></li>
+                    <li><a href="#sobre-nosotros" class="nav-link">Sobre Nosotros</a></li>
+                    <li><a href="#faq" class="nav-link">FAQ</a></li>
+                    <li><a href="#contacto" class="nav-link">Contacto</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <button class="icon-btn" id="cartBtn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    <a href="admin/login.html" class="icon-btn">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-slider">
+            <div class="hero-slide active">
+                <div class="hero-bg" style="background-image: url('img/productos.jpg')"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Tradición y Frescura</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">92 años llevando sabor desde San Luis Potosí</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Explorar Productos</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-bg" style="background-image: url('img/productos1.jpg')"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Chocolates con Sabor Irresistible</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">Descubre nuestra deliciosa y surtida variedad</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Ver Catálogo</a>
+                </div>
+            </div>
+            <div class="hero-slide">
+                <div class="hero-bg" style="background-image: url('img/tienda.jpeg')"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in">Dulzura para Cada Ocasión</h1>
+                    <p class="hero-subtitle animate-fade-in-delay">Para el antojo, para enamorar, para regalar</p>
+                    <a href="#productos" class="btn btn-primary animate-fade-in-delay-2">Comprar Ahora</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-controls">
+            <button class="hero-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="hero-next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="hero-indicators"></div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <h2 class="section-title">Explora Nuestras Categorías</h2>
+            <div class="categories-grid">
+                <div class="category-card" data-category="chocolates">
+                    <div class="category-icon">
+                        <i class="fas fa-candy-cane"></i>
+                    </div>
+                    <h3>Chocolates Envueltos</h3>
+                    <p>Sin envolver y semillas cubiertas</p>
+                </div>
+                <div class="category-card" data-category="caramelos">
+                    <div class="category-icon">
+                        <i class="fas fa-lollipop"></i>
+                    </div>
+                    <h3>Caramelos</h3>
+                    <p>Chiclosos, jaleas y gomitas</p>
+                </div>
+                <div class="category-card" data-category="presentaciones">
+                    <div class="category-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <h3>Presentaciones</h3>
+                    <p>Piezas, tablillas y bolsas</p>
+                </div>
+                <div class="category-card" data-category="temporalidades">
+                    <div class="category-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Temporalidades</h3>
+                    <p>Productos de temporada</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Favoritos Section -->
+    <section class="favoritos" id="favoritos">
+        <div class="container">
+            <h2 class="section-title">Los Favoritos y Consentidos</h2>
+            <p class="section-description">Contamos con una gran variedad de ricos dulces y chocolates que encantan a chicos y grandes desde hace más de 92 años</p>
+            <div class="carousel-container">
+                <button class="carousel-btn carousel-prev"><i class="fas fa-chevron-left"></i></button>
+                <div class="favoritos-carousel" id="favoritosCarousel">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Piezas, Presentaciones, Tablillas y Bolsas/02Tornillo.jpg" alt="Tornillo">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="1" data-name="Tornillo" data-price="25.00" data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/02Tornillo.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Tornillo</h3>
+                            <p>Delicioso chocolate macizo con leche</p>
+                            <div class="product-price">$25.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Piezas, Presentaciones, Tablillas y Bolsas/09PrincesaSurtida.jpg" alt="Princesa">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="2" data-name="Princesa Surtida" data-price="30.00" data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/09PrincesaSurtida.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Princesa Surtida</h3>
+                            <p>Bombón de chocolate amargo relleno de fondant y jalea</p>
+                            <div class="product-price">$30.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Piezas, Presentaciones, Tablillas y Bolsas/DUQUESA-PRESENTACIONES.jpg" alt="Duquesa">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="3" data-name="Duquesa" data-price="28.00" data-image="img/Piezas, Presentaciones, Tablillas y Bolsas/DUQUESA-PRESENTACIONES.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Duquesa</h3>
+                            <p>Irresistible sandwich de galleta con jalea y chocolate</p>
+                            <div class="product-price">$28.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Chocolates envueltos, sin envolver y semillas cubiertas/Esponja-Natural.jpg" alt="Esponja">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="4" data-name="Esponja Natural" data-price="22.00" data-image="img/Chocolates envueltos, sin envolver y semillas cubiertas/Esponja-Natural.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Esponja Natural</h3>
+                            <p>Suave malvavisco cubierto de chocolate amargo</p>
+                            <div class="product-price">$22.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Chocolates envueltos, sin envolver y semillas cubiertas/figura.png" alt="Figura">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="5" data-name="Figuras" data-price="20.00" data-image="img/Chocolates envueltos, sin envolver y semillas cubiertas/figura.png">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Figuras</h3>
+                            <p>Tradicional chocolate macizo semiamargo</p>
+                            <div class="product-price">$20.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Caramelos, chiclosos, jaleas y gomitas/Menta-Blanca.jpg" alt="Menta Blanca">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="6" data-name="Menta Blanca" data-price="18.00" data-image="img/Caramelos, chiclosos, jaleas y gomitas/Menta-Blanca.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Menta Blanca</h3>
+                            <p>Delicioso caramelo aireado sabor menta</p>
+                            <div class="product-price">$18.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Temporalidades/nuez-encanelada.png" alt="Nuez Encanelada">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="7" data-name="Nuez Encanelada" data-price="35.00" data-image="img/Temporalidades/nuez-encanelada.png">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Nuez Encanelada</h3>
+                            <p>Sabrosa nuez cubierta con jarabe de cajeta y canela</p>
+                            <div class="product-price">$35.00</div>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="img/Caramelos, chiclosos, jaleas y gomitas/Purupura-y-Oro-Envuelto.jpg" alt="Púrpura y Oro">
+                            <div class="product-overlay">
+                                <button class="btn-icon add-to-cart" data-id="8" data-name="Púrpura y Oro" data-price="32.00" data-image="img/Caramelos, chiclosos, jaleas y gomitas/Purupura-y-Oro-Envuelto.jpg">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>Púrpura y Oro</h3>
+                            <p>Exquisito chocolate crocante relleno de cacahuate</p>
+                            <div class="product-price">$32.00</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn carousel-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Productos Section -->
+    <section class="productos" id="productos">
+        <div class="container">
+            <h2 class="section-title">Nuestra Deliciosa y Surtida Variedad</h2>
+            <div class="productos-filter">
+                <button class="filter-btn active" data-filter="todos">Todos</button>
+                <button class="filter-btn" data-filter="chocolates">Chocolates</button>
+                <button class="filter-btn" data-filter="caramelos">Caramelos</button>
+                <button class="filter-btn" data-filter="presentaciones">Presentaciones</button>
+                <button class="filter-btn" data-filter="temporalidades">Temporalidades</button>
+            </div>
+            <div class="productos-grid" id="productosGrid">
+                <!-- Los productos se cargarán dinámicamente con JavaScript -->
+            </div>
+            <div class="load-more-container">
+                <button class="btn btn-secondary" id="loadMoreBtn">Cargar Más Productos</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promociones Section -->
+    <section class="promociones" id="promociones">
+        <div class="container">
+            <h2 class="section-title">¡Ofertas Especiales!</h2>
+            <div class="promociones-container">
+                <div class="promociones-ticker">
+                    <div class="promociones-content">
+                        <div class="promocion-item">
+                            <span class="promocion-icon">🍫</span>
+                            <span class="promocion-text">¡2x1 en todos los chocolates envueltos! Aprovecha esta oferta especial</span>
+                        </div>
+                        <div class="promocion-item">
+                            <span class="promocion-icon">🎁</span>
+                            <span class="promocion-text">¡Combo familiar! 3 productos por el precio de 2. Perfecto para compartir</span>
+                        </div>
+                        <div class="promocion-item">
+                            <span class="promocion-icon">💝</span>
+                            <span class="promocion-text">¡Envío gratis en compras mayores a $500! Lleva más, paga menos</span>
+                        </div>
+                        <div class="promocion-item">
+                            <span class="promocion-icon">🍫</span>
+                            <span class="promocion-text">¡2x1 en todos los chocolates envueltos! Aprovecha esta oferta especial</span>
+                        </div>
+                        <div class="promocion-item">
+                            <span class="promocion-icon">🎁</span>
+                            <span class="promocion-text">¡Combo familiar! 3 productos por el precio de 2. Perfecto para compartir</span>
+                        </div>
+                        <div class="promocion-item">
+                            <span class="promocion-icon">💝</span>
+                            <span class="promocion-text">¡Envío gratis en compras mayores a $500! Lleva más, paga menos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Historia Section -->
+    <section class="historia" id="historia">
+        <div class="container">
+            <h2 class="section-title">Nuestra Historia</h2>
+            
+            <div class="historia-carousel">
+                <div class="historia-slides" id="historiaSlides">
+                    <!-- Slide 1: Los Orígenes -->
+                    <div class="historia-slide active">
+                        <div class="slide-content">
+                            <div class="slide-year">1920-1930</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/los-origenes.jpg" alt="Los Orígenes - Don José Costanzo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Los Orígenes</h3>
+                                    <p>Todo comenzó con <strong>Don José Costanzo Navazotti</strong>, un inmigrante italiano que llegó a San Luis Potosí en la década de 1920. Con experiencia en la elaboración de caramelos, Don José colaboró inicialmente en la fábrica de dulces "La Victoria" antes de establecer su propio negocio en un pequeño local anexo al Cine Azteca, frente a la Plaza de Armas en la calle Guerrero.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Expansión -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">1935</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia4.jpg" alt="Expansión y Crecimiento - Don José Costanzo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Expansión y Crecimiento</h3>
+                                    <p>Don José adquirió una finca en la calle Galeana, donde estableció formalmente su fábrica. Con solo <strong>20 empleados</strong> y <strong>maquinaria importada directamente de Italia</strong>, la empresa comenzó a producir una variedad de dulces y chocolates que rápidamente ganaron popularidad entre los potosinos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: Continuidad Familiar -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">1966</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia5.jpg" alt="Continuidad Familiar - Equipo de Trabajo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Continuidad Familiar</h3>
+                                    <p>Tras el fallecimiento de Don José, su viuda <strong>María Palafox</strong> y su hijo <strong>Luis Costanzo Palafox</strong> asumieron la dirección de la empresa. Bajo su liderazgo, la fábrica continuó creciendo y modernizándose, manteniendo siempre la elaboración meticulosa de dulces y chocolates.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 4: Nueva Alianza -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">1993</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia6.jpg" alt="Nueva Alianza Estratégica - Tienda Costanzo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Nueva Alianza Estratégica</h3>
+                                    <p>La familia <strong>Díaz Infante Kohrs</strong> se asoció con Luis Costanzo Palafox, impulsando aún más la marca y expandiendo su distribución. Esta alianza permitió que Chocolates Costanzo se adaptara a los nuevos tiempos y potenciara su presencia en el mercado nacional.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 5: Franquicias -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">2014</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia7.jpg" alt="Modelo de Franquicias - Planta Industrial">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Modelo de Franquicias</h3>
+                                    <p>Se inició un innovador modelo de franquicias que permitió incrementar considerablemente las ventas y mejorar el servicio al cliente, llevando nuestros productos a ciudades como <strong>Monterrey, Querétaro, Saltillo, Zacatecas, Irapuato, Aguascalientes y Guadalajara</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 6: Nueva Planta -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">2020</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia8.jpg" alt="Nueva Planta Industrial - Edificio Costanzo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Nueva Planta Industrial</h3>
+                                    <p>La empresa trasladó su producción a una <strong>moderna planta de 8,100 metros cuadrados</strong> en la zona industrial de San Luis Potosí, equipada con tecnología de punta. Esta nueva instalación, <strong>cuatro veces más grande</strong> que la original, permitió aumentar la capacidad de producción sin sacrificar la calidad artesanal.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 7: Presente -->
+                    <div class="historia-slide">
+                        <div class="slide-content">
+                            <div class="slide-year">Hoy</div>
+                            <div class="slide-content-inner">
+                                <div class="slide-image">
+                                    <img src="img/historia.jpg" alt="Un Legado Vivo - Historia Costanzo">
+                                </div>
+                                <div class="slide-text">
+                                    <h3>Un Legado Vivo</h3>
+                                    <p>Actualmente ofrecemos <strong>más de 150 productos distintos</strong>, entre los que destacan el Tornillo, la Nuez Encanelada, la Esponja, la Duquesa, la Princesa y las Púrpuras. Seguimos siendo una empresa honesta con <strong>valores familiares</strong>, utilizando <strong>recetas originales y tradicionales</strong> que han endulzado el paladar de generaciones de mexicanos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles del carrusel -->
+                <div class="historia-controls">
+                    <button class="historia-prev" id="historiaPrev">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="historia-next" id="historiaNext">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Indicadores -->
+                <div class="historia-indicators" id="historiaIndicators">
+                    <span class="indicator active" data-slide="0"></span>
+                    <span class="indicator" data-slide="1"></span>
+                    <span class="indicator" data-slide="2"></span>
+                    <span class="indicator" data-slide="3"></span>
+                    <span class="indicator" data-slide="4"></span>
+                    <span class="indicator" data-slide="5"></span>
+                    <span class="indicator" data-slide="6"></span>
+                </div>
+                </div>
+
+            <!-- Filosofía -->
+            <div class="historia-filosofia">
+                <h3>Nuestra Filosofía</h3>
+                    <blockquote>
+                    <p>"Más de 92 años deleitando a generaciones de mexicanos con el sabor auténtico que nos caracteriza. Estamos siempre evolucionando para llevar el delicioso sabor y pasión por los dulces a más lugares del país."</p>
+                    <cite>- Legado de Don José Costanzo</cite>
+                    </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Promocional Section -->
+    <section class="video-promocional" id="video-promocional">
+        <div class="container">
+            <h2 class="section-title">Descubre Nuestra Tradición</h2>
+            <p class="section-description">Conoce la historia y calidad de Chocolates Costanzo en este video promocional</p>
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <iframe 
+                        id="promoVideo"
+                        class="promotional-video" 
+                        src="https://www.youtube.com/embed/vx8t0oJuDjE?si=bf34mqNx7kgKPvG7" 
+                        title="Video Promocional Chocolates Costanzo" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre Nosotros Section -->
+    <section class="sobre-nosotros" id="sobre-nosotros">
+        <div class="container">
+            <h2 class="section-title">Sobre Nosotros</h2>
+            <div class="sobre-nosotros-content">
+                <div class="sobre-nosotros-card">
+                    <div class="card-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>Calidad Artesanal</h3>
+                    <p>Mantenemos las recetas originales y tradicionales que Don José Costanzo trajo de Italia hace más de 92 años. Cada producto es elaborado con la misma dedicación y pasión que caracterizó a nuestros fundadores.</p>
+                    <p>Utilizamos ingredientes de primera calidad y procesos que combinan la tradición italiana con innovación moderna, garantizando productos frescos y deliciosos.</p>
+                </div>
+                <div class="sobre-nosotros-card">
+                    <div class="card-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Valores Familiares</h3>
+                    <p>Somos una empresa con valores familiares profundamente arraigados. La honestidad, el respeto y la pasión por lo que hacemos son los pilares que guían cada decisión que tomamos.</p>
+                    <p>Cada cliente es tratado como parte de nuestra familia extendida, ofreciendo atención personalizada y un servicio cálido que nos distingue.</p>
+                </div>
+                <div class="sobre-nosotros-card">
+                    <div class="card-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Presencia Nacional</h3>
+                    <p>Con presencia en más de 10 ciudades de México, incluyendo Monterrey, Querétaro, Saltillo, Zacatecas, Guadalajara y más, llevamos nuestros productos a todo el país.</p>
+                    <p>Nuestro modelo de franquicias exitoso y nuestra moderna planta de producción nos permiten satisfacer la creciente demanda sin comprometer la calidad que nos caracteriza.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Cómo puedo realizar un pedido?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Es muy sencillo: navega por nuestros productos, agrega los que desees al carrito de compras, revisa tu pedido y completa el proceso de compra con tus datos de envío y pago.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Cuál es el tiempo de entrega?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>El tiempo de entrega varía según tu ubicación. Dentro de San Luis Potosí: 2-3 días hábiles. En el resto de México: 5-7 días hábiles. Recibirás un código de rastreo para seguir tu pedido.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Los productos mantienen su frescura durante el envío?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>¡Absolutamente! Utilizamos empaques especiales que mantienen la temperatura adecuada y protegen nuestros chocolates durante el transporte. Garantizamos que llegarán en perfectas condiciones.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Ofrecen presentaciones especiales para regalo?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, contamos con hermosas presentaciones para regalo: cajas decoradas, canastas, arreglos personalizados y empaques para ocasiones especiales como San Valentín, Día de las Madres, Navidad y más.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Cuáles son los métodos de pago disponibles?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Aceptamos tarjetas de crédito y débito (Visa, Mastercard, American Express), transferencias bancarias, PayPal y pagos en efectivo contra entrega en San Luis Potosí.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Puedo hacer pedidos mayoristas?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>¡Por supuesto! Ofrecemos precios especiales para pedidos mayoristas. Contáctanos directamente para cotizaciones personalizadas y condiciones especiales para tu negocio o evento.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Tienen tiendas físicas?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, contamos con varias sucursales en San Luis Potosí y otras ciudades de México. Puedes visitarnos para conocer toda nuestra variedad de productos y probarlos antes de comprar.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>¿Los chocolates contienen información de alérgenos?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sí, todos nuestros productos incluyen información detallada sobre ingredientes y posibles alérgenos. Contáctanos si tienes alguna alergia específica y te ayudaremos a elegir productos seguros para ti.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacto Section -->
+    <section class="contacto" id="contacto">
+        <div class="container">
+            <h2 class="section-title">Contáctanos</h2>
+            <div class="contacto-content">
+                <div class="contacto-info">
+                    <div class="contacto-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Dirección</h3>
+                            <p>San Luis Potosí, México</p>
+                        </div>
+                    </div>
+                    <div class="contacto-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>Teléfono</h3>
+                            <p>+52 (444) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="contacto-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <p>contacto@chocolatescostanzo.com</p>
+                        </div>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <form class="contacto-form" id="contactForm">
+                    <h3>Envíanos un Mensaje</h3>
+                    <div class="form-group">
+                        <input type="text" placeholder="Nombre completo" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Correo electrónico" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Asunto">
+                    </div>
+                    <div class="form-group">
+                        <textarea rows="5" placeholder="Tu mensaje" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Chocolates Costanzo</h4>
+                    <p>Tradición y sabor desde 1932. Llevando dulzura a cada rincón de México.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#productos">Productos</a></li>
+                        <li><a href="#historia">Historia</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Información</h4>
+                    <ul>
+                        <li><a href="#faq">Preguntas Frecuentes</a></li>
+                        <li><a href="#">Términos y Condiciones</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="admin/login.html">Administración</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Chocolates Costanzo. Todos los derechos reservados.</p>
+                <p>Más de 92 años llevando sabor desde San Luis Potosí</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Carrito de Compras</h3>
+            <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Los items del carrito se cargarán dinámicamente -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-summary">
+                <div class="cart-summary-row">
+                    <span>Subtotal:</span>
+                    <span id="cartSubtotal">$0.00</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>IVA (16%):</span>
+                    <span id="cartIVA">$0.00</span>
+                </div>
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">$0.00</span>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="checkoutBtn">Proceder al Pago</button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/video.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/promociones.js"></script>
+    <script src="js/historia.js"></script>
+</body>
+</html>
+

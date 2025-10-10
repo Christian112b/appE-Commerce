@@ -51,8 +51,16 @@ function saveCart() {
     localStorage.setItem('costanzoCart', JSON.stringify(cart));
 }
 
-function getCartTotal() {
+function getCartSubtotal() {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+}
+
+function getCartIVA() {
+    return getCartSubtotal() * 0.16; // IVA 16%
+}
+
+function getCartTotal() {
+    return getCartSubtotal() + getCartIVA();
 }
 
 function getCartItemCount() {
@@ -113,8 +121,8 @@ function renderCartItems() {
                     <button onclick="updateQuantity(${item.id}, 1)">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="remove-item" onclick="removeFromCart(${item.id})">
-                        <i class="fas fa-trash"></i> Eliminar
+                    <button class="remove-item" onclick="removeFromCart(${item.id})" title="Eliminar producto">
+                        <i class="fas fa-trash-alt" style="font-family: 'Font Awesome 6 Free'; font-weight: 900;"></i>
                     </button>
                 </div>
             </div>
@@ -123,7 +131,16 @@ function renderCartItems() {
 }
 
 function updateCartTotal() {
+    const cartSubtotal = document.getElementById('cartSubtotal');
+    const cartIVA = document.getElementById('cartIVA');
     const cartTotal = document.getElementById('cartTotal');
+    
+    if (cartSubtotal) {
+        cartSubtotal.textContent = `$${getCartSubtotal().toFixed(2)}`;
+    }
+    if (cartIVA) {
+        cartIVA.textContent = `$${getCartIVA().toFixed(2)}`;
+    }
     if (cartTotal) {
         cartTotal.textContent = `$${getCartTotal().toFixed(2)}`;
     }
@@ -190,47 +207,47 @@ function showCheckoutModal() {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form class="checkout-form" onsubmit="processCheckout(event)">
+            <form class="checkout-form" onsubmit="processCheckout(event)" id="checkoutForm">
                 <h3>Información de Envío</h3>
                 <div class="form-group">
                     <label>Nombre Completo *</label>
-                    <input type="text" required>
+                    <input type="text" name="nombre" required minlength="3" pattern="[A-Za-zÀ-ÿ\s]+" title="Solo letras y espacios">
                 </div>
                 <div class="form-group">
                     <label>Correo Electrónico *</label>
-                    <input type="email" required>
+                    <input type="email" name="email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" title="Ingrese un correo válido">
                 </div>
                 <div class="form-group">
                     <label>Teléfono *</label>
-                    <input type="tel" required>
+                    <input type="tel" name="telefono" required pattern="[0-9]{10}" minlength="10" maxlength="10" title="Ingrese 10 dígitos">
                 </div>
                 <div class="form-group">
                     <label>Dirección Completa *</label>
-                    <textarea rows="3" required></textarea>
+                    <textarea name="direccion" rows="3" required minlength="10"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Ciudad *</label>
-                        <input type="text" required>
+                        <input type="text" name="ciudad" required minlength="3">
                     </div>
                     <div class="form-group">
                         <label>Código Postal *</label>
-                        <input type="text" required>
+                        <input type="text" name="cp" required pattern="[0-9]{5}" minlength="5" maxlength="5" title="Ingrese 5 dígitos">
                     </div>
                 </div>
                 
                 <h3>Método de Pago</h3>
                 <div class="payment-methods">
                     <label class="payment-option">
-                        <input type="radio" name="payment" value="card" checked>
+                        <input type="radio" name="payment" value="card" checked required>
                         <span><i class="fas fa-credit-card"></i> Tarjeta de Crédito/Débito</span>
                     </label>
                     <label class="payment-option">
-                        <input type="radio" name="payment" value="transfer">
+                        <input type="radio" name="payment" value="transfer" required>
                         <span><i class="fas fa-university"></i> Transferencia Bancaria</span>
                     </label>
                     <label class="payment-option">
-                        <input type="radio" name="payment" value="cash">
+                        <input type="radio" name="payment" value="cash" required>
                         <span><i class="fas fa-money-bill-wave"></i> Pago en Efectivo (contra entrega)</span>
                     </label>
                 </div>
@@ -238,7 +255,11 @@ function showCheckoutModal() {
                 <div class="checkout-summary">
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <span>$${getCartTotal().toFixed(2)}</span>
+                        <span>$${getCartSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>IVA (16%):</span>
+                        <span>$${getCartIVA().toFixed(2)}</span>
                     </div>
                     <div class="summary-row">
                         <span>Envío:</span>
