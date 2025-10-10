@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Administración Chocolates Costanzo</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="admin-dashboard">
+    
+    <!-- Sidebar  -->
+    {% include 'admin/components/sidebar.html' %}
+
+    <!-- Main Content  -->
+    {% include 'admin/components/mainContent.html' %}
+
+    <!-- Products Content  -->
+    {% include 'admin/components/products.html' %}
+
+
+
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeProductModal()"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+</body>
+
+</html>

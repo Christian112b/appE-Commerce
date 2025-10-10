@@ -1,0 +1,60 @@
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='assets/costanzo.png') }}" alt="Chocolates Costanzo"
+                class="login-logo">
+
+            <h2>Admin Panel</h2>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#productos" class="nav-item" data-section="productos">
+                        <i class="fas fa-box"></i>
+                        <span>Productos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#ventas" class="nav-item" data-section="ventas">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Ventas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#reportes" class="nav-item" data-section="reportes">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#clientes" class="nav-item" data-section="clientes">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#configuracion" class="nav-item" data-section="configuracion">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuración</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Cerrar Sesión</span>
+            </button>
+        </div>
+    </aside>

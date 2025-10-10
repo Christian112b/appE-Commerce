@@ -1,102 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Administración Chocolates Costanzo</title>
-    <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="admin-dashboard">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="../img/costanzo.png" alt="Costanzo">
-            <h2>Admin Panel</h2>
-            <button class="sidebar-toggle" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <ul>
-                <li>
-                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#productos" class="nav-item" data-section="productos">
-                        <i class="fas fa-box"></i>
-                        <span>Productos</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#ventas" class="nav-item" data-section="ventas">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Ventas</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#reportes" class="nav-item" data-section="reportes">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Reportes</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#clientes" class="nav-item" data-section="clientes">
-                        <i class="fas fa-users"></i>
-                        <span>Clientes</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#configuracion" class="nav-item" data-section="configuracion">
-                        <i class="fas fa-cog"></i>
-                        <span>Configuración</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Cerrar Sesión</span>
-            </button>
-        </div>
-    </aside>
-    
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Header -->
-        <header class="admin-header">
-            <div class="header-left">
-                <button class="mobile-toggle" id="mobileToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h1 id="pageTitle">Dashboard</h1>
-            </div>
-            <div class="header-right">
-                <div class="header-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Buscar...">
-                </div>
-                <button class="header-icon">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <div class="user-menu">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=8B4513&color=fff" alt="Admin">
-                    <span>Admin</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-            </div>
-        </header>
         
+    {% include 'admin/components/navbar.html' %}
+
+
         <!-- Dashboard Section -->
         <section id="section-dashboard" class="content-section active">
             <div class="stats-grid">
@@ -112,7 +19,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
                         <i class="fas fa-shopping-cart"></i>
@@ -125,7 +32,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                         <i class="fas fa-box"></i>
@@ -138,7 +45,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
                         <i class="fas fa-users"></i>
@@ -152,7 +59,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="charts-grid">
                 <div class="chart-card">
                     <div class="card-header">
@@ -166,7 +73,7 @@
                         <canvas id="salesChart"></canvas>
                     </div>
                 </div>
-                
+
                 <div class="chart-card">
                     <div class="card-header">
                         <h3>Productos Más Vendidos</h3>
@@ -200,7 +107,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="recent-orders">
                 <div class="card-header">
                     <h3>Pedidos Recientes</h3>
@@ -225,7 +132,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Productos Section -->
         <section id="section-productos" class="content-section">
             <div class="section-header">
@@ -234,7 +141,7 @@
                     <i class="fas fa-plus"></i> Nuevo Producto
                 </button>
             </div>
-            
+
             <div class="filters-bar">
                 <div class="filter-group">
                     <select class="select-md" id="categoryFilter">
@@ -250,7 +157,7 @@
                     <input type="text" placeholder="Buscar producto..." id="productSearch">
                 </div>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -271,7 +178,7 @@
                 </table>
             </div>
         </section>
-        
+
         <!-- Ventas Section -->
         <section id="section-ventas" class="content-section">
             <div class="section-header">
@@ -282,7 +189,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="filters-bar">
                 <div class="filter-group">
                     <label>Estado:</label>
@@ -299,7 +206,7 @@
                     <input type="date" class="input-md" id="dateFilter">
                 </div>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -321,13 +228,13 @@
                 </table>
             </div>
         </section>
-        
+
         <!-- Reportes Section -->
         <section id="section-reportes" class="content-section">
             <div class="section-header">
                 <h2>Reportes y Análisis</h2>
             </div>
-            
+
             <div class="report-cards">
                 <div class="report-card">
                     <i class="fas fa-calendar-day"></i>
@@ -335,21 +242,21 @@
                     <p>Ventas y estadísticas del día</p>
                     <button class="btn btn-primary" onclick="generateReport('daily')">Generar</button>
                 </div>
-                
+
                 <div class="report-card">
                     <i class="fas fa-calendar-week"></i>
                     <h3>Reporte Semanal</h3>
                     <p>Resumen de la semana</p>
                     <button class="btn btn-primary" onclick="generateReport('weekly')">Generar</button>
                 </div>
-                
+
                 <div class="report-card">
                     <i class="fas fa-calendar-alt"></i>
                     <h3>Reporte Mensual</h3>
                     <p>Análisis mensual completo</p>
                     <button class="btn btn-primary" onclick="generateReport('monthly')">Generar</button>
                 </div>
-                
+
                 <div class="report-card">
                     <i class="fas fa-chart-pie"></i>
                     <h3>Reporte Anual</h3>
@@ -357,7 +264,7 @@
                     <button class="btn btn-primary" onclick="generateReport('yearly')">Generar</button>
                 </div>
             </div>
-            
+
             <div class="report-section">
                 <h3>Últimos Reportes Generados</h3>
                 <div class="reports-list" id="reportsList">
@@ -365,13 +272,13 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Clientes Section -->
         <section id="section-clientes" class="content-section">
             <div class="section-header">
                 <h2>Gestión de Clientes</h2>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -392,13 +299,13 @@
                 </table>
             </div>
         </section>
-        
+
         <!-- Configuración Section -->
         <section id="section-configuracion" class="content-section">
             <div class="section-header">
                 <h2>Configuración</h2>
             </div>
-            
+
             <div class="config-cards">
                 <div class="config-card">
                     <h3><i class="fas fa-store"></i> Información de la Tienda</h3>
@@ -418,7 +325,7 @@
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </form>
                 </div>
-                
+
                 <div class="config-card">
                     <h3><i class="fas fa-truck"></i> Configuración de Envío</h3>
                     <form class="config-form">
@@ -440,70 +347,3 @@
             </div>
         </section>
     </main>
-    
-    <!-- Modal de Producto -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Nuevo Producto</h3>
-                <button class="close-modal" onclick="closeProductModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form class="modal-body" id="productForm">
-                <input type="hidden" id="productId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nombre del producto *</label>
-                        <input type="text" id="productName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Categoría *</label>
-                        <select id="productCategory" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="chocolates">Chocolates</option>
-                            <option value="caramelos">Caramelos</option>
-                            <option value="presentaciones">Presentaciones</option>
-                            <option value="temporalidades">Temporalidades</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea id="productDescription" rows="3"></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Precio *</label>
-                        <input type="number" step="0.01" id="productPrice" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Stock</label>
-                        <input type="number" id="productStock" value="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>URL de la imagen</label>
-                    <input type="text" id="productImage">
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="productActive" checked>
-                        <span>Producto activo</span>
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="modalOverlay" onclick="closeProductModal()"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/admin.js"></script>
-</body>
-</html>
-

@@ -4,47 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración - Chocolates Costanzo</title>
-    <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Fix para inputs bloqueados */
-        .login-form input {
-            pointer-events: auto !important;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
-        }
-        
-        .login-form input:focus {
-            pointer-events: auto !important;
-            user-select: text !important;
-        }
-        
-        /* Asegurar que no haya elementos sobrepuestos */
-        .login-container {
-            pointer-events: auto !important;
-        }
-        
-        .login-form {
-            pointer-events: auto !important;
-        }
-        
-        .form-group {
-            pointer-events: auto !important;
-        }
-    </style>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loginStyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+
 </head>
 <body class="login-page">
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <img src="../img/costanzo.png" alt="Chocolates Costanzo" class="login-logo">
-                <h1>Panel de Administración</h1>
-                <p>Chocolates Costanzo</p>
+                <img src="{{ url_for('static', filename='assets/costanzo.png') }}" alt="Chocolates Costanzo" class="login-logo">
+                <h1>Iniciar Sesión</h1>
             </div>
             
             <form class="login-form" id="loginForm">
@@ -72,21 +47,23 @@
                         <input type="checkbox" name="remember">
                         <span>Recordar sesión</span>
                     </label>
-                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                    <!-- TODO: Crear esta ruta y hacerla funcionar  -->
+                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a> 
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-block">
+                <button type="button" class="btn btn-primary btn-block" onclick="submitForm()">
                     <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </button>
                 
                 <div class="login-footer">
                     <p>Credenciales de prueba:</p>
-                    <p><strong>Usuario:</strong> admin | <strong>Contraseña:</strong> costanzo2024</p>
+                    <p><strong>Usuario:</strong> admin | <strong>Contraseña:</strong> 1234</p>
                 </div>
             </form>
             
             <div class="back-to-site">
-                <a href="../index.html">
+                <a href="{{ url_for('main.index') }}">
+
                     <i class="fas fa-arrow-left"></i> Volver al sitio web
                 </a>
             </div>
@@ -99,7 +76,8 @@
         </div>
     </div>
     
-    <script src="js/login.js"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
 </body>
 </html>
 

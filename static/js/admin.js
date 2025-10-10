@@ -1,17 +1,4 @@
 // ========================
-// Verificar autenticación
-// ========================
-document.addEventListener('DOMContentLoaded', function() {
-    const isLoggedIn = localStorage.getItem('adminLoggedIn');
-    if (isLoggedIn !== 'true') {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    initializeDashboard();
-});
-
-// ========================
 // Inicialización
 // ========================
 function initializeDashboard() {
@@ -23,6 +10,15 @@ function initializeDashboard() {
     loadClients();
     setupCharts();
 }
+
+// ========================
+// Dropdown func
+// ========================
+function toggleAdminDropdown() {
+    const menu = document.getElementById('adminDropdownMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
 
 // ========================
 // Navegación entre secciones
