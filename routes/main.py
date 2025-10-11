@@ -9,3 +9,7 @@ def index():
 @main_bp.route('/login')
 def login():
     return render_template('components/login.html')
+
+@main_bp.route('/register')
+def register():
+    return render_template('components/register.html')

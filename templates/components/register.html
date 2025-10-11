@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - Chocolates Costanzo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loginStyle.css') }}">
+
+
+</head>
+
+
+
+<body class="login-page">
+    <div class="login-container" >
+        <div class="login-card" style="width: 100%;">
+            <div class="login-header">
+                <img src="{{ url_for('static', filename='assets/costanzo.png') }}" alt="Chocolates Costanzo"
+                    class="login-logo">
+                <h1>Iniciar Sesión</h1>
+            </div>
+
+            <form class="login-form" id="registerForm">
+                <div class="form-group full-width">
+                    <label for="name">
+                        <i class="fas fa-user"></i> Nombre completo
+                    </label>
+                    <input type="text" id="name" name="name" placeholder="Ingresa tu nombre" maxlength="100"
+                        autocomplete="name" required>
+                </div>
+
+                <!-- Email y Teléfono  -->
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i> Correo
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="Ingresa tu correo" required
+                            maxlength="100" autocomplete="email">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="phone">
+                            <i class="fas fa-phone"></i> Telefono
+                        </label>
+                        <input type="tel" id="phone" name="phone" placeholder="Ingresa tu numero" required
+                            maxlength="20" autocomplete="tel">
+                    </div>
+                </div>
+
+                <!-- Contraseña y Confirmación en la misma fila -->
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> Contraseña
+                        </label>
+                        <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required
+                            minlength="6" autocomplete="new-password">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="confirmPassword">
+                            <i class="fas fa-lock"></i> Confirmar Contraseña
+                        </label>
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                            placeholder="Confirma tu contraseña" required minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-block" onclick="submitRegisterForm()">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </button>
+            </form>
+
+            <div class="back-to-site">
+                <a href="{{ url_for('main.index') }}">
+
+                    <i class="fas fa-arrow-left"></i> Volver al sitio web
+                </a>
+            </div>
+        </div>
+
+        <div class="login-background">
+            <div class="bg-shape shape-1"></div>
+            <div class="bg-shape shape-2"></div>
+            <div class="bg-shape shape-3"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+
+</body>
+
+</html>

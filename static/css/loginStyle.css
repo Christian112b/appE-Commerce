@@ -24,3 +24,27 @@
         .form-group {
             pointer-events: auto !important;
         }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .half-width {
+            flex: 1 1 45%;
+        }
+
+        .full-width {
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .half-width {
+                width: 100%;
+            }
+        }

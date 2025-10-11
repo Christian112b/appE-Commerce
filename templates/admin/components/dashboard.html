@@ -1,0 +1,342 @@
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Ventas del Día</h3>
+                        <p class="stat-value">$12,580.00</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12.5%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Pedidos</h3>
+                        <p class="stat-value">145</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 8.2%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Productos</h3>
+                        <p class="stat-value">76</p>
+                        <span class="stat-change neutral">
+                            <i class="fas fa-minus"></i> 0%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Clientes</h3>
+                        <p class="stat-value">1,234</p>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 15.3%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3>Ventas Mensuales</h3>
+                        <select class="select-sm">
+                            <option>2024</option>
+                            <option>2023</option>
+                        </select>
+                    </div>
+                    <div class="chart-placeholder">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h3>Productos Más Vendidos</h3>
+                    </div>
+                    <div class="top-products">
+                        <div class="product-item">
+                            <span class="product-rank">#1</span>
+                            <span class="product-name">Tornillo</span>
+                            <span class="product-sales">456 unidades</span>
+                        </div>
+                        <div class="product-item">
+                            <span class="product-rank">#2</span>
+                            <span class="product-name">Princesa Surtida</span>
+                            <span class="product-sales">398 unidades</span>
+                        </div>
+                        <div class="product-item">
+                            <span class="product-rank">#3</span>
+                            <span class="product-name">Duquesa</span>
+                            <span class="product-sales">367 unidades</span>
+                        </div>
+                        <div class="product-item">
+                            <span class="product-rank">#4</span>
+                            <span class="product-name">Nuez Encanelada</span>
+                            <span class="product-sales">342 unidades</span>
+                        </div>
+                        <div class="product-item">
+                            <span class="product-rank">#5</span>
+                            <span class="product-name">Púrpura y Oro</span>
+                            <span class="product-sales">318 unidades</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-orders">
+                <div class="card-header">
+                    <h3>Pedidos Recientes</h3>
+                    <a href="#ventas" class="link-primary">Ver todos</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>Cliente</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersTable">
+                            <!-- Datos cargados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Productos Section -->
+        <section id="section-productos" class="content-section">
+            <div class="section-header">
+                <h2>Gestión de Productos</h2>
+                <button class="btn btn-primary" onclick="showProductModal()">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <select class="select-md" id="categoryFilter">
+                        <option value="">Todas las categorías</option>
+                        <option value="chocolates">Chocolates</option>
+                        <option value="caramelos">Caramelos</option>
+                        <option value="presentaciones">Presentaciones</option>
+                        <option value="temporalidades">Temporalidades</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar producto..." id="productSearch">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTable">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Ventas Section -->
+        <section id="section-ventas" class="content-section">
+            <div class="section-header">
+                <h2>Gestión de Ventas</h2>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportSales()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Estado:</label>
+                    <select class="select-md" id="statusFilter">
+                        <option value="">Todos</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="processing">En proceso</option>
+                        <option value="completed">Completado</option>
+                        <option value="cancelled">Cancelado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Fecha:</label>
+                    <input type="date" class="input-md" id="dateFilter">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Productos</th>
+                            <th>Subtotal</th>
+                            <th>Envío</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTable">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Reportes Section -->
+        <section id="section-reportes" class="content-section">
+            <div class="section-header">
+                <h2>Reportes y Análisis</h2>
+            </div>
+
+            <div class="report-cards">
+                <div class="report-card">
+                    <i class="fas fa-calendar-day"></i>
+                    <h3>Reporte Diario</h3>
+                    <p>Ventas y estadísticas del día</p>
+                    <button class="btn btn-primary" onclick="generateReport('daily')">Generar</button>
+                </div>
+
+                <div class="report-card">
+                    <i class="fas fa-calendar-week"></i>
+                    <h3>Reporte Semanal</h3>
+                    <p>Resumen de la semana</p>
+                    <button class="btn btn-primary" onclick="generateReport('weekly')">Generar</button>
+                </div>
+
+                <div class="report-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Reporte Mensual</h3>
+                    <p>Análisis mensual completo</p>
+                    <button class="btn btn-primary" onclick="generateReport('monthly')">Generar</button>
+                </div>
+
+                <div class="report-card">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>Reporte Anual</h3>
+                    <p>Estadísticas del año</p>
+                    <button class="btn btn-primary" onclick="generateReport('yearly')">Generar</button>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3>Últimos Reportes Generados</h3>
+                <div class="reports-list" id="reportsList">
+                    <!-- Reportes generados -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Clientes Section -->
+        <section id="section-clientes" class="content-section">
+            <div class="section-header">
+                <h2>Gestión de Clientes</h2>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Pedidos</th>
+                            <th>Total Gastado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTable">
+                        <!-- Datos cargados dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Configuración Section -->
+        <section id="section-configuracion" class="content-section">
+            <div class="section-header">
+                <h2>Configuración</h2>
+            </div>
+
+            <div class="config-cards">
+                <div class="config-card">
+                    <h3><i class="fas fa-store"></i> Información de la Tienda</h3>
+                    <form class="config-form">
+                        <div class="form-group">
+                            <label>Nombre de la tienda</label>
+                            <input type="text" value="Chocolates Costanzo">
+                        </div>
+                        <div class="form-group">
+                            <label>Email de contacto</label>
+                            <input type="email" value="contacto@chocolatescostanzo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" value="+52 (444) 123-4567">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+
+                <div class="config-card">
+                    <h3><i class="fas fa-truck"></i> Configuración de Envío</h3>
+                    <form class="config-form">
+                        <div class="form-group">
+                            <label>Costo de envío local</label>
+                            <input type="number" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Costo de envío nacional</label>
+                            <input type="number" value="150">
+                        </div>
+                        <div class="form-group">
+                            <label>Envío gratis desde</label>
+                            <input type="number" value="500">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </section>

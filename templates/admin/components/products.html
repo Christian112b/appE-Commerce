@@ -1,58 +1,155 @@
-    <!-- Modal de Producto -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Nuevo Producto</h3>
-                <button class="close-modal" onclick="closeProductModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form class="modal-body" id="productForm">
-                <input type="hidden" id="productId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nombre del producto *</label>
-                        <input type="text" id="productName" required>
+<!-- Card de Producto -->
+
+<style>
+    .card-section {
+        padding: 10px;
+        overflow: hidden;
+        /* evita scrolls innecesarios */
+    }
+
+    .card-body {
+        padding: 10px;
+        overflow-x: auto;
+        /* solo si la tabla se desborda horizontalmente */
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+        overflow: hidden;
+        /* opcional si el scroll general no se necesita */
+    }
+</style>
+
+{% import 'macros/loadingMacro.html' as loadingComponent %}
+{{ loadingComponent.loading_modal('loadingProducts', 'Cargando productos...') }}
+
+
+
+
+
+<div id="productosCard" class="card-section container-fluid" style="display: none; padding: 10px;">
+    <div class="row">
+        <!-- Tabla de productos -->
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Listado de Productos</h5>
+                    <button class="btn btn-primary" onclick="openProductForm()">Agregar Producto</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Activo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody">
+                                <!-- Aquí se renderizan los productos dinámicamente -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="form-group">
-                        <label>Categoría *</label>
-                        <select id="productCategory" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="chocolates">Chocolates</option>
-                            <option value="caramelos">Caramelos</option>
-                            <option value="presentaciones">Presentaciones</option>
-                            <option value="temporalidades">Temporalidades</option>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6>Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="filterCategory" class="form-label">Categoría</label>
+                        <select id="filterCategoria" class="form-select mb-2">
+                            <option value="">Todas</option>
+                        </select>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="filterActive" class="form-label">Estado</label>
+                        <select id="filterActive" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1">Activos</option>
+                            <option value="0">Inactivos</option>
                         </select>
                     </div>
+                    <button class="btn btn-outline-primary w-100" onclick="applyProductFilters()">Aplicar
+                        filtros</button>
                 </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea id="productDescription" rows="3"></textarea>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Precio *</label>
-                        <input type="number" step="0.01" id="productPrice" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Stock</label>
-                        <input type="number" id="productStock" value="0">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>URL de la imagen</label>
-                    <input type="text" id="productImage">
-                </div>
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="productActive" checked>
-                        <span>Producto activo</span>
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
+</div>
+
+
+
+<!-- 
+<div id="productosCard" class="card-section" style="display: none;">
+    <div class="card">
+        <div class="card-header">
+            <h3 id="modalTitle">Nuevo Producto</h3>
+            <button class="close-card" onclick="hideProductosCard()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form class="card-body" id="productForm">
+            <input type="hidden" id="productId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre del producto *</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría *</label>
+                    <select id="productCategory" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="chocolates">Chocolates</option>
+                        <option value="caramelos">Caramelos</option>
+                        <option value="presentaciones">Presentaciones</option>
+                        <option value="temporalidades">Temporalidades</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea id="productDescription" rows="3"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio *</label>
+                    <input type="number" step="0.01" id="productPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Stock</label>
+                    <input type="number" id="productStock" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>URL de la imagen</label>
+                <input type="text" id="productImage">
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="productActive" checked>
+                    <span>Producto activo</span>
+                </label>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideProductosCard()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Producto</button>
+            </div>
+        </form>
+    </div>
+</div> -->

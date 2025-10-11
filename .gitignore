@@ -50,3 +50,6 @@ build/
 *.min.js
 *.min.css
 
+# Variables de entorno
+.env
+

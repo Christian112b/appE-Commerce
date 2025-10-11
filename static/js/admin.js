@@ -11,13 +11,7 @@ function initializeDashboard() {
     setupCharts();
 }
 
-// ========================
-// Dropdown func
-// ========================
-function toggleAdminDropdown() {
-    const menu = document.getElementById('adminDropdownMenu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-}
+
 
 
 // ========================
