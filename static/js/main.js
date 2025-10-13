@@ -660,8 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Opcional: descomentar para cursor personalizado
     // setupCustomCursor();
     
-    console.log('%c🍫 Chocolates Costanzo - Sitio Web Cargado 🍫', 'color: #D2691E; font-size: 20px; font-weight: bold;');
-    console.log('%cDesarrollado por estudiantes de la Universidad Politécnica de San Luis Potosí', 'color: #8B4513; font-size: 12px;');
 });
 
 // Hacer funciones globales

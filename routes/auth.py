@@ -15,7 +15,7 @@ def validationLogin():
 
         # Buscar usuario por correo
         result = db.query("""
-            SELECT id_usuario, nombre, apellido, contraseña_hash, tipo_usuario
+            SELECT id_usuario, nombre, apellido, correo,contraseña_hash, tipo_usuario, telefono
             FROM usuarios
             WHERE correo = %s
         """, (user,))
@@ -31,6 +31,8 @@ def validationLogin():
         if bcrypt.checkpw(password.encode('utf-8'), usuario['contraseña_hash'].encode('utf-8')):
             session['user'] = f"{usuario['nombre']} {usuario['apellido']}"
             session['autenticado'] = True
+            session['correo'] = usuario['correo']
+            session['id_user'] = usuario['id_usuario']
             session['admin'] = 1 if usuario['tipo_usuario'] == 1 else 0
             return jsonify({'status': 200, 'message': 'Login exitoso'})
         else:

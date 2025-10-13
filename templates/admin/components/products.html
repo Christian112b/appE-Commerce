@@ -22,11 +22,32 @@
         overflow: hidden;
         /* opcional si el scroll general no se necesita */
     }
+
+    .table td:last-child {
+        white-space: nowrap;
+    }
+
+    .modal .form-label {
+        font-weight: 500;
+    }
+
+    .modal .form-control,
+    .modal .form-select {
+        border-radius: 6px;
+    }
+
+    #productPreview {
+        max-height: 100px;
+        border-radius: 6px;
+        margin-top: 5px;
+        object-fit: cover;
+    }
 </style>
 
 {% import 'macros/loadingMacro.html' as loadingComponent %}
 {{ loadingComponent.loading_modal('loadingProducts', 'Cargando productos...') }}
 
+{% include 'admin/components/editProductModal.html' %}
 
 
 
@@ -52,6 +73,7 @@
                                     <th>Precio</th>
                                     <th>Stock</th>
                                     <th>Activo</th>
+                                    <th>Acciones
                                 </tr>
                             </thead>
                             <tbody id="productTableBody">
@@ -92,64 +114,3 @@
         </div>
     </div>
 </div>
-
-
-
-<!-- 
-<div id="productosCard" class="card-section" style="display: none;">
-    <div class="card">
-        <div class="card-header">
-            <h3 id="modalTitle">Nuevo Producto</h3>
-            <button class="close-card" onclick="hideProductosCard()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <form class="card-body" id="productForm">
-            <input type="hidden" id="productId">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nombre del producto *</label>
-                    <input type="text" id="productName" required>
-                </div>
-                <div class="form-group">
-                    <label>Categoría *</label>
-                    <select id="productCategory" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="chocolates">Chocolates</option>
-                        <option value="caramelos">Caramelos</option>
-                        <option value="presentaciones">Presentaciones</option>
-                        <option value="temporalidades">Temporalidades</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Descripción</label>
-                <textarea id="productDescription" rows="3"></textarea>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Precio *</label>
-                    <input type="number" step="0.01" id="productPrice" required>
-                </div>
-                <div class="form-group">
-                    <label>Stock</label>
-                    <input type="number" id="productStock" value="0">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>URL de la imagen</label>
-                <input type="text" id="productImage">
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="productActive" checked>
-                    <span>Producto activo</span>
-                </label>
-            </div>
-            <div class="card-footer">
-                <button type="button" class="btn btn-secondary" onclick="hideProductosCard()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar Producto</button>
-            </div>
-        </form>
-    </div>
-</div> -->

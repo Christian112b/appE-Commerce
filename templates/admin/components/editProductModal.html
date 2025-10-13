@@ -1,0 +1,71 @@
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="productModalLabel">Agregar Producto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="productName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="productCategory" class="form-label">Categoría</label>
+                            <select class="form-select" id="productCategory" required>
+                                <option value="">Selecciona una categoría</option>
+                                <option value="Chocolate">Chocolate</option>
+                                <option value="Sandwich">Sandwich</option>
+                                <option value="Bombon">Bombón</option>
+                                <option value="Caramelo">Caramelo</option>
+                                <option value="Semilla">Semilla</option> <!-- para nuez, café, etc. -->
+                                <option value="Tradicionales">Tradicionales</option>
+                                <option value="Temporales">Temporales</option>
+                                <option value="Solubles">Solubles</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="productDescription" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="productDescription" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="productPrice" class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="productStock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="productStock" required>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center">
+                            <label class="form-label me-3">Activo</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="productActive">
+                                <label class="form-check-label" for="productActive" id="activeLabel">Sí</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="productImage" class="form-label">Imagen</label>
+                            <input type="file" class="form-control mb-2" id="productImage" accept="image/*">
+                            <img id="productPreview" src="" alt="Vista previa" class="img-thumbnail"
+                                style="max-height: 100px; display: none;">
+
+                                
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" form="productForm">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

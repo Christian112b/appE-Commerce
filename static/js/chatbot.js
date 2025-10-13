@@ -330,6 +330,5 @@ class ChatBot {
 // Inicializar el chatbot cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     const chatbot = new ChatBot();
-    console.log('🤖 Chatbot de Chocolates Costanzo inicializado');
 });
 

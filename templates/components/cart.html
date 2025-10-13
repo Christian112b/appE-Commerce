@@ -1,27 +1,39 @@
-    <!-- Cart Sidebar -->
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h3>Carrito de Compras</h3>
-            <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+<!-- Cart Sidebar -->
+<div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h3>Carrito de Compras</h3>
+        <button class="close-cart" id="closeCart"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-items" id="cartItems">
+        <!-- Los items del carrito se cargarán dinámicamente -->
+
+        <div id="cartItems">
+            <div id="cartLoading" class="cart-loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Cargando productos...</p>
+            </div>
         </div>
-        <div class="cart-items" id="cartItems">
-            <!-- Los items del carrito se cargarán dinámicamente -->
-        </div>
-        <div class="cart-footer">
-            <div class="cart-summary">
-                <div class="cart-summary-row">
-                    <span>Subtotal:</span>
-                    <span id="cartSubtotal">$0.00</span>
-                </div>
-                <div class="cart-summary-row">
-                    <span>IVA (16%):</span>
-                    <span id="cartIVA">$0.00</span>
-                </div>
+
+    </div>
+    <div class="cart-footer">
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Subtotal:</span>
+                <span id="cartSubtotal">$0.00</span>
+            </div>
+            <div class="cart-summary-row">
+                <span>IVA (16%):</span>
+                <span id="cartIVA">$0.00</span>
+            </div>
             <div class="cart-total">
                 <span>Total:</span>
                 <span id="cartTotal">$0.00</span>
-                </div>
             </div>
-            <button class="btn btn-primary btn-block" id="checkoutBtn">Proceder al Pago</button>
         </div>
+        <button class="btn btn-primary btn-block" id="checkoutBtn">Proceder al Pago</button>
     </div>
+
+
+
+
+</div>
