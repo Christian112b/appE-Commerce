@@ -1,0 +1,107 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  padding: 1.5rem;
+  box-shadow: 0 0 12px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header h2 {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.modal-body {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.checkout-item {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.checkout-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.checkout-item-info {
+  flex: 1;
+}
+
+.checkout-item-info h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.checkout-item-info p {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.modal-summary {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.summary-row.total {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.btn-confirm, .btn-cancel {
+  flex: 1;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-confirm {
+  background: #28a745;
+}
+
+.btn-cancel {
+  background: #dc3545;
+}

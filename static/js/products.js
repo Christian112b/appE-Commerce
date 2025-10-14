@@ -3,6 +3,10 @@
 // ========================
 let allProducts = []; // global para mantener los productos cargados
 let currentLimit = 12;
+let displayedProducts = 12; 
+let currentFilter = 'todos'; // o el valor inicial que estés usando
+
+
 
 // ========================
 // Inicialización

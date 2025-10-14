@@ -125,3 +125,40 @@ def getItemsCart():
 
     return jsonify({'ok': True, 'items': items})
 
+@cart_bp.route('/check-session', methods=['GET'])
+def verificar_sesion():
+    autenticado = session.get('autenticado', False)
+    return jsonify({'ok': autenticado})
+
+@cart_bp.route('/saveCart', methods=['POST'])
+def saveCart():
+    if not session.get('autenticado'):
+        return jsonify({'ok': False, 'mensaje': 'No autenticado'}), 401
+
+    data = request.get_json()
+    items = data.get('items', [])
+    id_usuario = session.get('id_user')
+
+    db = DBConnection()
+
+    carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+    if not carrito:
+        db.execute("INSERT INTO costanzo.carritocompra (id_usuario) VALUES (%s)", (id_usuario,))
+        carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+
+    id_carrito = carrito[0]['id_carrito']
+
+    # Limpiar carrito actual
+    db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
+
+    # Insertar nuevos items
+    for item in items:
+        db.execute("""
+            INSERT INTO costanzo.carrito_items (id_carrito, id_producto, cantidad, precio_unitario)
+            VALUES (%s, %s, %s, %s)
+        """, (id_carrito, item['id'], item['quantity'], item['price']))
+
+
+    db.close()
+    return jsonify({'ok': True})
+
