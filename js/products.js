@@ -582,46 +582,78 @@ const allProducts = [
 // ========================
 let currentFilter = 'todos';
 let displayedProducts = 12;
+let searchQuery = '';
 
 // ========================
 // Funciones de renderizado
 // ========================
-function renderProducts(filter = 'todos', limit = 12) {
+function renderProducts(filter = 'todos', limit = 12, search = '') {
     const grid = document.getElementById('productosGrid');
+    const searchResultsInfo = document.getElementById('searchResultsInfo');
     if (!grid) return;
     
     let products = allProducts;
     
-    // Aplicar filtro
+    // Aplicar búsqueda por texto
+    if (search.trim() !== '') {
+        const searchLower = search.toLowerCase();
+        products = products.filter(p => 
+            p.name.toLowerCase().includes(searchLower) || 
+            p.description.toLowerCase().includes(searchLower)
+        );
+    }
+    
+    // Aplicar filtro de categoría
     if (filter !== 'todos') {
-        products = allProducts.filter(p => p.category === filter || p.image.includes(filter));
+        products = products.filter(p => p.category === filter || p.image.includes(filter));
+    }
+    
+    // Mostrar información de resultados de búsqueda
+    if (searchResultsInfo) {
+        if (search.trim() !== '') {
+            searchResultsInfo.style.display = 'block';
+            searchResultsInfo.querySelector('p').textContent = 
+                `Se encontraron ${products.length} producto${products.length !== 1 ? 's' : ''} para "${search}"`;
+        } else {
+            searchResultsInfo.style.display = 'none';
+        }
     }
     
     // Limitar productos mostrados
     const productsToShow = products.slice(0, limit);
     
     // Renderizar productos
-    grid.innerHTML = productsToShow.map(product => `
-        <div class="product-card" data-category="${product.category || 'chocolates'}">
-            <div class="product-image">
-                <img src="${product.image}" alt="${product.name}" loading="lazy">
-                <div class="product-overlay">
-                    <button class="btn-icon add-to-cart" 
-                            data-id="${product.id}" 
-                            data-name="${product.name}" 
-                            data-price="${product.price}" 
-                            data-image="${product.image}">
-                        <i class="fas fa-shopping-cart"></i>
-                    </button>
+    if (productsToShow.length === 0) {
+        grid.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros términos de búsqueda o categoría</p>
+            </div>
+        `;
+    } else {
+        grid.innerHTML = productsToShow.map(product => `
+            <div class="product-card" data-category="${product.category || 'chocolates'}">
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}" loading="lazy">
+                    <div class="product-overlay">
+                        <button class="btn-icon add-to-cart" 
+                                data-id="${product.id}" 
+                                data-name="${product.name}" 
+                                data-price="${product.price}" 
+                                data-image="${product.image}">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
                 </div>
             </div>
-            <div class="product-info">
-                <h3>${product.name}</h3>
-                <p>${product.description}</p>
-                <div class="product-price">$${product.price.toFixed(2)}</div>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    }
     
     // Actualizar botón "Cargar más"
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -688,8 +720,58 @@ function setupFilters() {
             displayedProducts = 12;
             
             // Renderizar productos filtrados
-            renderProducts(currentFilter, displayedProducts);
+            renderProducts(currentFilter, displayedProducts, searchQuery);
         });
+    });
+}
+
+// ========================
+// Búsqueda de productos
+// ========================
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    if (!searchInput) return;
+    
+    // Evento de búsqueda con debounce
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchQuery = this.value;
+        
+        // Mostrar/ocultar botón de limpiar
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = searchQuery ? 'block' : 'none';
+        }
+        
+        // Búsqueda con delay para mejor rendimiento
+        searchTimeout = setTimeout(() => {
+            displayedProducts = 12;
+            renderProducts(currentFilter, displayedProducts, searchQuery);
+        }, 300);
+    });
+    
+    // Limpiar búsqueda
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            searchQuery = '';
+            this.style.display = 'none';
+            displayedProducts = 12;
+            renderProducts(currentFilter, displayedProducts, searchQuery);
+            searchInput.focus();
+        });
+    }
+    
+    // Búsqueda al presionar Enter
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchQuery = this.value;
+            displayedProducts = 12;
+            renderProducts(currentFilter, displayedProducts, searchQuery);
+        }
     });
 }
 
@@ -701,7 +783,7 @@ function setupLoadMore() {
     if (loadMoreBtn) {
         loadMoreBtn.addEventListener('click', function() {
             displayedProducts += 12;
-            renderProducts(currentFilter, displayedProducts);
+            renderProducts(currentFilter, displayedProducts, searchQuery);
         });
     }
 }
@@ -775,6 +857,7 @@ function showNotification(message) {
 document.addEventListener('DOMContentLoaded', function() {
     renderProducts();
     setupFilters();
+    setupSearch();
     setupLoadMore();
     setupCategoryCards();
 });
