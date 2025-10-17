@@ -1,8 +1,10 @@
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   display: none;
   align-items: center;
   justify-content: center;
@@ -14,14 +16,20 @@
 }
 
 .modal-box {
-  background: #fff;
-  border-radius: 10px;
   width: 90%;
   max-width: 600px;
-  padding: 1.5rem;
-  box-shadow: 0 0 12px rgba(0,0,0,0.2);
+  min-height: 500px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  border-radius: 10px;
+}
+
+.modal-header {
+  background-color: red !important;
 }
 
 .modal-header h2 {
@@ -88,7 +96,8 @@
   gap: 1rem;
 }
 
-.btn-confirm, .btn-cancel {
+.btn-confirm,
+.btn-cancel {
   flex: 1;
   padding: 0.7rem;
   border: none;
@@ -104,4 +113,179 @@
 
 .btn-cancel {
   background: #dc3545;
+}
+
+.tab-header{ 
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.6rem;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+.tab-content .tab-panel {
+
+  display: none;
+}
+
+.tab-content .tab-panel.active {
+  display: block;
+}
+
+.modal-summary {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.summary-row.total {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.radio-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.btn-confirm {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.7rem;
+  background: #28a745;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.address-card {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem; /* espacio entre cards */
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.address-card.add {
+  background: #eaf4ff;
+  border-color: #007bff;
+}
+
+.btn-select-address,
+.btn-add-address {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.address-card {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.address-card.selected {
+  background: #007bff;
+  color: white;
+}
+
+.address-card.add {
+  background: #eaf4ff;
+  border-color: #007bff;
+}
+
+.address-card.selected p,
+.address-card.selected label {
+  color: white;
+}
+
+.no-address-message {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #856404;
+  text-align: center;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.payment-methods {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: #fdfdfd;
+}
+
+.payment-methods h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.payment-option {
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.payment-option input[type="radio"] {
+  accent-color: #007bff;
 }

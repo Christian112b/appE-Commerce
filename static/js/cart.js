@@ -286,8 +286,6 @@ function removeFromCart(idProducto) {
     updateCartTotal(cart);
 }
 
-
-
 // // ========================
 // // Checkout
 // // ========================
@@ -296,6 +294,9 @@ function checkout() {
         showNotification('Tu carrito está vacío', 'warning');
         return;
     }
+
+    getAddresses();
+    // fetchAddresses(true); // fuerza recarga
 
     const checkoutItemsContainer = document.getElementById('checkoutItems');
     checkoutItemsContainer.innerHTML = cart.map(item => {
@@ -317,11 +318,20 @@ function checkout() {
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const iva = subtotal * 0.16;
-    const total = subtotal + iva;
+    const envio = 50.00; // costo fijo de envío
+    const totalResumen = subtotal + iva;
+    const totalPago = subtotal + iva + envio;
 
-    document.getElementById('checkoutSubtotal').textContent = subtotal.toFixed(2);
-    document.getElementById('checkoutIVA').textContent = iva.toFixed(2);
-    document.getElementById('checkoutTotal').textContent = total.toFixed(2);
+
+    document.getElementById('checkoutSubtotalResumen').textContent = subtotal.toFixed(2);
+    document.getElementById('checkoutIVAResumen').textContent = iva.toFixed(2);
+    document.getElementById('checkoutTotalResumen').textContent = totalResumen.toFixed(2);
+
+    document.getElementById('checkoutSubtotalPago').textContent = subtotal.toFixed(2);
+    document.getElementById('checkoutIVAPago').textContent = iva.toFixed(2);
+    document.getElementById('checkoutEnvioPago').textContent = envio.toFixed(2);
+    document.getElementById('checkoutTotalPago').textContent = totalPago.toFixed(2);
+
 
     document.getElementById('checkoutModal').classList.add('active');
 }
@@ -675,6 +685,191 @@ function confirmCheckout() {
 //     document.querySelector('.checkout-modal').remove();
 //     document.body.style.overflow = '';
 // }
+
+function showTab(index) {
+    const tabs = document.querySelectorAll('.tab-panel');
+    const buttons = document.querySelectorAll('.tab-btn');
+
+    tabs.forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+        buttons[i].classList.toggle('active', i === index);
+    });
+}
+
+function showAddAddressForm() {
+    document.getElementById('nuevaDireccionForm').style.display = 'block';
+}
+
+// Simulación de direcciones guardadas
+function cargarDireccionesSimuladas() {
+    const direcciones = [
+        { id: 1, direccion: 'Av. Universidad 123', telefono: '4441234567' },
+        { id: 2, direccion: 'Calle Real 456', telefono: '4447654321' }
+    ];
+
+    const select = document.getElementById('direccionSelect');
+    select.innerHTML = '';
+
+    direcciones.forEach(dir => {
+        const option = document.createElement('option');
+        option.value = dir.id;
+        option.textContent = `${dir.direccion} (${dir.telefono})`;
+        select.appendChild(option);
+    });
+}
+
+// ========================
+// Seleccionar dirección
+// ========================
+function selectAddress(element) {
+    document.querySelectorAll('.address-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+
+    element.classList.add('selected');
+
+    const isAddCard = element.classList.contains('add');
+    document.getElementById('addAddressForm').style.display = isAddCard ? 'block' : 'none';
+}
+
+// ========================
+// CVargar direcciones desde backend
+// ========================
+let cachedAddresses = null;
+
+function getAddresses(force = false) {
+    // Si ya hay direcciones en caché y no se fuerza recarga, usar las guardadas
+    if (cachedAddresses && !force) {
+        renderAddressCards(cachedAddresses);
+        return;
+    }
+
+    fetch('/getAddresses')
+        .then(res => res.json())
+        .then(data => {
+            const addresses = data.direcciones || [];
+
+            console.log('Fetched addresses:', addresses);
+
+
+            // Guardar en caché
+            cachedAddresses = addresses;
+
+            // Renderizar en DOM
+            renderAddressCards(addresses);
+        })
+        .catch(err => {
+            console.error('Error fetching addresses:', err);
+            showNotification('No se pudieron cargar las direcciones.', 'error');
+        });
+}
+
+function renderAddressCards(addresses) {
+    const container = document.getElementById('addressList');
+    container.innerHTML = '';
+
+    const saved = document.createElement('div');
+    saved.id = 'savedAddresses';
+
+    if (addresses.length === 0) {
+        saved.innerHTML = `
+      <div class="no-address-message">
+        <p><strong>No hay direcciones guardadas.</strong></p>
+        <p>Agrega una nueva abajo.</p>
+      </div>
+      <hr>
+    `;
+    } else {
+        addresses.forEach(addr => {
+            const card = document.createElement('div');
+            card.className = 'address-card';
+            card.onclick = () => selectAddress(card);
+            card.innerHTML = `
+        <p><strong>${addr.alias || 'Dirección'}</strong></p>
+        <p>${addr.calle}</p>
+        <p>${addr.colonia}, ${addr.ciudad}, ${addr.estado}</p>
+        <p>C.P. ${addr.cp}</p>
+      `;
+            saved.appendChild(card);
+        });
+
+        saved.appendChild(document.createElement('hr'));
+    }
+
+    container.appendChild(saved);
+
+    const addCard = document.createElement('div');
+    addCard.className = 'address-card add';
+    addCard.onclick = () => selectAddress(addCard);
+    addCard.innerHTML = `<p><strong>Agregar nueva dirección</strong></p>`;
+    container.appendChild(addCard);
+
+    const form = document.getElementById('addAddressForm');
+    if (form) {
+        container.appendChild(form);
+    } else {
+        console.warn('Formulario de dirección no encontrado');
+    }
+}
+
+
+
+
+
+
+// ========================
+// Enviar nueva dirección
+// ========================
+function submitNewAddress() {
+    const payload = {
+        alias: document.getElementById('alias').value.trim(),
+        street: document.getElementById('street').value.trim(),
+        neighborhood: document.getElementById('neighborhood').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        state: document.getElementById('state').value.trim(),
+        postalCode: document.getElementById('postalCode').value.trim()
+    };
+
+    // Validación básica
+    for (const key in payload) {
+        if (!payload[key]) {
+            showNotification(`Please complete the field: ${key}`, 'warning');
+            return;
+        }
+    }
+
+    // Envío al backend (ajusta la ruta según tu estructura)
+    fetch('/api/address/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.ok) {
+                showNotification(data.message || 'Error saving address', 'error');
+                return;
+            }
+
+            showNotification('Address saved successfully!', 'success');
+            document.getElementById('addAddressForm').style.display = 'none';
+            // Opcional: recargar lista de direcciones
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            showNotification('Could not save address.', 'error');
+        });
+}
+
+function getSelectedPaymentMethod() {
+    const selected = document.querySelector('input[name="paymentMethod"]:checked');
+    return selected ? selected.value : null;
+}
+
+
+
+// Llamar al abrir el modal
+
 
 // ========================
 // Event Listeners

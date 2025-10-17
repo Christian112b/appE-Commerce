@@ -162,3 +162,26 @@ def saveCart():
     db.close()
     return jsonify({'ok': True})
 
+@cart_bp.route('/getAddresses', methods=['GET'])
+def getAddresses():
+    if not session.get('autenticado'):
+        return jsonify({'direcciones': []})
+
+    id_usuario = session.get('id_user')
+    db = DBConnection()
+
+    direcciones = db.query("""
+        SELECT 
+            id_direccion AS id,
+            alias,
+            calle,
+            colonia,
+            ciudad,
+            estado,
+            cp
+        FROM costanzo.direcciones
+        WHERE id_usuario = %s
+        """, (id_usuario,))
+
+    db.close()
+    return jsonify({'direcciones': direcciones})
