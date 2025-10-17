@@ -887,6 +887,47 @@ function setupStripeCardForm() {
   cardElement.mount('#card-element');
 }
 
+async function submitCheckout() {
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+  if (paymentMethod !== 'card') {
+    showNotification('Método de pago no implementado aún', 'warning');
+    return;
+  }
+
+  const total = parseFloat(document.getElementById('checkoutTotalPago').textContent) || 0;
+  const amountInCents = Math.round(total * 100);
+
+  console.log('Creando intento de pago:', amountInCents);
+
+  const res = await fetch('/create-payment-intent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: amountInCents })
+  });
+
+  const data = await res.json();
+  if (!data.clientSecret) {
+    showNotification('Error al crear el intento de pago', 'error');
+    return;
+  }
+
+  const result = await stripe.confirmCardPayment(data.clientSecret, {
+    payment_method: {
+      card: cardElement
+    }
+  });
+
+  if (result.error) {
+    document.getElementById('card-errors').textContent = result.error.message;
+    showNotification('Pago fallido: ' + result.error.message, 'error');
+  } else {
+    showNotification('Pago exitoso', 'success');
+    // Aquí puedes guardar el pedido en tu base de datos
+    console.log('ID del pago:', result.paymentIntent.id);
+  }
+}
+
 
 
 
@@ -932,6 +973,8 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
     }
   });
 });
+
+document.getElementById('confirmCheckoutBtn').addEventListener('click', submitCheckout);
 
 
 // Hacer funciones globales para los event handlers inline

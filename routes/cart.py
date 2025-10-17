@@ -1,9 +1,18 @@
 
+import os
+import stripe
+
+from dotenv import load_dotenv
 from datetime import datetime
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request, session
 
+load_dotenv()
+stripe_api_key = os.getenv("STRIPE_PRIVATE_KEY")
+
+
 cart_bp = Blueprint('cart', __name__)
+stripe_api_key = stripe_api_key
 
 # Agregar producto en carrito
 @cart_bp.route('/addCart', methods=['POST'])
@@ -185,3 +194,22 @@ def getAddresses():
 
     db.close()
     return jsonify({'direcciones': direcciones})
+
+@cart_bp.route('/create-payment-intent', methods=['POST'])
+def create_payment():
+    data = request.json
+    try:
+        amount = int(data.get('amount', 0))
+        print(f"Creando intento de pago: {amount}")
+        print(f"Usando clave de Stripe: {stripe_api_key}")
+
+        stripe.api_key = stripe_api_key  #
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency='mxn',
+            automatic_payment_methods={'enabled': True}
+        )
+        return jsonify({'clientSecret': intent.client_secret})
+    except Exception as e:
+        print('Error en Stripe:', str(e))
+        return jsonify({'error': str(e)}), 400
