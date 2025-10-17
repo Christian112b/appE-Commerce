@@ -694,6 +694,8 @@ function showTab(index) {
         tab.classList.toggle('active', i === index);
         buttons[i].classList.toggle('active', i === index);
     });
+
+    if (index === 2) setupStripeCardForm();
 }
 
 function showAddAddressForm() {
@@ -872,6 +874,24 @@ function getSelectedPaymentMethod() {
 
 
 // ========================
+// Test de Stripe
+// ========================
+let stripe, cardElement;
+
+function setupStripeCardForm() {
+  if (cardElement) return; // ya montado
+
+  stripe = Stripe('pk_test_51SJ5IND5jXc8vsskASQHUOlNCi1LBwPW7IuA9j4zf2LkgrTEdkhEPLsGAoApMhmefbN2NOwavsEzKv0jTqJzivOy00CS00jL4x'); // tu clave pública
+  const elements = stripe.elements();
+  cardElement = elements.create('card');
+  cardElement.mount('#card-element');
+}
+
+
+
+
+
+// ========================
 // Event Listeners
 // ========================
 document.addEventListener('DOMContentLoaded', function () {
@@ -902,6 +922,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cargar carrito inicial
     updateCartUI();
 });
+
+document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+  input.addEventListener('change', () => {
+    const isCardSelected = document.getElementById('payCard').checked;
+    const cardForm = document.getElementById('cardFormContainer');
+    if (cardForm) {
+      cardForm.style.display = isCardSelected ? 'block' : 'none';
+    }
+  });
+});
+
 
 // Hacer funciones globales para los event handlers inline
 window.addToCart = addToCart;

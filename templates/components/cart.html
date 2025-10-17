@@ -114,17 +114,8 @@
 
                 <!-- Tab 2: Metodos de pago -->
                 <div class="tab-panel" id="tabMetodosPago">
-                    <div class="checkout-summary">
-                        <div class="summary-row"><span>Subtotal:</span><span id="checkoutSubtotalPago">$0.00</span>
-                        </div>
-                        <div class="summary-row"><span>IVA (16%):</span><span id="checkoutIVAPago">$0.00</span></div>
-                        <div class="summary-row"><span>Envío:</span><span id="checkoutEnvioPago">$50.00</span></div>
-                        <div class="summary-row total"><span>Total:</span><span id="checkoutTotalPago">$0.00</span>
-                        </div>
-
-                    </div>
-
-
+                    
+                    
                     <div class="payment-methods">
                         <h3>Método de pago</h3>
                         <div class="payment-option">
@@ -140,6 +131,24 @@
                             <label for="payCash">Pago en Efectivo (contra entrega)</label>
                         </div>
                     </div>
+                    
+                    <div class="checkout-summary">
+                        <div class="summary-row"><span>Subtotal:</span><span id="checkoutSubtotalPago">$0.00</span>
+                        </div>
+                        <div class="summary-row"><span>IVA (16%):</span><span id="checkoutIVAPago">$0.00</span></div>
+                        <div class="summary-row"><span>Envío:</span><span id="checkoutEnvioPago">$50.00</span></div>
+                        <div class="summary-row total"><span>Total:</span><span id="checkoutTotalPago">$0.00</span>
+                        </div>
+
+                    </div>
+                    
+                    <div id="cardFormContainer" style="display: none; margin-top: 1rem;">
+                        <h4>Datos de la tarjeta</h4>
+                        <div id="card-element" style="padding: 1rem; border: 1px solid #ccc; border-radius: 6px;"></div>
+                        <div id="card-errors" style="color: red; margin-top: 0.5rem;"></div>
+                    </div>
+
+
 
 
                 </div>
@@ -159,6 +168,7 @@
     </div>
 
 
+    <script src="https://js.stripe.com/v3/"></script>
 
 
 </div>
