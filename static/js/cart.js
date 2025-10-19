@@ -895,27 +895,31 @@ function validateAndApplyCoupon(code) {
     const loading = document.getElementById('couponLoadingModal');
     if (loading) loading.style.display = 'flex';
 
-    // fetch latest discounts to ensure up-to-date
-    return fetch('/get-discounts')
+    // Call new validate-coupon endpoint
+    return fetch('/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coupon_name: code })
+    })
         .then(res => res.json())
-        .then(list => {
-            availableCoupons = list || [];
-            const found = availableCoupons.find(c => String(c.nombre).toLowerCase() === String(code).toLowerCase());
-            if (!found) {
-                messageEl.textContent = 'Cupón no válido';
+        .then(data => {
+            if (!data.ok) {
+                messageEl.textContent = data.mensaje || 'Cupón no válido';
                 messageEl.classList.add('invalid');
                 window.selectedCoupon = null;
                 return;
             }
 
+            const coupon = data.cupon;
+            // Calculate discount for display
             const subtotal = parseFloat(getCartSubtotal()) || 0;
             let descuento = 0;
-            if (found.tipo === 'porcentaje') descuento = subtotal * (found.valor / 100);
-            else descuento = parseFloat(found.valor || 0);
+            if (coupon.tipo === 'porcentaje') descuento = subtotal * (coupon.valor / 100);
+            else descuento = parseFloat(coupon.valor || 0);
 
             messageEl.textContent = `Descuento aplicado: $${descuento.toFixed(2)}`;
             messageEl.classList.remove('invalid');
-            window.selectedCoupon = found.id_descuento;
+            window.selectedCoupon = coupon.id_descuento;
         })
         .catch(err => {
             console.error('Error validating coupon', err);
@@ -933,14 +937,30 @@ function buildConfirmSummary() {
     const subtotal = parseFloat(document.getElementById('checkoutSubtotalPago').textContent) || 0;
     const iva = parseFloat(document.getElementById('checkoutIVAPago').textContent) || 0;
     const envio = parseFloat(document.getElementById('checkoutEnvioPago').textContent) || 0;
-    const total = subtotal + iva + envio;
+    const total = parseFloat(document.getElementById('checkoutTotalPago').textContent) || 0;
     const selectedAddress = document.querySelector('.address-card.selected');
     const addrText = selectedAddress ? selectedAddress.innerText.replace(/\n/g,' ').trim() : 'No seleccionado';
     const method = document.querySelector('input[name="paymentMethod"]:checked');
     const methodText = method ? method.nextElementSibling ? method.nextElementSibling.textContent : method.value : '-';
-    document.getElementById('confirmTotal').textContent = total.toFixed(2);
+
+    // Update confirmation tab with detailed breakdown
+    document.getElementById('confirmSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('confirmIVA').textContent = `$${iva.toFixed(2)}`;
+    document.getElementById('confirmEnvio').textContent = `$${envio.toFixed(2)}`;
+    document.getElementById('confirmTotal').textContent = `$${total.toFixed(2)}`;
     document.getElementById('confirmAddress').textContent = addrText;
     document.getElementById('confirmMethod').textContent = methodText;
+
+    // Handle discount row in confirmation
+    const discountRow = document.getElementById('confirmDiscountRow');
+    const discountAmount = document.getElementById('checkoutDiscountPago');
+    if (discountAmount && discountAmount.textContent !== '-$0.00' && discountAmount.style.display !== 'none') {
+        document.getElementById('confirmDiscount').textContent = discountAmount.textContent;
+        if (discountRow) discountRow.style.display = 'flex';
+    } else {
+        if (discountRow) discountRow.style.display = 'none';
+    }
+
     // if card element, show last4 placeholder
     const cardLast4 = window.cardLast4 || 'XXXX';
     document.getElementById('confirmCardLast4').textContent = `**** **** **** ${cardLast4}`;
@@ -954,14 +974,15 @@ function recalcCheckoutTotals() {
     let totalPago = subtotal + iva + envio;
 
     // If a coupon is applied, compute discount and subtract (frontend only)
+    let descuento = 0;
     if (window.selectedCoupon && availableCoupons.length) {
         const found = availableCoupons.find(c => c.id_descuento == window.selectedCoupon);
         if (found) {
-            let descuento = 0;
             if (found.tipo === 'porcentaje') descuento = subtotal * (found.valor / 100);
             else descuento = parseFloat(found.valor || 0);
             totalPago = Math.max(0, totalPago - descuento);
-            document.getElementById('couponMessage').textContent = `Descuento aplicado: $${descuento.toFixed(2)}`;
+            const discountText = found.tipo === 'porcentaje' ? `${found.valor}%` : `$${found.valor}`;
+            document.getElementById('couponMessage').textContent = `Descuento aplicado: ${discountText}`;
             document.getElementById('couponMessage').style.color = '#1a512b';
         }
     }
@@ -973,6 +994,23 @@ function recalcCheckoutTotals() {
     document.getElementById('checkoutSubtotalPago').textContent = subtotal.toFixed(2);
     document.getElementById('checkoutIVAPago').textContent = iva.toFixed(2);
     document.getElementById('checkoutEnvioPago').textContent = envio.toFixed(2);
+
+    // Add discount row if coupon is applied
+    const discountRow = document.getElementById('checkoutDiscountRow');
+    if (descuento > 0) {
+        if (!discountRow) {
+            const summary = document.querySelector('.checkout-summary');
+            const newRow = document.createElement('div');
+            newRow.className = 'summary-row';
+            newRow.id = 'checkoutDiscountRow';
+            newRow.innerHTML = `<span>Descuento:</span><span id="checkoutDiscountPago">-$0.00</span>`;
+            summary.insertBefore(newRow, summary.querySelector('.summary-row.total'));
+        }
+        document.getElementById('checkoutDiscountPago').textContent = `-${descuento.toFixed(2)}`;
+    } else if (discountRow) {
+        discountRow.remove();
+    }
+
     document.getElementById('checkoutTotalPago').textContent = totalPago.toFixed(2);
 }
 

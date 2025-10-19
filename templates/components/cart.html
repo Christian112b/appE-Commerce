@@ -132,6 +132,7 @@
                         <div class="summary-row"><span>Subtotal:</span><span id="checkoutSubtotalPago">$0.00</span>
                         </div>
                         <div class="summary-row"><span>IVA (16%):</span><span id="checkoutIVAPago">$0.00</span></div>
+                        <div class="summary-row" id="checkoutDiscountRow" style="display:none;"><span>Descuento:</span><span id="checkoutDiscountPago">-$0.00</span></div>
                         <div class="summary-row"><span>Envío:</span><span id="checkoutEnvioPago">$50.00</span></div>
                         <div class="summary-row total"><span>Total:</span><span id="checkoutTotalPago">$0.00</span>
                         </div>
@@ -164,6 +165,22 @@
                     <div class="confirm-summary">
                         <h4>Resumen del pedido</h4>
                         <div class="confirm-details">
+                            <div class="confirm-row">
+                                <span>Subtotal:</span>
+                                <span id="confirmSubtotal">$0.00</span>
+                            </div>
+                            <div class="confirm-row">
+                                <span>IVA (16%):</span>
+                                <span id="confirmIVA">$0.00</span>
+                            </div>
+                            <div class="confirm-row" id="confirmDiscountRow" style="display:none;">
+                                <span>Descuento:</span>
+                                <span id="confirmDiscount">-$0.00</span>
+                            </div>
+                            <div class="confirm-row">
+                                <span>Envío:</span>
+                                <span id="confirmEnvio">$50.00</span>
+                            </div>
                             <div class="confirm-row">
                                 <span>Total:</span>
                                 <span id="confirmTotal">$0.00</span>

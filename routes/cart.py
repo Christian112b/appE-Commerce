@@ -4,6 +4,7 @@ import stripe
 
 from dotenv import load_dotenv
 from datetime import datetime
+from pytz import timezone
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request, session
 
@@ -203,6 +204,9 @@ def create_payment():
     # Obtener IP de origen (X-Forwarded-For si está presente, sino remote_addr)
     xff = request.headers.get('X-Forwarded-For', '')
     ip_origen = xff.split(',')[0].strip() if xff else request.remote_addr
+    # Usar zona horaria de México para fechas
+    mexico_tz = timezone('America/Mexico_City')
+    now_mexico = datetime.now(mexico_tz)
     # Esperamos 'amount' en centavos y 'method_id' en el body
     method_id = data.get('method_id')
 
@@ -222,7 +226,7 @@ def create_payment():
                 # Para pagos offline no hay PaymentIntent, guardamos NULL en id_intento_pago
                 db.execute(
                     "INSERT INTO costanzo.logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
-                    (None, int(method_id), amount/100.0, datetime.now(), 'pendiente')
+                    (None, int(method_id), amount/100.0, now_mexico, 'pendiente')
                 )
             except Exception as log_exc:
                 print('Error guardando logpagos (pendiente):', str(log_exc))
@@ -232,7 +236,7 @@ def create_payment():
                 descripcion_log = f"Pago pendiente creado metodo={method_id} monto={amount/100.0}"
                 db.execute(
                     "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
-                    (id_usuario, 'CREACION_PAGO', descripcion_log, datetime.now(), ip_origen)
+                    (id_usuario, 'CREACION_PAGO', descripcion_log, now_mexico, ip_origen)
                 )
             except Exception as logact_exc:
                 print('Error guardando logactividad (pendiente):', str(logact_exc))
@@ -275,7 +279,7 @@ def create_payment():
             intent_id = getattr(intent, 'id', None)
             db.execute(
                 "INSERT INTO costanzo.logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
-                (intent_id, int(method_id) if method_id else None, amount/100.0, datetime.now(), 'exitoso')
+                (intent_id, int(method_id) if method_id else None, amount/100.0, now_mexico, 'exitoso')
             )
         except Exception as log_exc:
             print('Error guardando logpagos (exitoso):', str(log_exc))
@@ -285,7 +289,7 @@ def create_payment():
             descripcion_log = f"Pago exitoso creado metodo={method_id} monto={amount/100.0} intent_id={getattr(intent, 'id', None)}"
             db.execute(
                 "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
-                (id_usuario, 'CREACION_PAGO', descripcion_log, datetime.now(), ip_origen)
+                (id_usuario, 'CREACION_PAGO', descripcion_log, now_mexico, ip_origen)
             )
         except Exception as logact_exc:
             print('Error guardando logactividad (exitoso):', str(logact_exc))
@@ -308,7 +312,7 @@ def create_payment():
         try:
             db.execute(
                 "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
-                (id_usuario, 'create_payment_error', descripcion, datetime.now(), ip_origen)
+                (id_usuario, 'create_payment_error', descripcion, now_mexico, ip_origen)
             )
         except Exception as log_exc:
             print('Error guardando log de actividad (error):', str(log_exc))
@@ -320,19 +324,43 @@ def create_payment():
         except Exception:
             pass
 
+@cart_bp.route('/validate-coupon', methods=['POST'])
+def validate_coupon():
+    data = request.get_json()
+    coupon_name = data.get('coupon_name', '').strip()
 
-@cart_bp.route('/get-discounts', methods=['GET'])
-def get_discounts():
+
+    if not coupon_name:
+        return jsonify({'ok': False, 'mensaje': 'Nombre del cupón requerido.'}), 400
+
     db = DBConnection()
     try:
-        discounts = db.query(
-            "SELECT id_descuento, nombre, tipo, valor, fecha_inicio, fecha_fin, activo FROM costanzo.descuentospromociones WHERE activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
-            (datetime.now(), datetime.now())
+        # Usar zona horaria de México para validar fechas
+        mexico_tz = timezone('America/Mexico_City')
+        now_mexico = datetime.now(mexico_tz)
+        print('Hora de validación del cupón:', now_mexico)
+
+        # Buscar cupón activo por nombre (case-insensitive)
+        coupon = db.query(
+            "SELECT id_descuento, nombre, tipo, valor FROM costanzo.descuentospromociones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
+            (coupon_name, now_mexico, now_mexico)
         )
-        return jsonify(discounts)
+
+        print('Coupon query result for', coupon_name, ':', coupon)
+
+        if coupon:
+            return jsonify({
+                'ok': True,
+                'cupon': coupon[0]
+            })
+        else:
+            return jsonify({
+                'ok': False,
+                'mensaje': 'Cupón no encontrado o no válido.'
+            }), 404
     except Exception as e:
-        print('Error fetching discounts:', str(e))
-        return jsonify([])
+        print('Error validating coupon:', str(e))
+        return jsonify({'ok': False, 'mensaje': 'Error interno del servidor.'}), 500
     finally:
         db.close()
  

@@ -52,65 +52,66 @@
 
 
 
-<div id="productosCard" class="card-section container-fluid" style="display: none; padding: 10px;">
-    <div class="row">
-        <!-- Tabla de productos -->
-        <div class="col-md-9">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Listado de Productos</h5>
-                    <button class="btn btn-primary" onclick="openProductForm()">Agregar Producto</button>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
-                        <table class="table table-striped table-hover mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Descripción</th>
-                                    <th>Categoría</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th>Activo</th>
-                                    <th>Acciones
-                                </tr>
-                            </thead>
-                            <tbody id="productTableBody">
-                                <!-- Aquí se renderizan los productos dinámicamente -->
-                            </tbody>
-                        </table>
+<section id="section-productos" class="content-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-box me-2"></i>Listado de Productos</h5>
+                        <button class="btn btn-primary" onclick="openProductForm()">
+                            <i class="fas fa-plus me-1"></i> Agregar Producto
+                        </button>
                     </div>
-                </div>
-            </div>
-        </div>
+                    <div class="card-body" style="padding: 1.25rem;">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="filterProductoNombre" class="form-control" placeholder="Buscar por nombre...">
+                            </div>
+                            <div class="col-md-4">
+                                <select id="filterProductoCategoria" class="form-select">
+                                    <option value="">Todas las categorías</option>
+                                    <!-- Categories will be loaded here -->
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="filterProductoActivo" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="1">Activos</option>
+                                    <option value="0">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-secondary" id="applyProductoFiltersBtn" onclick="applyProductoFilters()">
+                                    <i class="fas fa-filter me-1"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
 
-        <!-- Filtros -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h6>Filtros</h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="filterCategory" class="form-label">Categoría</label>
-                        <select id="filterCategoria" class="form-select mb-2">
-                            <option value="">Todas</option>
-                        </select>
-
+                        <!-- Products Table -->
+                        <div class="table-responsive" style="max-height: calc(100vh - 450px); overflow-y: auto;">
+                            <table class="table table-striped">
+                                <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Descripción</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th>Activo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productTableBody">
+                                    <!-- Products will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="filterActive" class="form-label">Estado</label>
-                        <select id="filterActive" class="form-select">
-                            <option value="">Todos</option>
-                            <option value="1">Activos</option>
-                            <option value="0">Inactivos</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-outline-primary w-100" onclick="applyProductFilters()">Aplicar
-                        filtros</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>

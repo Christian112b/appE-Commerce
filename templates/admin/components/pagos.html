@@ -1,0 +1,118 @@
+<!-- Pagos Section -->
+<section id="section-pagos" class="content-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Gestión de Pagos</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select id="filterPagoEstado" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                    <option value="exitoso">Exitoso</option>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="fallido">Fallido</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="filterPagoMetodo" class="form-select">
+                                    <option value="">Todos los métodos</option>
+                                    <option value="1">Tarjeta de Crédito</option>
+                                    <option value="4">Transferencia Bancaria</option>
+                                    <option value="5">Efectivo en Tienda</option>
+                                    <option value="6">OXXO</option>
+                                    <option value="7">SPEI</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" id="filterPagoFecha" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-secondary" id="applyPagoFiltersBtn" onclick="applyPagoFilters()">
+                                    <i class="fas fa-filter me-1"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Pagos Table -->
+                        <div class="table-responsive" style="max-height: calc(100vh - 450px); overflow-y: auto;">
+                            <table class="table table-striped">
+                                <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+                                    <tr>
+                                        <th>ID Pago</th>
+                                        <th>ID Intento</th>
+                                        <th>Método</th>
+                                        <th>Monto</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagoTableBody">
+                                    <!-- Pagos will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-success">Total Exitosos</h5>
+                                        <h3 id="totalExitosos">$0.00</h3>
+                                        <p class="text-muted" id="countExitosos">0 pagos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-warning">Total Pendientes</h5>
+                                        <h3 id="totalPendientes">$0.00</h3>
+                                        <p class="text-muted" id="countPendientes">0 pagos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-danger">Total Fallidos</h5>
+                                        <h3 id="totalFallidos">$0.00</h3>
+                                        <p class="text-muted" id="countFallidos">0 pagos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">Total General</h5>
+                                        <h3 id="totalGeneral">$0.00</h3>
+                                        <p class="text-muted" id="countGeneral">0 pagos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Modal for Pagos -->
+<div class="modal fade" id="loadingPagos" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando pagos...</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -149,9 +149,7 @@
 .tab-header{
    display: flex;
    justify-content: space-between;
-   align-items: center;
    margin-bottom: 1rem;
-   position: relative;
 }
 
 .tab-btn {
@@ -186,15 +184,12 @@
    transition: all var(--transition-normal);
    border: none;
    cursor: pointer;
-   position: absolute;
-   right: 0;
-   top: 50%;
-   transform: translateY(-50%);
+   margin-left: auto;
 }
 
 .close-modal:hover {
    background: rgba(255, 255, 255, 0.3);
-   transform: translateY(-50%) scale(1.1);
+   transform: scale(1.1);
 }
 
 .tab-content .tab-panel {
@@ -507,6 +502,42 @@
 #nextCheckoutBtn {
   border-radius: 6px !important;
   padding: 0.6rem 1rem;
+}
+
+/* Enhanced checkout summary styling */
+.checkout-summary {
+  background: linear-gradient(135deg, #FFF8DC, #F5F5DC);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  border: 2px solid #D2691E;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-summary .summary-row {
+  font-size: 0.95rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(210, 105, 30, 0.2);
+}
+
+.checkout-summary .summary-row:last-child {
+  border-bottom: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #8B4513;
+  margin-top: 0.3rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #D2691E;
+}
+
+/* Payment methods styling to match summary */
+.payment-methods {
+  background: linear-gradient(135deg, #FFF8DC, #F5F5DC);
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #D2691E;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
 }
 
  

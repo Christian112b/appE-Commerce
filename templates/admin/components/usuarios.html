@@ -1,0 +1,166 @@
+<!-- Usuarios Section -->
+<section id="section-usuarios" class="content-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Gestión de Usuarios</h5>
+                        <button class="btn btn-primary" onclick="openUsuarioForm()">
+                            <i class="fas fa-plus me-1"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="card-body" style="padding: 1.25rem;">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="filterUsuarioNombre" class="form-control" placeholder="Buscar por nombre...">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" id="filterUsuarioCorreo" class="form-control" placeholder="Buscar por correo...">
+                            </div>
+                            <div class="col-md-2">
+                                <select id="filterUsuarioTipo" class="form-select">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="0">Usuario Regular</option>
+                                    <option value="1">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-secondary" id="applyUsuarioFiltersBtn" onclick="applyUsuarioFilters()">
+                                    <i class="fas fa-filter me-1"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Usuarios Table -->
+                        <div class="table-responsive" style="max-height: calc(100vh - 550px); overflow-y: auto;">
+                            <table class="table table-striped">
+                                <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Apellido</th>
+                                        <th>Correo</th>
+                                        <th>Teléfono</th>
+                                        <th>Tipo</th>
+                                        <th>Fecha Registro</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usuarioTableBody">
+                                    <!-- Usuarios will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">Total Usuarios</h5>
+                                        <h3 id="totalUsuarios">0</h3>
+                                        <p class="text-muted">usuarios registrados</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-warning">Usuarios Regulares</h5>
+                                        <h3 id="usuariosRegulares">0</h3>
+                                        <p class="text-muted">tipo usuario = 0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-danger">Administradores</h5>
+                                        <h3 id="usuariosAdmin">0</h3>
+                                        <p class="text-muted">tipo usuario = 1</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Usuario Modal -->
+<div class="modal fade" id="usuarioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usuarioModalTitle">Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="usuarioForm">
+                    <input type="hidden" id="usuarioId">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="usuarioNombre" class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" id="usuarioNombre" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="usuarioApellido" class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" id="usuarioApellido" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuarioCorreo" class="form-label">Correo Electrónico *</label>
+                        <input type="email" class="form-control" id="usuarioCorreo" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuarioTelefono" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="usuarioTelefono">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="usuarioTipo" class="form-label">Tipo de Usuario *</label>
+                        <select class="form-select" id="usuarioTipo" required>
+                            <option value="0">Usuario Regular</option>
+                            <option value="1">Administrador</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="passwordSection">
+                        <label for="usuarioPassword" class="form-label">Contraseña *</label>
+                        <input type="password" class="form-control" id="usuarioPassword" required>
+                        <div class="form-text">Mínimo 6 caracteres</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveUsuario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal for Usuarios -->
+<div class="modal fade" id="loadingUsuarios" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando usuarios...</p>
+            </div>
+        </div>
+    </div>
+</div>

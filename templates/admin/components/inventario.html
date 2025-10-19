@@ -1,0 +1,150 @@
+<!-- Inventario Section -->
+<section id="section-inventario" class="content-section">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-boxes me-2"></i>Gestión de Inventario</h5>
+                        <button class="btn btn-primary" onclick="openInventarioForm()">
+                            <i class="fas fa-plus me-1"></i> Nuevo Registro
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filters -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" id="filterInventarioProducto" class="form-control" placeholder="Buscar por producto...">
+                            </div>
+                            <div class="col-md-2">
+                                <select id="filterInventarioEstado" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="bajo">Stock Bajo</option>
+                                    <option value="normal">Normal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" id="filterInventarioUbicacion" class="form-control" placeholder="Ubicación...">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-secondary" id="applyInventarioFiltersBtn" onclick="applyInventarioFilters()">
+                                    <i class="fas fa-filter me-1"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Inventario Table -->
+                        <div class="table-responsive" style="max-height: calc(100vh - 450px); overflow-y: auto;">
+                            <table class="table table-striped">
+                                <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad Actual</th>
+                                        <th>Cantidad Mínima</th>
+                                        <th>Ubicación</th>
+                                        <th>Última Actualización</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventarioTableBody">
+                                    <!-- Inventario will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-info">Total Productos</h5>
+                                        <h3 id="totalProductos">0</h3>
+                                        <p class="text-muted">productos en inventario</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-warning">Stock Bajo</h5>
+                                        <h3 id="productosStockBajo">0</h3>
+                                        <p class="text-muted">productos por debajo del mínimo</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-success">Total Unidades</h5>
+                                        <h3 id="totalUnidades">0</h3>
+                                        <p class="text-muted">unidades en stock</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Inventario Modal -->
+<div class="modal fade" id="inventarioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventarioModalTitle">Nuevo Registro de Inventario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inventarioForm">
+                    <input type="hidden" id="inventarioId">
+
+                    <div class="mb-3">
+                        <label for="inventarioProducto" class="form-label">Producto *</label>
+                        <select class="form-select" id="inventarioProducto" required>
+                            <option value="">Seleccione un producto...</option>
+                            <!-- Products will be loaded here -->
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inventarioCantidadActual" class="form-label">Cantidad Actual *</label>
+                        <input type="number" class="form-control" id="inventarioCantidadActual" min="0" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inventarioCantidadMinima" class="form-label">Cantidad Mínima *</label>
+                        <input type="number" class="form-control" id="inventarioCantidadMinima" min="0" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inventarioUbicacion" class="form-label">Ubicación</label>
+                        <input type="text" class="form-control" id="inventarioUbicacion" maxlength="100">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveInventario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal for Inventario -->
+<div class="modal fade" id="loadingInventario" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Cargando inventario...</p>
+            </div>
+        </div>
+    </div>
+</div>
