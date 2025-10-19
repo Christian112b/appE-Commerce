@@ -9,7 +9,41 @@ let cart = []
 // Funciones del carrito
 // ========================
 function addToCart(product) {
+    // Check if product already exists in cart
+    const existingItem = cart.find(item => item.id === product.id);
 
+    if (existingItem) {
+        // Update quantity locally
+        existingItem.quantity += 1;
+    } else {
+        // Add new item to cart
+        cart.push({
+            id: product.id,
+            name: product.name || 'Producto',
+            image: product.image || '',
+            price: parseFloat(product.price) || 0,
+            quantity: 1
+        });
+    }
+
+    // Save to localStorage immediately
+    saveCart();
+
+    // Update UI in real-time
+    renderCartItems(cart);
+    updateCartTotal(cart);
+
+    // Update checkout button state
+    const checkoutBtnEl = document.getElementById('checkoutBtn');
+    if (checkoutBtnEl) {
+        checkoutBtnEl.disabled = false;
+        checkoutBtnEl.classList.remove('disabled');
+    }
+
+    // Show success notification
+    showNotification('Producto agregado al carrito', 'success');
+
+    // Sync with server in background (don't wait for response)
     fetch('/addCart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20,15 +54,13 @@ function addToCart(product) {
         .then(res => res.json())
         .then(data => {
             if (!data.ok) {
-                showNotification(data.mensaje, 'error');
-            } else {
-                // updateCartUI(); // ✅ Recargar carrito
-                showNotification(data.mensaje, 'success');
+                console.warn('Server sync failed:', data.mensaje);
+                // Don't show error to user since local operation succeeded
             }
         })
         .catch(err => {
-            console.error('Error al agregar al carrito:', err);
-            showNotification('Error de conexión con el servidor.', 'error');
+            console.warn('Server sync error:', err);
+            // Don't show error to user since local operation succeeded
         });
 }
 
@@ -56,6 +88,26 @@ function clearCart() {
     cart = [];
     saveCart();
     updateCartUI();
+}
+
+// ========================
+// Load cart from localStorage on page load
+// ========================
+function loadCartFromStorage() {
+    try {
+        const savedCart = localStorage.getItem('costanzoCart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
+            // Validate cart items (ensure they have required properties)
+            cart = cart.filter(item =>
+                item.id && item.name && item.price !== undefined && item.quantity > 0
+            );
+            saveCart(); // Re-save validated cart
+        }
+    } catch (e) {
+        console.warn('Error loading cart from localStorage:', e);
+        cart = [];
+    }
 }
 
 function saveCart() {
@@ -126,7 +178,7 @@ function closeCart() {
         cartSidebar.classList.remove('active');
         overlay.classList.remove('active');
 
-        // Guardar cart en backend
+        // Sync cart with server when closing (batch update)
         persistCartToBackend();
     }
 }
@@ -309,33 +361,59 @@ function updateCartTotal(items) {
 }
 
 // ========================
-// Agregar uno de producto al carrito
+// Agregar uno de producto al carrito (LOCAL - sin server requests)
 // ========================
 function updateQuantity(idProducto, delta) {
     const index = cart.findIndex(p => p.id === idProducto);
     if (index === -1) return;
 
+    // Update local cart
     cart[index].quantity += delta;
 
     if (cart[index].quantity <= 0) {
         cart.splice(index, 1);
     }
 
+    // Save to localStorage immediately
+    saveCart();
+
+    // Update UI in real-time
     renderCartItems(cart);
     updateCartTotal(cart);
+
+    // Update checkout button state
+    const checkoutBtnEl = document.getElementById('checkoutBtn');
+    if (checkoutBtnEl) {
+        const hasItems = cart && cart.length > 0;
+        checkoutBtnEl.disabled = !hasItems;
+        checkoutBtnEl.classList.toggle('disabled', !hasItems);
+    }
 }
 
 // ========================
-// Borrar producto de carrito
+// Borrar producto de carrito (LOCAL - sin server requests)
 // ========================
 function removeFromCart(idProducto) {
     const index = cart.findIndex(p => p.id === idProducto);
     if (index === -1) return;
 
-    cart.splice(index, 1); // elimina el producto del array
+    // Remove from local cart
+    cart.splice(index, 1);
 
+    // Save to localStorage immediately
+    saveCart();
+
+    // Update UI in real-time
     renderCartItems(cart);
     updateCartTotal(cart);
+
+    // Update checkout button state
+    const checkoutBtnEl = document.getElementById('checkoutBtn');
+    if (checkoutBtnEl) {
+        const hasItems = cart && cart.length > 0;
+        checkoutBtnEl.disabled = !hasItems;
+        checkoutBtnEl.classList.toggle('disabled', !hasItems);
+    }
 }
 
 // // ========================
@@ -347,50 +425,56 @@ function checkout() {
         return;
     }
 
-    getAddresses();
-    // fetchAddresses(true); // fuerza recarga
+    // Sync cart with server before checkout
+    persistCartToBackend().then(() => {
+        getAddresses();
+        // fetchAddresses(true); // fuerza recarga
 
-    const checkoutItemsContainer = document.getElementById('checkoutItems');
-    checkoutItemsContainer.innerHTML = cart.map(item => {
-        const price = parseFloat(item.price) || 0;
-        const total = price * item.quantity;
+        const checkoutItemsContainer = document.getElementById('checkoutItems');
+        checkoutItemsContainer.innerHTML = cart.map(item => {
+            const price = parseFloat(item.price) || 0;
+            const total = price * item.quantity;
 
-        return `
-        <div class="checkout-item">
-            <img src="${item.image || '/static/img/default.png'}" alt="${item.name}">
-            <div class="checkout-item-info">
-                <h4>${item.name}</h4>
-                <p>Cantidad: ${item.quantity}</p>
-                <p>Precio unitario: $${price.toFixed(2)}</p>
-                <p>Total: $${total.toFixed(2)}</p>
+            return `
+            <div class="checkout-item">
+                <img src="${item.image || '/static/img/default.png'}" alt="${item.name}">
+                <div class="checkout-item-info">
+                    <h4>${item.name}</h4>
+                    <p>Cantidad: ${item.quantity}</p>
+                    <p>Precio unitario: $${price.toFixed(2)}</p>
+                    <p>Total: $${total.toFixed(2)}</p>
+                </div>
             </div>
-        </div>
-    `;
-    }).join('');
+        `;
+        }).join('');
 
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const iva = subtotal * 0.16;
-    const envio = 50.00; // costo fijo de envío
-    const totalResumen = subtotal + iva;
-    const totalPago = subtotal + iva + envio;
-
-
-    document.getElementById('checkoutSubtotalResumen').textContent = subtotal.toFixed(2);
-    document.getElementById('checkoutIVAResumen').textContent = iva.toFixed(2);
-    document.getElementById('checkoutTotalResumen').textContent = totalResumen.toFixed(2);
-
-    document.getElementById('checkoutSubtotalPago').textContent = subtotal.toFixed(2);
-    document.getElementById('checkoutIVAPago').textContent = iva.toFixed(2);
-    document.getElementById('checkoutEnvioPago').textContent = envio.toFixed(2);
-    document.getElementById('checkoutTotalPago').textContent = totalPago.toFixed(2);
+        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const iva = subtotal * 0.16;
+        const envio = 50.00; // costo fijo de envío
+        const totalResumen = subtotal + iva;
+        const totalPago = subtotal + iva + envio;
 
 
-    const modalEl = document.getElementById('checkoutModal');
-    if (modalEl) {
-        modalEl.classList.add('active');
-        // reset tabs to the first panel when opening
-        showTab(0);
-    }
+        document.getElementById('checkoutSubtotalResumen').textContent = subtotal.toFixed(2);
+        document.getElementById('checkoutIVAResumen').textContent = iva.toFixed(2);
+        document.getElementById('checkoutTotalResumen').textContent = totalResumen.toFixed(2);
+
+        document.getElementById('checkoutSubtotalPago').textContent = subtotal.toFixed(2);
+        document.getElementById('checkoutIVAPago').textContent = iva.toFixed(2);
+        document.getElementById('checkoutEnvioPago').textContent = envio.toFixed(2);
+        document.getElementById('checkoutTotalPago').textContent = totalPago.toFixed(2);
+
+
+        const modalEl = document.getElementById('checkoutModal');
+        if (modalEl) {
+            modalEl.classList.add('active');
+            // reset tabs to the first panel when opening
+            showTab(0);
+        }
+    }).catch(err => {
+        console.error('Error syncing cart before checkout:', err);
+        showNotification('Error al sincronizar carrito. Intenta de nuevo.', 'error');
+    });
 }
 
 function closeCheckoutModal() {
@@ -1591,7 +1675,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const finalBtn = document.getElementById('finalCheckoutBtn');
     if (finalBtn) finalBtn.addEventListener('click', submitCheckout);
 
-    // Cargar carrito inicial
+    // Load cart from localStorage first, then sync with server
+    loadCartFromStorage();
+
+    // Update UI with local cart data immediately
+    renderCartItems(cart);
+    updateCartTotal(cart);
+
+    // Then sync with server in background
     updateCartUI();
 });
 

@@ -22,6 +22,8 @@ function submitForm() {
     const form = document.getElementById('loginForm');
     const formData = new FormData(form);
 
+    console.log("Enviando datos de login...");
+
     fetch('/validationLogin', {
         method: 'POST',
         body: formData
@@ -30,14 +32,17 @@ function submitForm() {
     .then(data => {
 
         if(data['status'] == 200){
-            window.location.href = '/'; 
+            showNotification('¡Bienvenido! Iniciando sesión...', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
         } else {
-            alert("Usuario o contraseña incorrectos");
+            showNotification(data.message || "Usuario o contraseña incorrectos", 'error');
         }
     })
     .catch(error => {
-        // TODO: Crear toast para errores 
         console.error('Error en el envío:', error);
+        showNotification('Error de conexión. Intenta de nuevo.', 'error');
     });
 }
 

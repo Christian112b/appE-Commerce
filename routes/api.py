@@ -12,8 +12,11 @@ def getProducts():
         db = DBConnection()
 
         productos = db.query("""
-            SELECT id_producto, nombre, descripcion, categoria, precio_unitario, stock, activo, imagen_base64
-            FROM costanzo.productos
+            SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo, p.imagen_base64,
+                   COALESCE(i.cantidad_actual, 0) as stock
+            FROM costanzo.productos p
+            LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
+            WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
         """)
 
         categorias = db.query("""
@@ -55,39 +58,57 @@ def updateProduct():
         descripcion = data.get('descripcion', '').strip()
         categoria = data.get('categoria', '').strip()
         precio_unitario = float(data.get('precio_unitario', 0))
-        stock = int(data.get('stock', 0))
+        cantidad_actual = int(data.get('stock', 0))  # Now represents inventory quantity
+        cantidad_minima = int(data.get('cantidad_minima', 0))
+        ubicacion = data.get('ubicacion', '').strip()
         activo = int(data.get('activo', 1))
         imagen_base64 = data.get('imagen_base64')  # puede ser None
 
         db = DBConnection()
 
+        # Update product (without stock column)
         if imagen_base64:
-            query = """
+            product_query = """
                 UPDATE costanzo.productos
                 SET nombre = %s,
                     descripcion = %s,
                     categoria = %s,
                     precio_unitario = %s,
-                    stock = %s,
                     activo = %s,
                     imagen_base64 = %s
                 WHERE id_producto = %s
             """
-            params = [nombre, descripcion, categoria, precio_unitario, stock, activo, imagen_base64, id_producto]
+            product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_base64, id_producto]
         else:
-            query = """
+            product_query = """
                 UPDATE costanzo.productos
                 SET nombre = %s,
                     descripcion = %s,
                     categoria = %s,
                     precio_unitario = %s,
-                    stock = %s,
                     activo = %s
                 WHERE id_producto = %s
             """
-            params = [nombre, descripcion, categoria, precio_unitario, stock, activo, id_producto]
+            product_params = [nombre, descripcion, categoria, precio_unitario, activo, id_producto]
 
-        db.execute(query, params)
+        db.execute(product_query, product_params)
+
+        # Update or insert inventory
+        inventory_check = db.query("SELECT id_inventario FROM costanzo.inventario WHERE id_producto = %s", (id_producto,))
+        if inventory_check:
+            # Update existing inventory
+            db.execute("""
+                UPDATE costanzo.inventario
+                SET cantidad_actual = %s, cantidad_minima = %s, ubicacion = %s, fecha_actualizacion = NOW()
+                WHERE id_producto = %s
+            """, (cantidad_actual, cantidad_minima, ubicacion, id_producto))
+        else:
+            # Insert new inventory record
+            db.execute("""
+                INSERT INTO costanzo.inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (id_producto, cantidad_actual, cantidad_minima, ubicacion))
+
         db.close()
 
         return jsonify({'success': True, 'message': 'Producto actualizado correctamente'})
@@ -107,20 +128,32 @@ def insertProduct():
         descripcion = data.get('descripcion', '').strip()
         categoria = data.get('categoria', '').strip()
         precio_unitario = float(data.get('precio_unitario', 0))
-        stock = int(data.get('stock', 0))
+        cantidad_actual = int(data.get('stock', 0))  # Now represents inventory quantity
+        cantidad_minima = int(data.get('cantidad_minima', 0))
+        ubicacion = data.get('ubicacion', '').strip()
         activo = int(data.get('activo', 1))
         imagen_base64 = data.get('imagen_base64')  # puede ser None
 
         db = DBConnection()
 
-        query = """
+        # Insert product (without stock column)
+        product_query = """
             INSERT INTO costanzo.productos
-            (nombre, descripcion, categoria, precio_unitario, stock, activo, imagen_base64)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (nombre, descripcion, categoria, precio_unitario, activo, imagen_base64)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        params = [nombre, descripcion, categoria, precio_unitario, stock, activo, imagen_base64]
+        product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_base64]
 
-        db.execute(query, params)
+        db.execute(product_query, product_params)
+        product_id = db.cursor.lastrowid
+
+        # Insert inventory record
+        if cantidad_actual > 0 or cantidad_minima > 0:
+            db.execute("""
+                INSERT INTO costanzo.inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (product_id, cantidad_actual, cantidad_minima, ubicacion))
+
         db.close()
 
         return jsonify({'success': True, 'message': 'Producto agregado correctamente'})
@@ -146,3 +179,65 @@ def deleteProduct():
     except Exception as e:
         print("Error al eliminar producto:", e)
         return jsonify({'success': False, 'message': 'Error al eliminar producto'})
+
+# Obtener mensajes de contacto para admin
+@api_bp.route('/api/getContactMessages', methods=['GET'])
+def getContactMessages():
+    try:
+        db = DBConnection()
+        messages = db.query("""
+            SELECT id_mensaje, nombre, email, asunto, mensaje,
+                   DATE_FORMAT(fecha_envio, '%Y-%m-%d %H:%i:%s') as fecha_envio,
+                   estado
+            FROM costanzo.mensajes_contacto
+            ORDER BY fecha_envio DESC
+        """)
+        db.close()
+
+        return jsonify({'success': True, 'messages': messages})
+
+    except Exception as e:
+        print("Error al obtener mensajes de contacto:", e)
+        return jsonify({'success': False, 'message': 'Error al obtener mensajes'})
+
+# Actualizar estado de mensaje de contacto
+@api_bp.route('/updateContactMessageStatus', methods=['POST'])
+def updateContactMessageStatus():
+    try:
+        data = request.get_json()
+        id_mensaje = int(data.get('id_mensaje'))
+        estado = data.get('estado')
+
+        if estado not in ['nuevo', 'leído', 'respondido']:
+            return jsonify({'success': False, 'message': 'Estado inválido'})
+
+        db = DBConnection()
+        db.execute("""
+            UPDATE costanzo.mensajes_contacto
+            SET estado = %s
+            WHERE id_mensaje = %s
+        """, (estado, id_mensaje))
+        db.close()
+
+        return jsonify({'success': True, 'message': 'Estado actualizado correctamente'})
+
+    except Exception as e:
+        print("Error al actualizar estado del mensaje:", e)
+        return jsonify({'success': False, 'message': 'Error al actualizar estado'})
+
+# Eliminar mensaje de contacto
+@api_bp.route('/deleteContactMessage', methods=['POST'])
+def deleteContactMessage():
+    try:
+        data = request.get_json()
+        id_mensaje = int(data.get('id_mensaje'))
+
+        db = DBConnection()
+        db.execute("DELETE FROM costanzo.mensajes_contacto WHERE id_mensaje = %s", (id_mensaje,))
+        db.close()
+
+        return jsonify({'success': True, 'message': 'Mensaje eliminado correctamente'})
+
+    except Exception as e:
+        print("Error al eliminar mensaje de contacto:", e)
+        return jsonify({'success': False, 'message': 'Error al eliminar mensaje'})

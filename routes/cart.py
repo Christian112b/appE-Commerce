@@ -31,15 +31,20 @@ def addCart():
     db = DBConnection()
 
     producto = db.query(
-        "SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s",
+        "SELECT p.precio_unitario, COALESCE(i.cantidad_actual, 0) as stock_disponible FROM costanzo.productos p LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto WHERE p.id_producto = %s AND p.activo = 1",
         (id_producto,)
     )
 
     if not producto:
         db.close()
-        return jsonify({'ok': False, 'mensaje': 'Producto no encontrado.'}), 404
+        return jsonify({'ok': False, 'mensaje': 'Producto no encontrado o inactivo.'}), 404
 
     precio = producto[0]['precio_unitario']
+    stock_disponible = producto[0]['stock_disponible']
+
+    if stock_disponible <= 0:
+        db.close()
+        return jsonify({'ok': False, 'mensaje': 'Producto sin stock disponible.'}), 400
 
 
     # Obtener o crear carrito
@@ -252,6 +257,19 @@ def create_payment():
                         print('No carritocompra found for id_usuario=', id_usuario)
                     else:
                         id_carrito = carrito[0]['id_carrito']
+                        # Obtener items del carrito para actualizar inventario (solo para pagos pendientes)
+                        cart_items = db.query("""
+                            SELECT id_producto, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s
+                        """, (id_carrito,))
+
+                        # Actualizar inventario para cada producto vendido (pagos pendientes)
+                        for item in cart_items:
+                            db.execute("""
+                                UPDATE costanzo.inventario
+                                SET cantidad_actual = cantidad_actual - %s, fecha_actualizacion = NOW()
+                                WHERE id_producto = %s
+                            """, (item['cantidad'], item['id_producto']))
+
                         try:
                             db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
                             print('Deleted carrito_items rows count:', db.cursor.rowcount)
@@ -294,11 +312,26 @@ def create_payment():
         except Exception as logact_exc:
             print('Error guardando logactividad (exitoso):', str(logact_exc))
 
-        # Borrar carrito del usuario al completar el pago
+        # Borrar carrito del usuario al completar el pago y actualizar inventario
         try:
             carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
             if carrito:
                 id_carrito = carrito[0]['id_carrito']
+
+                # Obtener items del carrito para actualizar inventario
+                cart_items = db.query("""
+                    SELECT id_producto, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s
+                """, (id_carrito,))
+
+                # Actualizar inventario para cada producto vendido
+                for item in cart_items:
+                    db.execute("""
+                        UPDATE costanzo.inventario
+                        SET cantidad_actual = cantidad_actual - %s, fecha_actualizacion = NOW()
+                        WHERE id_producto = %s
+                    """, (item['cantidad'], item['id_producto']))
+
+                # Borrar items del carrito
                 db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
                 db.execute("DELETE FROM costanzo.carritocompra WHERE id_carrito = %s", (id_carrito,))
         except Exception as del_exc:

@@ -260,32 +260,65 @@ function setupFAQ() {
 // ========================
 function setupContactForm() {
     const form = document.getElementById('contactForm');
-    
+
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            // Simular envío
+
+            // Get form data
+            const formData = new FormData(form);
+
+            // Validate required fields
+            const name = formData.get('name')?.trim();
+            const email = formData.get('email')?.trim();
+            const message = formData.get('message')?.trim();
+
+            if (!name || !email || !message) {
+                showNotification('Por favor completa todos los campos.', 'error');
+                return;
+            }
+
+            // Show loading state
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            
+
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                submitBtn.innerHTML = '<i class="fas fa-check"></i> ¡Mensaje Enviado!';
-                submitBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
-                
-                setTimeout(() => {
+
+            // Send to backend
+            fetch('/contact', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    // Success
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> ¡Mensaje Enviado!';
+                    submitBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.style.background = '';
+                        submitBtn.disabled = false;
+                        form.reset();
+
+                        // Show success notification
+                        showNotification(data.message, 'success');
+                    }, 2000);
+                } else {
+                    // Error
                     submitBtn.innerHTML = originalText;
-                    submitBtn.style.background = '';
                     submitBtn.disabled = false;
-                    form.reset();
-                    
-                    // Mostrar notificación
-                    showNotification('¡Gracias por contactarnos! Te responderemos pronto.');
-                }, 2000);
-            }, 1500);
+                    showNotification(data.message || 'Error al enviar el mensaje.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending contact form:', error);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                showNotification('Error de conexión. Intenta de nuevo.', 'error');
+            });
         });
     }
 }

@@ -114,6 +114,24 @@ document.querySelector('[data-section="usuarios"]').addEventListener('click', ()
     }, 100);
 });
 
+document.querySelector('[data-section="contacto"]').addEventListener('click', () => {
+    document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
+    const contactoCard = document.getElementById('contacto-section');
+    contactoCard.style.display = 'block';
+
+    showLoading('loadingContacto')
+
+    // Force load contact messages when clicking the menu
+    setTimeout(() => {
+        loadContactMessages();
+    }, 100);
+
+    // Asegura que los elementos ya están en el DOM
+    setTimeout(() => {
+        // Initialize any needed components
+    }, 100);
+});
+
 document.querySelector('[data-section="reportes"]').addEventListener('click', () => {
     document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
     const reportesCard = document.getElementById('section-reportes');

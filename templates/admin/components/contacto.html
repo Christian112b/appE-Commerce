@@ -1,0 +1,705 @@
+<!-- Contact Messages Section -->
+<section class="content-section" id="contacto-section">
+    <div class="section-header">
+        <h2><i class="fas fa-envelope"></i> Mensajes de Contacto</h2>
+    </div>
+
+    <div class="stats-cards contacto-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="totalMessages">0</h3>
+                <p>Total</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon new">
+                <i class="fas fa-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="newMessages">0</h3>
+                <p>Nuevos</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon read">
+                <i class="fas fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="readMessages">0</h3>
+                <p>Leídos</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon replied">
+                <i class="fas fa-reply"></i>
+            </div>
+            <div class="stat-info">
+                <h3 id="repliedMessages">0</h3>
+                <p>Respondidos</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Mensajes Recientes</h3>
+            <div class="table-actions" style="display: flex; gap: 1rem; align-items: center;">
+                <select id="statusFilter" class="form-control" style="margin: 0;">
+                    <option value="">Todos los estados</option>
+                    <option value="nuevo">Nuevos</option>
+                    <option value="leído">Leídos</option>
+                    <option value="respondido">Respondidos</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadContactMessages()" style="margin: 0;" title="Actualizar">
+                    <i class="fas fa-sync"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table" id="messagesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Asunto</th>
+                        <th>Mensaje</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="messagesTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando mensajes...
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+<style>
+    .message-detail {
+        padding: 1rem 0;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .sender-info h6 {
+        margin: 0 0 0.25rem 0;
+        color: #8B4513;
+    }
+
+    .sender-info p {
+        margin: 0;
+        color: #6c757d;
+    }
+
+    .message-meta {
+        text-align: right;
+    }
+
+    .message-meta small {
+        display: block;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .message-subject {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .message-content {
+        margin-top: 1rem;
+    }
+
+    .message-text {
+        margin-top: 0.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        line-height: 1.6;
+    }
+
+    .status-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .badge-nuevo {
+        background: #dc3545;
+        color: white;
+    }
+
+    .badge-leído {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .badge-respondido {
+        background: #28a745;
+        color: white;
+    }
+
+    /* Contact-specific stats cards - Horizontal row layout */
+    .contacto-stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+    
+    .contacto-stats .stat-card {
+        flex: 1;
+        background: linear-gradient(135deg, #FFF8DC, #FFFFFF);
+        border: 2px solid #D2691E;
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(139, 69, 19, 0.1);
+        transition: all 0.3s ease;
+        min-height: 90px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+    
+    .contacto-stats .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.2);
+    }
+    
+    .contacto-stats .stat-card .stat-icon {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #8B4513, #D2691E);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .contacto-stats .stat-card .stat-icon.new {
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+    }
+    
+    .contacto-stats .stat-card .stat-icon.read {
+        background: linear-gradient(135deg, #ffc107, #f39c12);
+    }
+    
+    .contacto-stats .stat-card .stat-icon.replied {
+        background: linear-gradient(135deg, #28a745, #27ae60);
+    }
+    
+    .contacto-stats .stat-card .stat-info {
+        flex: 1;
+        text-align: left;
+    }
+
+    .contacto-stats .stat-card .stat-info h3 {
+        margin: 0 0 0.25rem 0;
+        color: #8B4513;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .contacto-stats .stat-card .stat-info p {
+        margin: 0;
+        color: #5C4033;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Table container with vertical scroll */
+    .table-container {
+        margin-top: 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        max-height: calc(100vh - 400px);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .table-responsive {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: auto;
+        min-height: 400px;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    
+    .data-table th {
+        background: #000000;
+        color: white;
+        padding: 1rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .data-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #FFF8DC;
+    }
+    
+    /* Message preview truncation */
+    .message-preview {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .contacto-stats {
+            flex-wrap: wrap;
+        }
+
+        .contacto-stats .stat-card {
+            flex: 1;
+            min-width: 120px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .contacto-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .contacto-stats .stat-card {
+            padding: 1rem;
+            min-height: 100px;
+        }
+
+        .contacto-stats .stat-card .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .contacto-stats .stat-card .stat-info h3 {
+            font-size: 1.8rem;
+        }
+
+        .contacto-stats .stat-card .stat-info p {
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            max-height: calc(100vh - 350px);
+        }
+
+        .table-responsive {
+            min-height: 300px;
+        }
+
+        .data-table {
+            font-size: 0.8rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .contacto-stats .stat-card {
+            flex: 0 0 calc(50% - 0.5rem);
+            padding: 0.75rem;
+        }
+
+        .contacto-stats .stat-card .stat-icon {
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+        }
+
+        .contacto-stats .stat-card .stat-info h3 {
+            font-size: 1.5rem;
+        }
+
+        .contacto-stats .stat-card .stat-info p {
+            font-size: 0.8rem;
+        }
+
+        .table-container {
+            max-height: calc(100vh - 300px);
+        }
+
+        .table-responsive {
+            min-height: 250px;
+        }
+    }
+
+    .stat-card .stat-icon.new i {
+        color: #dc3545;
+    }
+
+    .stat-card .stat-icon.read i {
+        color: #ffc107;
+    }
+
+    .stat-card .stat-icon.replied i {
+        color: #28a745;
+    }
+</style>
+
+<script>
+    // Global variable to store current message ID
+    let currentMessageId = null;
+
+    // Load contact messages
+    function loadContactMessages() {
+        const tbody = document.getElementById('messagesTableBody');
+        const filter = document.getElementById('statusFilter').value;
+
+        tbody.innerHTML = `
+        <tr>
+            <td colspan="8" class="text-center">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando mensajes...
+                </div>
+            </td>
+        </tr>
+    `;
+
+        fetch('/api/getContactMessages')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMessages(data.messages, filter);
+                    updateStats(data.messages);
+                } else {
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Error al cargar mensajes
+                        </td>
+                    </tr>
+                `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading messages:', error);
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Error de conexión
+                    </td>
+                </tr>
+            `;
+            });
+    }
+
+    // Display messages in table
+    function displayMessages(messages, filter = '') {
+        const tbody = document.getElementById('messagesTableBody');
+
+        if (!messages || messages.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center">
+                    <i class="fas fa-inbox"></i> No hay mensajes
+                </td>
+            </tr>
+        `;
+            return;
+        }
+
+        const filteredMessages = filter ? messages.filter(msg => msg.estado === filter) : messages;
+
+        tbody.innerHTML = filteredMessages.map(msg => `
+        <tr>
+            <td>${msg.id_mensaje}</td>
+            <td>${msg.nombre}</td>
+            <td>${msg.email}</td>
+            <td>${msg.asunto}</td>
+            <td>
+                <div class="message-preview">
+                    ${msg.mensaje.length > 50 ? msg.mensaje.substring(0, 50) + '...' : msg.mensaje}
+                </div>
+            </td>
+            <td>${msg.fecha_envio}</td>
+            <td>
+                <span class="badge badge-${msg.estado}">${msg.estado}</span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-info" onclick="viewMessage(${msg.id_mensaje})" title="Ver detalle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="quickUpdateStatus(${msg.id_mensaje}, 'leído')" title="Marcar como leído">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="quickUpdateStatus(${msg.id_mensaje}, 'respondido')" title="Marcar como respondido">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="quickDeleteMessage(${msg.id_mensaje})" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    }
+
+    // Update statistics
+    function updateStats(messages) {
+        const total = messages.length;
+        const nuevos = messages.filter(m => m.estado === 'nuevo').length;
+        const leidos = messages.filter(m => m.estado === 'leído').length;
+        const respondidos = messages.filter(m => m.estado === 'respondido').length;
+
+        document.getElementById('totalMessages').textContent = total;
+        document.getElementById('newMessages').textContent = nuevos;
+        document.getElementById('readMessages').textContent = leidos;
+        document.getElementById('repliedMessages').textContent = respondidos;
+    }
+
+    // View message detail (simple alert for now)
+    function viewMessage(id) {
+        currentMessageId = id;
+
+        // Find message data
+        const rows = document.querySelectorAll('#messagesTableBody tr');
+        let messageData = null;
+
+        rows.forEach(row => {
+            const idCell = row.cells[0];
+            if (idCell && parseInt(idCell.textContent) === id) {
+                messageData = {
+                    id: id,
+                    nombre: row.cells[1].textContent,
+                    email: row.cells[2].textContent,
+                    asunto: row.cells[3].textContent,
+                    mensaje: row.cells[4].textContent.replace('...', ''), // Remove preview truncation
+                    fecha: row.cells[5].textContent,
+                    estado: row.cells[6].textContent.trim()
+                };
+            }
+        });
+
+        if (messageData) {
+            alert(`Mensaje de: ${messageData.nombre} (${messageData.email})\n\nAsunto: ${messageData.asunto}\n\nMensaje:\n${messageData.mensaje}\n\nFecha: ${messageData.fecha}\nEstado: ${messageData.estado}`);
+        }
+    }
+
+    // Update message status
+    function updateMessageStatus(newStatus) {
+        if (!currentMessageId) return;
+
+        fetch('/api/updateContactMessageStatus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_mensaje: currentMessageId,
+                estado: newStatus
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Estado actualizado correctamente', 'success');
+                    loadContactMessages();
+                } else {
+                    showNotification(data.message || 'Error al actualizar estado', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                showNotification('Error de conexión', 'error');
+            });
+    }
+
+    // Quick update status from table
+    function quickUpdateStatus(id, status) {
+        fetch('/api/updateContactMessageStatus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_mensaje: id,
+                estado: status
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Estado actualizado correctamente', 'success');
+                    loadContactMessages();
+                } else {
+                    showNotification(data.message || 'Error al actualizar estado', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                showNotification('Error de conexión', 'error');
+            });
+    }
+
+    // Delete message
+    function deleteMessage() {
+        if (!currentMessageId) return;
+
+        if (!confirm('¿Estás seguro de que quieres eliminar este mensaje?')) return;
+
+        fetch('/api/deleteContactMessage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_mensaje: currentMessageId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Mensaje eliminado correctamente', 'success');
+                    loadContactMessages();
+                } else {
+                    showNotification(data.message || 'Error al eliminar mensaje', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting message:', error);
+                showNotification('Error de conexión', 'error');
+            });
+    }
+
+    // Quick delete from table
+    function quickDeleteMessage(id) {
+        if (!confirm('¿Estás seguro de que quieres eliminar este mensaje?')) return;
+
+        fetch('/api/deleteContactMessage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_mensaje: id
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Mensaje eliminado correctamente', 'success');
+                    loadContactMessages();
+                } else {
+                    showNotification(data.message || 'Error al eliminar mensaje', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting message:', error);
+                showNotification('Error de conexión', 'error');
+            });
+    }
+
+    // Filter messages
+    document.getElementById('statusFilter').addEventListener('change', function () {
+        loadContactMessages();
+    });
+
+    // Load messages on page load
+    document.addEventListener('DOMContentLoaded', function () {
+
+        loadContactMessages();
+
+        // Load messages when contacto section becomes active
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    if (target.id === 'contacto-section' && target.classList.contains('active')) {
+                        // Small delay to ensure DOM is ready
+                        setTimeout(() => {
+                            loadContactMessages();
+                        }, 100);
+                    }
+                }
+            });
+        });
+
+        const contactoSection = document.getElementById('contacto-section');
+        if (contactoSection) {
+            observer.observe(contactoSection, { attributes: true });
+        }
+
+        // Also try to load immediately if already active (for direct navigation)
+        setTimeout(() => {
+            const activeSection = document.querySelector('.content-section.active');
+            if (activeSection && activeSection.id === 'contacto-section') {
+                loadContactMessages();
+            }
+        }, 200);
+
+        // Force load on initial page load if contacto is active
+        const initialActive = document.querySelector('.content-section.active#contacto-section');
+        if (initialActive) {
+            setTimeout(() => loadContactMessages(), 500);
+        }
+    });
+
+    // Function to close modal manually
+    function closeMessageModal() {
+        const modal = document.getElementById('messageModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+    }
+</script>

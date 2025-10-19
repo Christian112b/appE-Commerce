@@ -35,16 +35,16 @@
                 <form class="contacto-form" id="contactForm">
                     <h3>Envíanos un Mensaje</h3>
                     <div class="form-group">
-                        <input type="text" placeholder="Nombre completo" required>
+                        <input type="text" name="name" placeholder="Nombre completo" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Correo electrónico" required>
+                        <input type="email" name="email" placeholder="Correo electrónico" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" placeholder="Asunto">
+                        <input type="text" name="subject" placeholder="Asunto" required>
                     </div>
                     <div class="form-group">
-                        <textarea rows="5" placeholder="Tu mensaje" required></textarea>
+                        <textarea name="message" rows="5" placeholder="Tu mensaje" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
                 </form>
