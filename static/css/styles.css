@@ -1434,7 +1434,8 @@ cite {
     width: 100%;
     height: 100vh;
     background: rgba(0, 0, 0, 0.7);
-    z-index: 1500;
+    /* keep overlay below cart and internal modals */
+    z-index: 1000;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition-normal);

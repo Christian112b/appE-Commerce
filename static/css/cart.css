@@ -8,7 +8,8 @@
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  /* modal-overlay must be above global overlay but below the cart which sits higher */
+  z-index: 1600;
 }
 
 .modal-overlay.active {
@@ -92,8 +93,10 @@
 
 .modal-footer {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0;
 }
 
 .btn-confirm,
@@ -107,32 +110,91 @@
   font-weight: bold;
 }
 
+/* Footer final button style match cancel */
+#finalCheckoutBtn {
+  padding: 0.7rem;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+/* Ensure footer buttons share same height */
+.modal-footer .btn, .modal-footer .btn-primary, .modal-footer .btn-confirm {
+   height: 44px;
+   line-height: 44px;
+}
+
+/* Ensure button text is vertically centered even if wrapping */
+.modal-footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
+}
+
+/* Disabled button appearance */
+.btn.disabled, .btn[disabled], .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-confirm {
   background: #28a745;
 }
 
 .btn-cancel {
-  background: #dc3545;
+  background: red !important;
 }
 
-.tab-header{ 
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+.tab-header{
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 1rem;
+   position: relative;
 }
 
 .tab-btn {
   flex: 1;
   padding: 0.6rem;
-  background: #eee;
-  border: none;
+  background: #f5efe6; /* beige */
+  border: 1px solid transparent;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
+  color: #5c3a21;
+  border-radius: 8px 8px 0 0;
+  margin: 0 0.25rem;
 }
 
 .tab-btn.active {
-  background: #007bff;
-  color: white;
+   background: linear-gradient(135deg, #8B4513, #D2691E); /* chocolate to orange */
+   color: #fff;
+   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+   transform: translateY(-2px);
+}
+
+.close-modal {
+   background: rgba(255, 255, 255, 0.2);
+   color: #fff;
+   width: 35px;
+   height: 35px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 1.2rem;
+   transition: all var(--transition-normal);
+   border: none;
+   cursor: pointer;
+   position: absolute;
+   right: 0;
+   top: 50%;
+   transform: translateY(-50%);
+}
+
+.close-modal:hover {
+   background: rgba(255, 255, 255, 0.3);
+   transform: translateY(-50%) scale(1.1);
 }
 
 .tab-content .tab-panel {
@@ -196,6 +258,73 @@
 .address-card.add {
   background: #eaf4ff;
   border-color: #007bff;
+}
+
+/* Compact saved addresses list to avoid overflowing modal */
+#savedAddresses {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Make individual address cards smaller */
+.address-card {
+  padding: 0.6rem;
+  font-size: 0.9rem;
+}
+
+/* Ensure Cancel button uses normal case and matches size of other footer buttons */
+.modal-footer .btn-cancel {
+  background: #6c757d; /* muted gray */
+  color: white;
+}
+
+/* Prevent global uppercase transforms on footer buttons (if any) */
+.modal-footer button { text-transform: none; }
+
+/* Confirmation tab styles */
+.confirm-summary {
+   background: var(--color-light-cream);
+   padding: var(--spacing-md);
+   border-radius: 15px;
+   margin-bottom: var(--spacing-md);
+   border-left: 4px solid var(--color-accent);
+}
+
+.confirm-summary h4 {
+   color: var(--color-primary);
+   margin-bottom: var(--spacing-sm);
+   font-size: 1.3rem;
+   text-align: center;
+}
+
+.confirm-details {
+   background: var(--color-white);
+   padding: var(--spacing-md);
+   border-radius: 10px;
+   box-shadow: var(--shadow-sm);
+}
+
+.confirm-row {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 0.75rem 0;
+   border-bottom: 1px solid var(--color-light);
+}
+
+.confirm-row:last-child {
+   border-bottom: none;
+}
+
+.confirm-row span:first-child {
+   color: var(--color-dark);
+   font-weight: 500;
+}
+
+.confirm-row span:last-child {
+   color: var(--color-primary);
+   font-weight: 600;
 }
 
 .btn-select-address,
@@ -289,3 +418,95 @@
 .payment-option input[type="radio"] {
   accent-color: #007bff;
 }
+
+.saved-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-item {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Coupon input/button */
+#couponInput {
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#applyCouponBtn {
+  background: #8B4513;
+  color: white;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#couponMessage {
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+/* Invalid coupon message */
+#couponMessage.invalid {
+  color: #b00020;
+  background: rgba(176,0,32,0.06);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* (replaced) coupon-loading styles are defined below as .coupon-loading-box */
+
+/* Cart inline loading placeholder */
+.cart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  color: #5c3a21;
+}
+
+/* coupon-loading overlay (small inline box) */
+.coupon-loading-overlay {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.coupon-loading-box {
+  background: rgba(255,255,255,0.98);
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  color: #5c3a21;
+}
+
+/* Blocking overlay style (used when processing payments) */
+#blockingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  z-index: 9999;
+}
+
+/* Make the footer 'Siguiente' button less round */
+#nextCheckoutBtn {
+  border-radius: 6px !important;
+  padding: 0.6rem 1rem;
+}
+
+ 

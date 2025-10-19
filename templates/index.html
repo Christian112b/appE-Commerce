@@ -49,15 +49,14 @@
     <!-- Footer  -->
     {% include 'components/footer.html' %}
 
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
     <!-- Carrito de Compras  -->
     {% include 'components/cart.html' %}
 
     <!-- Loading  -->
     <div id="loader-logo-path" data-src="{{ url_for('static', filename='assets/costanzo.png') }}"></div>
-
-
-    <!-- Overlay -->
-    <div class="overlay" id="overlay"></div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
