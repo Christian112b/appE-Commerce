@@ -241,3 +241,49 @@ def deleteContactMessage():
     except Exception as e:
         print("Error al eliminar mensaje de contacto:", e)
         return jsonify({'success': False, 'message': 'Error al eliminar mensaje'})
+
+# Agregar nueva dirección
+@api_bp.route('/api/address/add', methods=['POST'])
+def addAddress():
+  
+    try:
+        from flask import session
+
+        if not session.get('autenticado'):
+            return jsonify({'ok': False, 'message': 'Usuario no autenticado'}), 401
+
+        id_usuario = session.get('id_user')
+        data = request.get_json()
+
+        alias = data.get('alias', '').strip()
+        street = data.get('street', '').strip()
+        neighborhood = data.get('neighborhood', '').strip()
+        city = data.get('city', '').strip()
+        state = data.get('state', '').strip()
+        postalCode = data.get('postalCode', '').strip()
+
+        # Validaciones básicas
+        if not all([alias, street, neighborhood, city, state, postalCode]):
+            return jsonify({'ok': False, 'message': 'Todos los campos son requeridos'}), 400
+
+        if len(alias) > 50 or len(street) > 100 or len(neighborhood) > 100 or len(city) > 100 or len(state) > 100:
+            return jsonify({'ok': False, 'message': 'Uno o más campos exceden la longitud máxima'}), 400
+
+        if len(postalCode) != 5 or not postalCode.isdigit():
+            return jsonify({'ok': False, 'message': 'Código postal debe tener 5 dígitos'}), 400
+
+        db = DBConnection()
+
+        # Insertar nueva dirección
+        db.execute("""
+            INSERT INTO costanzo.direcciones (id_usuario, alias, calle, colonia, ciudad, estado, cp)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (id_usuario, alias, street, neighborhood, city, state, postalCode))
+
+        db.close()
+
+        return jsonify({'ok': True, 'message': 'Dirección agregada correctamente'})
+
+    except Exception as e:
+        print("Error al agregar dirección:", e)
+        return jsonify({'ok': False, 'message': 'Error interno del servidor'}), 500

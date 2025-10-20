@@ -18,93 +18,109 @@
                             </button>
                         </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="padding: 0.75rem;">
                         <!-- Summary Cards -->
-                        <div class="row mb-4">
-                            <div class="col-md-3">
+                        <div class="row mb-2 g-2">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="card text-center border-primary">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-primary">Ventas Totales</h5>
-                                        <h3 id="reporteVentasTotales">$0.00</h3>
-                                        <p class="text-muted mb-0">en el período seleccionado</p>
+                                    <div class="card-body py-1 px-2">
+                                        <div class="text-primary fw-bold small mb-1">Ventas</div>
+                                        <div id="reporteVentasTotales" class="h5 mb-0">$0.00</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="card text-center border-success">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-success">Pedidos Completados</h5>
-                                        <h3 id="reportePedidosCompletados">0</h3>
-                                        <p class="text-muted mb-0">pedidos exitosos</p>
+                                    <div class="card-body py-1 px-2">
+                                        <div class="text-success fw-bold small mb-1">Pedidos</div>
+                                        <div id="reportePedidosCompletados" class="h5 mb-0">0</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3 col-md-6">
                                 <div class="card text-center border-warning">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-warning">Productos Vendidos</h5>
-                                        <h3 id="reporteProductosVendidos">0</h3>
-                                        <p class="text-muted mb-0">unidades totales</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card text-center border-info">
-                                    <div class="card-body">
-                                        <h5 class="card-title text-info">Cupones Usados</h5>
-                                        <h3 id="reporteCuponesUsados">0</h3>
-                                        <p class="text-muted mb-0">descuentos aplicados</p>
+                                    <div class="card-body py-1 px-2">
+                                        <div class="text-warning fw-bold small mb-1">Productos</div>
+                                        <div id="reporteProductosVendidos" class="h5 mb-0">0</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Charts Section -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6>Ventas por Método de Pago</h6>
+                        <!-- Charts and Table Section -->
+                        <div class="row mb-2 g-2">
+                            <!-- Charts Column -->
+                            <div class="col-lg-6">
+                                <div class="row g-1 mb-2">
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header py-1 px-2">
+                                                <small class="mb-0 fw-bold">Ventas por Método</small>
+                                            </div>
+                                            <div class="card-body py-1 px-2">
+                                                <canvas id="chartMetodosPago" style="max-width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="card-body">
-                                        <canvas id="chartMetodosPago" width="400" height="300"></canvas>
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header py-1 px-2">
+                                                <small class="mb-0 fw-bold">Tendencia de Ventas</small>
+                                            </div>
+                                            <div class="card-body py-1 px-2">
+                                                <canvas id="chartVentasTendencia" style="max-width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header py-1 px-2">
+                                                <small class="mb-0 fw-bold">Uso de Cupones</small>
+                                            </div>
+                                            <div class="card-body py-1 px-2">
+                                                <canvas id="chartCuponesUso" style="max-width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header py-1 px-2">
+                                                <small class="mb-0 fw-bold">Productos Top</small>
+                                            </div>
+                                            <div class="card-body py-1 px-2">
+                                                <canvas id="chartProductosTop" style="max-width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6>Productos Más Vendidos</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <canvas id="chartProductosVendidos" width="400" height="300"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Detailed Reports -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h6>Reporte Detallado de Ventas</h6>
+                            <!-- Table Column -->
+                            <div class="col-lg-6">
+                                <div class="card" style="height: 320px;">
+                                    <div class="card-header py-1 px-2">
+                                        <small class="fw-bold">Ventas Detalladas</small>
                                     </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive" style="max-height: calc(100vh - 600px); overflow-y: auto;">
-                                            <table class="table table-striped">
+                                    <div class="card-body p-1" style="height: calc(100% - 35px); overflow: hidden;">
+                                        <div class="table-responsive h-100" style="overflow-y: auto;">
+                                            <table class="table table-striped table-sm mb-0">
                                                 <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
                                                     <tr>
-                                                        <th>Fecha</th>
-                                                        <th>ID Pago</th>
-                                                        <th>Método</th>
-                                                        <th>Monto</th>
-                                                        <th>Estado</th>
-                                                        <th>Productos</th>
+                                                        <th style="width: 25%; font-size: 0.75rem;">Fecha</th>
+                                                        <th style="width: 20%; font-size: 0.75rem;">ID</th>
+                                                        <th style="width: 25%; font-size: 0.75rem;">Método</th>
+                                                        <th style="width: 15%; font-size: 0.75rem;">Monto</th>
+                                                        <th style="width: 15%; font-size: 0.75rem;">Estado</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="reporteVentasTableBody">
-                                                    <!-- Report data will be loaded here -->
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted py-4">
+                                                            <small>No hay datos disponibles</small>
+                                                        </td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -114,13 +130,13 @@
                         </div>
 
                         <!-- Export Options -->
-                        <div class="row mt-3">
+                        <div class="row mt-1">
                             <div class="col-12 text-center">
-                                <button class="btn btn-success me-2" onclick="exportarReporte('pdf')">
-                                    <i class="fas fa-file-pdf me-1"></i> Exportar PDF
+                                <button class="btn btn-success btn-sm me-1" onclick="exportarReporte('pdf')">
+                                    <i class="fas fa-file-pdf"></i>
                                 </button>
-                                <button class="btn btn-success" onclick="exportarReporte('excel')">
-                                    <i class="fas fa-file-excel me-1"></i> Exportar Excel
+                                <button class="btn btn-success btn-sm" onclick="exportarReporte('excel')">
+                                    <i class="fas fa-file-excel"></i>
                                 </button>
                             </div>
                         </div>

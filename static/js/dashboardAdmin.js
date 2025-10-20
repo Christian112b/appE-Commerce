@@ -1266,10 +1266,10 @@ function generarReportes() {
             reportesData = data;
 
             // Update summary cards
-            document.getElementById('reporteVentasTotales').textContent = `$${data.ventas_totales.toFixed(2)}`;
-            document.getElementById('reportePedidosCompletados').textContent = data.pedidos_completados;
-            document.getElementById('reporteProductosVendidos').textContent = data.productos_vendidos;
-            document.getElementById('reporteCuponesUsados').textContent = data.cupones_usados;
+            if (document.getElementById('reporteVentasTotales')) document.getElementById('reporteVentasTotales').textContent = `$${data.ventas_totales.toFixed(2)}`;
+            if (document.getElementById('reportePedidosCompletados')) document.getElementById('reportePedidosCompletados').textContent = data.pedidos_completados;
+            if (document.getElementById('reporteProductosVendidos')) document.getElementById('reporteProductosVendidos').textContent = data.productos_vendidos;
+            if (document.getElementById('reporteCuponesUsados')) document.getElementById('reporteCuponesUsados').textContent = data.cupones_usados;
 
             // Update detailed table
             renderReporteVentasTable(data.ventas_detalle);
@@ -1281,10 +1281,27 @@ function generarReportes() {
 }
 
 function renderReporteVentasTable(ventas) {
+    console.log('renderReporteVentasTable called with:', ventas);
+
     const tbody = document.getElementById('reporteVentasTableBody');
+    if (!tbody) {
+        console.error('Elemento reporteVentasTableBody no encontrado');
+        return;
+    }
+
     tbody.innerHTML = '';
 
-    ventas.forEach(venta => {
+    if (!ventas || ventas.length === 0) {
+        console.log('No hay ventas para mostrar');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><small>No hay datos disponibles</small></td></tr>';
+        return;
+    }
+
+    console.log('Procesando', ventas.length, 'ventas');
+
+    ventas.forEach((venta, index) => {
+        console.log('Procesando venta', index, ':', venta);
+
         const row = document.createElement('tr');
         const fecha = venta.fecha_pago ? new Date(venta.fecha_pago).toLocaleString('es-MX') : 'N/A';
 
@@ -1307,75 +1324,91 @@ function renderReporteVentasTable(ventas) {
             <td>${metodoNombre}</td>
             <td>$${parseFloat(venta.monto).toFixed(2)}</td>
             <td><span class="${estadoClass}">${estadoText}</span></td>
-            <td>${venta.productos_cantidad || 0}</td>
         `;
         tbody.appendChild(row);
     });
+
+    console.log('Tabla renderizada con', ventas.length, 'filas');
 }
 
 function updateCharts(data) {
-    // Payment methods chart
-    const metodosCtx = document.getElementById('chartMetodosPago');
-    if (metodosCtx && data.metodos_pago) {
-        const metodoLabels = data.metodos_pago.map(m => {
-            const metodoMap = {
-                1: 'Tarjeta',
-                4: 'Transferencia',
-                5: 'Efectivo',
-                6: 'OXXO',
-                7: 'SPEI'
-            };
-            return metodoMap[m.id_metodo_pago] || 'Otro';
-        });
-        const metodoData = data.metodos_pago.map(m => m.total);
+    console.log('updateCharts called with data:', data);
 
-        if (window.metodosChart) window.metodosChart.destroy();
-        window.metodosChart = new Chart(metodosCtx, {
-            type: 'pie',
-            data: {
-                labels: metodoLabels,
-                datasets: [{
-                    data: metodoData,
-                    backgroundColor: [
-                        '#FF6384',
-                        '#36A2EB',
-                        '#FFCE56',
-                        '#4BC0C0',
-                        '#9966FF'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
+    // Payment methods chart - real data
+    const metodosCtx = document.getElementById('chartMetodosPago');
+    console.log('chartMetodosPago element:', metodosCtx);
+
+    if (metodosCtx && data.metodos_pago) {
+        console.log('Creating payment methods chart with data:', data.metodos_pago);
+
+        const metodoLabels = data.metodos_pago.map(m => {
+            const metodoMap = {1: 'Tarjeta', 4: 'Transferencia', 5: 'Efectivo', 6: 'OXXO', 7: 'SPEI'};
+            return metodoMap[m.id_metodo_pago] || `Método ${m.id_metodo_pago}`;
+        });
+        const metodoData = data.metodos_pago.map(m => m.cantidad);
+
+        console.log('Labels:', metodoLabels, 'Data:', metodoData);
+
+        try {
+            if (window.metodosChart) window.metodosChart.destroy();
+            window.metodosChart = new Chart(metodosCtx, {
+                type: 'bar',
+                data: {
+                    labels: metodoLabels,
+                    datasets: [{
+                        label: 'Ventas por Método',
+                        data: metodoData,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Métodos de Pago'
+                        }
                     },
-                    title: {
-                        display: true,
-                        text: 'Distribución por Método de Pago'
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Ventas'
+                            }
+                        }
                     }
                 }
-            }
-        });
+            });
+            console.log('Payment methods chart created successfully');
+        } catch (error) {
+            console.error('Error creating payment methods chart:', error);
+        }
+    } else {
+        console.log('Payment methods chart not created - element or data missing');
     }
 
-    // Products sold chart (simplified - would need actual product sales data)
-    const productosCtx = document.getElementById('chartProductosVendidos');
-    if (productosCtx) {
-        // Mock data for demonstration - in real implementation, get actual top products
-        const productosLabels = ['Producto A', 'Producto B', 'Producto C', 'Producto D', 'Producto E'];
-        const productosData = [45, 32, 28, 19, 15];
+    // Sales trend chart - weekly earnings (LINE CHART)
+    const tendenciaCtx = document.getElementById('chartVentasTendencia');
+    if (tendenciaCtx && data.ganancias_semana && data.ganancias_semana.length > 0) {
+        const tendenciaLabels = data.ganancias_semana.map(g => g.semana);
+        const tendenciaData = data.ganancias_semana.map(g => g.total);
 
-        if (window.productosChart) window.productosChart.destroy();
-        window.productosChart = new Chart(productosCtx, {
-            type: 'bar',
+        if (window.tendenciaChart) window.tendenciaChart.destroy();
+        window.tendenciaChart = new Chart(tendenciaCtx, {
+            type: 'line',
             data: {
-                labels: productosLabels,
+                labels: tendenciaLabels,
                 datasets: [{
-                    label: 'Unidades Vendidas',
-                    data: productosData,
-                    backgroundColor: '#36A2EB'
+                    label: 'Ganancias',
+                    data: tendenciaData,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
@@ -1386,7 +1419,75 @@ function updateCharts(data) {
                     },
                     title: {
                         display: true,
-                        text: 'Productos Más Vendidos'
+                        text: 'Ganancias por Semana'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Monto ($)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Coupons usage chart - dummy data (keep as is)
+    const cuponesCtx = document.getElementById('chartCuponesUso');
+    if (cuponesCtx) {
+        const cuponesLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'];
+        const cuponesData = [15, 22, 18, 25, 30];
+
+        if (window.cuponesChart) window.cuponesChart.destroy();
+        window.cuponesChart = new Chart(cuponesCtx, {
+            type: 'bar',
+            data: {
+                labels: cuponesLabels,
+                datasets: [{
+                    data: cuponesData,
+                    backgroundColor: '#FFCE56'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Top products chart - dummy data (keep as is)
+    const productosTopCtx = document.getElementById('chartProductosTop');
+    if (productosTopCtx) {
+        const productosLabels = ['Prod A', 'Prod B', 'Prod C'];
+        const productosData = [45, 32, 28];
+
+        if (window.productosTopChart) window.productosTopChart.destroy();
+        window.productosTopChart = new Chart(productosTopCtx, {
+            type: 'bar',
+            data: {
+                labels: productosLabels,
+                datasets: [{
+                    data: productosData,
+                    backgroundColor: '#4BC0C0'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
                     }
                 },
                 scales: {

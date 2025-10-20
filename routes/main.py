@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from controllers.dbConnection import DBConnection
 from routes.auth import validate_email, sanitize_input
-import datetime
+from datetime import datetime, timedelta
 
 main_bp = Blueprint('main', __name__)
 
@@ -48,7 +48,7 @@ def contact():
             db.execute("""
                 INSERT INTO costanzo.mensajes_contacto (nombre, email, asunto, mensaje, fecha_envio, estado)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (name, normalized_email, subject, message, datetime.datetime.now(), 'nuevo'))
+            """, (name, normalized_email, subject, message, datetime.now(), 'nuevo'))
 
             db.close()
 
@@ -65,3 +65,46 @@ def contact():
     except Exception as e:
         print(f"Contact form error: {e}")
         return jsonify({'status': 500, 'message': 'Error interno del servidor'}), 500
+
+@main_bp.route('/get-best-sellers', methods=['GET'])
+def get_best_sellers():
+    """Get top 3 best-selling products based on sales data"""
+    try:
+        db = DBConnection()
+
+        # Get top 3 products by total sales from ventas_productos table
+        best_sellers = db.query("""
+            SELECT
+                p.id_producto,
+                p.nombre,
+                p.precio_unitario,
+                p.imagen_base64,
+                COALESCE(vp.total_vendido, 0) as total_vendido
+            FROM costanzo.productos p
+            LEFT JOIN costanzo.ventas_productos vp ON p.id_producto = vp.id_producto
+            WHERE p.activo = 1
+            ORDER BY total_vendido DESC, p.nombre ASC
+            LIMIT 3
+        """)
+
+        db.close()
+
+        # Format the response
+        products = []
+        for product in best_sellers:
+            imagen_base64 = product['imagen_base64']
+            imagen_final = f"data:image/png;base64,{imagen_base64}" if imagen_base64 else None
+
+            products.append({
+                'id': product['id_producto'],
+                'name': product['nombre'],
+                'price': float(product['precio_unitario']),
+                'image': imagen_final,
+                'total_sold': int(product['total_vendido'])
+            })
+
+        return jsonify({'ok': True, 'products': products})
+
+    except Exception as e:
+        print(f"Error getting best sellers: {e}")
+        return jsonify({'ok': False, 'message': 'Error al obtener productos más vendidos'}), 500

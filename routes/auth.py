@@ -4,6 +4,9 @@ import jwt
 import datetime
 import os
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, request, session, jsonify, redirect, url_for, current_app
 
@@ -210,11 +213,16 @@ def verify_token():
 @auth_bp.route('/registerUser', methods=['POST'])
 def validationRegister():
     try:
+
+
+
         # Get and sanitize form data
         name = sanitize_input(request.form.get('name', ''), 100)
         email_raw = request.form.get('email', '').strip()
         phone = sanitize_input(request.form.get('phone', ''), 20)
         password = request.form.get('password', '')
+
+
 
         # Validate required fields
         if not name:
@@ -229,13 +237,15 @@ def validationRegister():
             return jsonify({'status': 400, 'message': email_error}), 400
 
         # Validate password requirements
-        password_valid, password_error = validate_password(password)
-        if not password_valid:
-            return jsonify({'status': 400, 'message': password_error}), 400
+            password_valid, password_error = validate_password(password)
+            if not password_valid:
+                return jsonify({'status': 400, 'message': password_error}), 400
+            print("Iniciando proceso de registro")
 
         # Additional phone validation (basic)
         if not re.match(r'^\+?\d{10,15}$', phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')):
             return jsonify({'status': 400, 'message': 'Formato de teléfono inválido'}), 400
+
 
         db = DBConnection()
 

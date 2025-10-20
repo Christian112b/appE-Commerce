@@ -541,53 +541,24 @@ h1, h2, h3, h4, h5, h6 {
     background: linear-gradient(135deg, var(--color-light-cream), var(--color-white));
 }
 
-.carousel-container {
-    position: relative;
-    margin-top: var(--spacing-md);
-}
-
-.favoritos-carousel {
-    display: flex;
+.favoritos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: var(--spacing-md);
-    overflow-x: auto;
-    scroll-behavior: smooth;
     padding: var(--spacing-sm) 0;
-    scrollbar-width: none;
 }
 
-.favoritos-carousel::-webkit-scrollbar {
-    display: none;
+@media (max-width: 768px) {
+    .favoritos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
 }
 
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--color-white);
-    color: var(--color-primary);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-md);
-    z-index: 10;
-    transition: all var(--transition-normal);
-}
-
-.carousel-btn:hover {
-    background: var(--color-primary);
-    color: var(--color-white);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.carousel-prev {
-    left: -25px;
-}
-
-.carousel-next {
-    right: -25px;
+@media (max-width: 480px) {
+    .favoritos-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ========================

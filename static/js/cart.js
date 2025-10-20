@@ -1400,7 +1400,7 @@ function submitNewAddress() {
         }
     }
 
-    // Envío al backend (ajusta la ruta según tu estructura)
+    // Envío al backend (ruta correcta)
     fetch('/api/address/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1413,9 +1413,10 @@ function submitNewAddress() {
                 return;
             }
 
-            showNotification('Address saved successfully!', 'success');
+            showNotification('Dirección guardada correctamente!', 'success');
             document.getElementById('addAddressForm').style.display = 'none';
-            // Opcional: recargar lista de direcciones
+            // Recargar lista de direcciones automáticamente
+            getAddresses(true); // true para forzar recarga
         })
         .catch(err => {
             console.error('Error:', err);

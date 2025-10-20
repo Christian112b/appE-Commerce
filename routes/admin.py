@@ -378,10 +378,12 @@ def get_dashboard_data():
     finally:
         db.close()
 
-@admin_bp.route('/get-reportes', methods=['GET'])
+@admin_bp.route('/ireportes', methods=['GET'])
 def get_reportes():
     if session.get('admin') != 1:
         return jsonify({'error': 'No autorizado'}), 403
+
+    periodo = request.args.get('periodo', 'mes')
 
     periodo = request.args.get('periodo', 'mes')
 

@@ -1,12 +1,14 @@
 
 import os
 import stripe
+from threading import Thread
 
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request, session
+from flask_mail import Message
 
 load_dotenv()
 stripe_api_key = os.getenv("STRIPE_PRIVATE_KEY")
@@ -331,9 +333,70 @@ def create_payment():
                         WHERE id_producto = %s
                     """, (item['cantidad'], item['id_producto']))
 
+                    # Actualizar tabla ventas_productos
+                    db.execute("""
+                        INSERT INTO costanzo.ventas_productos (id_producto, total_vendido, fecha_ultima_venta)
+                        VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE
+                            total_vendido = total_vendido + VALUES(total_vendido),
+                            fecha_ultima_venta = VALUES(fecha_ultima_venta)
+                    """, (item['id_producto'], item['cantidad'], now_mexico))
+
+                # Obtener email del usuario para enviar confirmación
+                usuario = db.query("SELECT email FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
+                email_usuario = usuario[0]['email'] if usuario else None
+
+                # Preparar datos del pedido para el correo
+                subtotal = sum(item['price'] * item['quantity'] for item in cart_items)
+                iva = subtotal * 0.16
+                descuento = 0
+                descuento_info = ""
+
+                # Calcular descuento si hay cupón aplicado (desde request data)
+                if cupon_id:
+                    cupon = db.query("SELECT nombre, tipo, valor FROM costanzo.cupones WHERE id_descuento = %s", (cupon_id,))
+                    if cupon:
+                        cupon_data = cupon[0]
+                        if cupon_data['tipo'] == 'porcentaje':
+                            descuento = subtotal * (cupon_data['valor'] / 100)
+                            descuento_info = f"{cupon_data['nombre']} ({cupon_data['valor']}%)"
+                        else:
+                            descuento = float(cupon_data['valor'] or 0)
+                            descuento_info = cupon_data['nombre']
+
+                total = subtotal + iva - descuento
+
+                # Obtener dirección de envío
+                direccion_envio = "Dirección no especificada"
+                if direccion_id:
+                    direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM costanzo.direcciones WHERE id_direccion = %s", (direccion_id,))
+                    if direccion:
+                        direccion_envio = direccion[0]['full_address']
+
+                # Mapear método de pago
+                metodo_map = {1: 'Tarjeta de Crédito', 4: 'Transferencia Bancaria', 5: 'Efectivo en Tienda', 6: 'OXXO', 7: 'SPEI'}
+                metodo_pago = metodo_map.get(method_id, f'Método {method_id}')
+
+                datos_pedido = {
+                    'numero_pedido': f"CC-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    'fecha_pedido': now_mexico.strftime('%d/%m/%Y %H:%M'),
+                    'productos': cart_items,
+                    'subtotal': subtotal,
+                    'iva': iva,
+                    'descuento': descuento,
+                    'descuento_info': descuento_info,
+                    'total': total,
+                    'direccion_envio': direccion_envio,
+                    'metodo_pago': metodo_pago
+                }
+
                 # Borrar items del carrito
                 db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
                 db.execute("DELETE FROM costanzo.carritocompra WHERE id_carrito = %s", (id_carrito,))
+
+                # Enviar correo de confirmación en background si hay email
+                if email_usuario:
+                    Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
         except Exception as del_exc:
             print('Error borrando carrito (exitoso):', str(del_exc))
 
@@ -357,11 +420,121 @@ def create_payment():
         except Exception:
             pass
 
+def enviar_correo_confirmacion(email_usuario, datos_pedido):
+    """Envía correo de confirmación de pedido"""
+    try:
+        # Crear lista de productos para el email
+        productos_html = ""
+        for producto in datos_pedido['productos']:
+            productos_html += f"""
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">{producto['name']}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{producto['quantity']}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${producto['price']:.2f}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${producto['price'] * producto['quantity']:.2f}</td>
+            </tr>
+            """
+
+        # Template HTML del correo
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Confirmación de Pedido - Chocolates Costanzo</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #8B4513; margin-bottom: 10px;">¡Gracias por tu compra!</h1>
+                <p style="font-size: 16px; color: #666;">Tu pedido ha sido confirmado exitosamente</p>
+            </div>
+
+            <!-- Order Details -->
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h2 style="color: #8B4513; margin-bottom: 15px;">Detalles del Pedido</h2>
+                <p><strong>Número de pedido:</strong> {datos_pedido['numero_pedido']}</p>
+                <p><strong>Fecha:</strong> {datos_pedido['fecha_pedido']}</p>
+                <p><strong>Método de pago:</strong> {datos_pedido['metodo_pago']}</p>
+            </div>
+
+            <!-- Products Table -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #8B4513; margin-bottom: 10px;">Productos</h3>
+                <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background: #8B4513; color: white;">
+                            <th style="padding: 10px; text-align: left;">Producto</th>
+                            <th style="padding: 10px; text-align: center;">Cantidad</th>
+                            <th style="padding: 10px; text-align: right;">Precio</th>
+                            <th style="padding: 10px; text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {productos_html}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f9f9f9; font-weight: bold;">
+                            <td colspan="3" style="padding: 10px; text-align: right;">Subtotal:</td>
+                            <td style="padding: 10px; text-align: right;">${datos_pedido['subtotal']:.2f}</td>
+                        </tr>
+                        <tr style="background: #f9f9f9; font-weight: bold;">
+                            <td colspan="3" style="padding: 10px; text-align: right;">IVA (16%):</td>
+                            <td style="padding: 10px; text-align: right;">${datos_pedido['iva']:.2f}</td>
+                        </tr>
+                        {f'<tr style="background: #f9f9f9; font-weight: bold;"><td colspan="3" style="padding: 10px; text-align: right;">Descuento ({datos_pedido.get("descuento_info", "")}):</td><td style="padding: 10px; text-align: right; color: #d9534f;">-${datos_pedido["descuento"]:.2f}</td></tr>' if datos_pedido.get('descuento', 0) > 0 else ''}
+                        <tr style="background: #8B4513; color: white; font-weight: bold; font-size: 18px;">
+                            <td colspan="3" style="padding: 15px; text-align: right;">Total:</td>
+                            <td style="padding: 15px; text-align: right;">${datos_pedido['total']:.2f}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Shipping Info -->
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #8B4513; margin-bottom: 10px;">Información de Envío</h3>
+                <p><strong>Dirección:</strong> {datos_pedido['direccion_envio']}</p>
+                <p>Recibirás actualizaciones sobre el estado de tu pedido por este medio.</p>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="color: #666; font-size: 14px;">
+                    Gracias por elegir <strong>Chocolates Costanzo</strong><br>
+                    ¡Esperamos verte pronto!
+                </p>
+                <div style="margin-top: 15px;">
+                    <a href="#" style="color: #8B4513; text-decoration: none; margin: 0 10px;">Sitio Web</a> |
+                    <a href="#" style="color: #8B4513; text-decoration: none; margin: 0 10px;">Contacto</a> |
+                    <a href="#" style="color: #8B4513; text-decoration: none; margin: 0 10px;">Ayuda</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Importar mail aquí para evitar import circular
+        from app import mail
+
+        msg = Message(
+            subject=f'Confirmación de Pedido #{datos_pedido["numero_pedido"]} - Chocolates Costanzo',
+            recipients=[email_usuario],
+            html=html_content
+        )
+
+        mail.send(msg)
+        print(f"Correo de confirmación enviado exitosamente a {email_usuario}")
+        return True
+    except Exception as e:
+        print(f"Error enviando correo de confirmación: {e}")
+        return False
+
 @cart_bp.route('/validate-coupon', methods=['POST'])
 def validate_coupon():
     data = request.get_json()
     coupon_name = data.get('coupon_name', '').strip()
-
 
     if not coupon_name:
         return jsonify({'ok': False, 'mensaje': 'Nombre del cupón requerido.'}), 400
@@ -375,7 +548,7 @@ def validate_coupon():
 
         # Buscar cupón activo por nombre (case-insensitive)
         coupon = db.query(
-            "SELECT id_descuento, nombre, tipo, valor FROM costanzo.descuentospromociones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
+            "SELECT id_descuento, nombre, tipo, valor FROM costanzo.cupones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
             (coupon_name, now_mexico, now_mexico)
         )
 
@@ -394,6 +567,136 @@ def validate_coupon():
     except Exception as e:
         print('Error validating coupon:', str(e))
         return jsonify({'ok': False, 'mensaje': 'Error interno del servidor.'}), 500
+    finally:
+        db.close()
+
+@cart_bp.route('/get-reportes', methods=['GET'])
+def get_reportes():
+    periodo = request.args.get('periodo', 'mes')
+    db = DBConnection()
+
+    try:
+        # Calcular fechas según período
+        now = datetime.now()
+        if periodo == 'hoy':
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif periodo == 'semana':
+            start_date = now - timedelta(days=now.weekday())
+            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif periodo == 'mes':
+            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        elif periodo == 'anio':
+            start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        else:
+            start_date = now - timedelta(days=30)
+
+        # Ventas totales
+        ventas_result = db.query(
+            "SELECT COALESCE(SUM(monto), 0) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
+            (start_date,)
+        )
+        ventas_totales = float(ventas_result[0]['total']) if ventas_result else 0
+
+        # Pedidos completados
+        pedidos_result = db.query(
+            "SELECT COUNT(*) as count FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
+            (start_date,)
+        )
+        pedidos_completados = pedidos_result[0]['count'] if pedidos_result else 0
+
+        # Productos vendidos (suma de cantidades de carrito_items)
+        productos_result = db.query(
+            "SELECT COALESCE(SUM(ci.cantidad), 0) as total FROM costanzo.carrito_items ci JOIN costanzo.carritocompra c ON ci.id_carrito = c.id_carrito WHERE c.fecha_creacion >= %s",
+            (start_date,)
+        )
+        productos_vendidos = productos_result[0]['total'] if productos_result else 0
+
+        # Cupones usados
+        cupones_result = db.query(
+            "SELECT COUNT(*) as count FROM costanzo.logpagos WHERE cupon_id IS NOT NULL AND estado_pago = 'exitoso' AND fecha_pago >= %s",
+            (start_date,)
+        )
+        cupones_usados = cupones_result[0]['count'] if cupones_result else 0
+
+        # Ventas por método de pago
+        metodos_result = db.query(
+            "SELECT id_metodo_pago, COUNT(*) as count, SUM(monto) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s GROUP BY id_metodo_pago",
+            (start_date,)
+        )
+        metodos_pago = []
+        for row in metodos_result:
+            metodo_id = row['id_metodo_pago']
+            metodo_map = {1: 'Tarjeta', 4: 'Transferencia', 5: 'Efectivo', 6: 'OXXO', 7: 'SPEI'}
+            metodo_name = metodo_map.get(metodo_id, f'Método {metodo_id}')
+            metodos_pago.append({
+                'id_metodo_pago': metodo_id,
+                'nombre': metodo_name,
+                'count': row['count'],
+                'total': float(row['total'])
+            })
+
+        # Ventas detalladas con JOIN para obtener cantidad de productos
+        ventas_detalle = db.query(
+            """
+            SELECT
+                lp.id_pago,
+                lp.id_intento_pago,
+                lp.id_metodo_pago,
+                lp.monto,
+                lp.fecha_pago,
+                lp.estado_pago,
+                COALESCE(SUM(ci.cantidad), 0) as productos_cantidad
+            FROM costanzo.logpagos lp
+            LEFT JOIN costanzo.carritocompra c ON lp.fecha_pago >= c.fecha_creacion
+                AND lp.fecha_pago <= DATE_ADD(c.fecha_creacion, INTERVAL 1 HOUR)
+                AND lp.id_usuario = c.id_usuario
+            LEFT JOIN costanzo.carrito_items ci ON c.id_carrito = ci.id_carrito
+            WHERE lp.fecha_pago >= %s
+            GROUP BY lp.id_pago, lp.id_intento_pago, lp.id_metodo_pago, lp.monto, lp.fecha_pago, lp.estado_pago
+            ORDER BY lp.fecha_pago DESC
+            LIMIT 50
+            """,
+            (start_date,)
+        )
+
+        # Ganancias por semana (últimas 4 semanas)
+        ganancias_semana = []
+        for i in range(4):
+            week_start = now - timedelta(days=now.weekday() + (i * 7))
+            week_end = week_start + timedelta(days=6)
+            week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+            week_end = week_end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+            week_result = db.query(
+                "SELECT COALESCE(SUM(monto), 0) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago BETWEEN %s AND %s",
+                (week_start, week_end)
+            )
+            ganancias_semana.append({
+                'semana': f'Sem {4-i}',
+                'total': float(week_result[0]['total']) if week_result else 0
+            })
+
+        return jsonify({
+            'ventas_totales': ventas_totales,
+            'pedidos_completados': pedidos_completados,
+            'productos_vendidos': productos_vendidos,
+            'cupones_usados': cupones_usados,
+            'metodos_pago': metodos_pago,
+            'ventas_detalle': ventas_detalle,
+            'ganancias_semana': ganancias_semana
+        })
+
+    except Exception as e:
+        print('Error generating reports:', str(e))
+        return jsonify({
+            'ventas_totales': 0,
+            'pedidos_completados': 0,
+            'productos_vendidos': 0,
+            'cupones_usados': 0,
+            'metodos_pago': [],
+            'ventas_detalle': [],
+            'ganancias_semana': []
+        })
     finally:
         db.close()
  

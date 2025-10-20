@@ -168,68 +168,59 @@ function stopAutoSlide() {
 }
 
 // ========================
-// Carrusel de Favoritos
+// Favoritos - Top 4 Best Sellers
 // ========================
-function setupFavoritosCarousel() {
-    const carousel = document.getElementById('favoritosCarousel');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
-    
-    if (!carousel) return;
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            carousel.scrollBy({
-                left: -320,
-                behavior: 'smooth'
-            });
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            carousel.scrollBy({
-                left: 320,
-                behavior: 'smooth'
-            });
-        });
-    }
-    
-    // Auto scroll
-    let autoScrollInterval = setInterval(() => {
-        if (carousel.scrollLeft >= carousel.scrollWidth - carousel.clientWidth - 10) {
-            carousel.scrollTo({
-                left: 0,
-                behavior: 'smooth'
-            });
-        } else {
-            carousel.scrollBy({
-                left: 320,
-                behavior: 'smooth'
-            });
-        }
-    }, 4000);
-    
-    // Pausar auto scroll en hover
-    carousel.addEventListener('mouseenter', () => {
-        clearInterval(autoScrollInterval);
-    });
-    
-    carousel.addEventListener('mouseleave', () => {
-        autoScrollInterval = setInterval(() => {
-            if (carousel.scrollLeft >= carousel.scrollWidth - carousel.clientWidth - 10) {
-                carousel.scrollTo({
-                    left: 0,
-                    behavior: 'smooth'
-                });
-            } else {
-                carousel.scrollBy({
-                    left: 320,
-                    behavior: 'smooth'
-                });
+function loadBestSellers() {
+    const grid = document.getElementById('favoritosGrid');
+    if (!grid) return;
+
+    fetch('/get-best-sellers')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.ok || !data.products || data.products.length === 0) {
+                console.log('No best sellers found');
+                return;
             }
-        }, 4000);
-    });
+
+            // Clear existing content
+            grid.innerHTML = '';
+
+            // Create product cards for top 3
+            data.products.slice(0, 3).forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const imageSrc = product.image || '/static/assets/default-product.png';
+
+                card.innerHTML = `
+                    <div class="product-image">
+                        <img src="${imageSrc}" alt="${product.name}" loading="lazy">
+                        <div class="product-overlay">
+                            <button class="btn-icon add-to-cart"
+                                data-id="${product.id}"
+                                data-name="${product.name}"
+                                data-price="${product.price}"
+                                data-image="${imageSrc}">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        <p>Uno de nuestros más vendidos</p>
+                        <div class="product-price">$${product.price.toFixed(2)}</div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            // Re-bind cart events for new elements
+            setupCartEvents();
+        })
+        .catch(err => {
+            console.error('Error loading best sellers:', err);
+        });
 }
 
 // ========================
@@ -681,7 +672,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupLoadingScreen();
     setupNavigation();
     setupHeroSlider();
-    setupFavoritosCarousel();
+    loadBestSellers(); // Load top 4 best sellers instead of carousel
     setupFAQ();
     setupContactForm();
     setupScrollAnimations();
@@ -689,10 +680,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setupLazyLoading();
     setupScrollToTop();
     injectAnimations();
-    
+
     // Opcional: descomentar para cursor personalizado
     // setupCustomCursor();
-    
+
 });
 
 // Hacer funciones globales

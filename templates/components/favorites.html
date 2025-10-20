@@ -4,9 +4,7 @@
             <h2 class="section-title">Los Favoritos y Consentidos</h2>
             <p class="section-description">Contamos con una gran variedad de ricos dulces y chocolates que encantan a
                 chicos y grandes desde hace más de 92 años</p>
-            <div class="carousel-container">
-                <button class="carousel-btn carousel-prev"><i class="fas fa-chevron-left"></i></button>
-                <div class="favoritos-carousel" id="favoritosCarousel">
+            <div class="favoritos-grid" id="favoritosGrid">
                     <div class="product-card">
                         <div class="product-image">
                             <img src="{{ url_for('static', filename='assets/presentaciones_tablillas_bolsas/02Tornillo.jpg') }}" alt="Tornillo">
@@ -147,7 +145,6 @@
                         </div>
                     </div>
                 </div>
-                <button class="carousel-btn carousel-next"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
