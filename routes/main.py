@@ -108,3 +108,11 @@ def get_best_sellers():
     except Exception as e:
         print(f"Error getting best sellers: {e}")
         return jsonify({'ok': False, 'message': 'Error al obtener productos más vendidos'}), 500
+
+@main_bp.route('/politicas-privacidad')
+def politicas_privacidad():
+    return render_template('politicas-privacidad.html')
+
+@main_bp.route('/politicas-devolucion')
+def politicas_devolucion():
+    return render_template('politicas-devolucion.html')

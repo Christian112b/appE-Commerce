@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Políticas de Devolución - Constanzo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="flex min-h-screen flex-col">
+
+  <!-- Header -->
+  {% include 'components/navbar.html' %}
+
+  <main class="flex-1">
+    <!-- Hero Section -->
+    <section class="hero bg-gradient py-16 text-light">
+      <div class="container text-center">
+        <h1>Políticas de Devolución, Entregas y Reembolsos</h1>
+        <p class="subtitulo">Tu satisfacción es nuestra prioridad. Conoce nuestras políticas de servicio</p>
+        <p class="fecha">Última actualización: 19 de octubre de 2025</p>
+      </div>
+    </section>
+
+    <!-- Content Section -->
+    <section class="contenido py-16">
+      <div class="container">
+
+        <div class="card">
+          <h2>1. Política de Entregas</h2>
+          <h3>Tiempos de Entrega:</h3>
+          <ul>
+            <li>  Ciudad de México: 24–48 horas hábiles</li>
+            <li>  Área Metropolitana: 2–4 días hábiles</li>
+            <li>  Interior de la República: 3–7 días hábiles</li>
+            <li>  Pedidos especiales: 5–10 días hábiles</li>
+          </ul>
+          <h3>Costos de Envío:</h3>
+          <ul>
+            <li>  Envío gratis en compras mayores a $800 MXN</li>
+            <li>  Costo estándar: $120 MXN</li>
+            <li>  Interior: $180–$250 MXN</li>
+          </ul>
+          <h3>Condiciones:</h3>
+          <p>Usamos empaques térmicos. Es importante refrigerar los productos al recibirlos.</p>
+        </div>
+
+        <div class="card">
+          <h2>2. Política de Devoluciones</h2>
+          <h3>Productos elegibles:</h3>
+          <ul>
+            <li>  Dañado en envío</li>
+            <li>  Defectuoso</li>
+            <li>  Incorrecto</li>
+            <li>  Vencido o próximo a vencer</li>
+          </ul>
+          <h3>Plazo:</h3>
+          <p>Debe reportarse dentro de las 24 horas posteriores a la recepción.</p>
+          <h3>No elegibles:</h3>
+          <ul>
+            <li>  Personalizados</li>
+            <li>  En promoción</li>
+            <li>  Consumidos</li>
+            <li>  Sin empaque original</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>3. Proceso de Devolución</h2>
+          <ol>
+            <li><strong>Contacto:</strong> Enviar correo con evidencia</li>
+            <li><strong>Evaluación:</strong> Respuesta en 24h</li>
+            <li><strong>Recolección:</strong> Coordinación sin costo</li>
+            <li><strong>Resolución:</strong> Reembolso o reemplazo</li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h2>4. Política de Reembolsos</h2>
+          <h3>Métodos:</h3>
+          <ul>
+            <li>  Tarjeta: 5–10 días</li>
+            <li>  Transferencia: 3–5 días</li>
+            <li>  Crédito en tienda: inmediato</li>
+          </ul>
+          <h3>Monto:</h3>
+          <p>Incluye producto y envío si el error fue nuestro.</p>
+          <h3>Reemplazos:</h3>
+          <p>Se envían sin costo adicional en 2–3 días hábiles.</p>
+        </div>
+
+        <div class="card">
+          <h2>5. Cancelaciones</h2>
+          <p><strong>Antes de producción:</strong> Cancelable dentro de 2h</p>
+          <p><strong>Personalizados:</strong> No cancelables</p>
+          <p><strong>En tránsito:</strong> Puede rechazarse, aplican cargos</p>
+        </div>
+
+        <div class="card">
+          <h2>6. Garantía de Calidad</h2>
+          <p>Garantizamos calidad artesanal. Si no estás satisfecho, buscamos solución.</p>
+        </div>
+
+        <div class="card">
+          <h2>7. Casos Especiales</h2>
+          <ul>
+            <li>  Problemas con paquetería</li>
+            <li>  Alergias e intolerancias</li>
+            <li>  Eventos climáticos</li>
+          </ul>
+        </div>
+
+        <div class="card contacto">
+          <h3>Información de Contacto</h3>
+          <ul>
+            <li><strong>Correo:</strong> devoluciones@constanzo.com</li>
+            <li><strong>Teléfono:</strong> +52 (55) 1234-5678</li>
+            <li><strong>WhatsApp:</strong> +52 (55) 9876-5432</li>
+            <li><strong>Horario:</strong> Lun–Vie: 9:00–18:00 hrs</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  {% include 'components/footer.html' %}
+
+</body>
+</html>

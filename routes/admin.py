@@ -11,7 +11,7 @@ def adminPanel():
         return render_template('admin/dashboard.html')
     return redirect(url_for('main.index'))
 
-@admin_bp.route('/get-coupons', methods=['GET'])
+@admin_bp.route('/get-discounts', methods=['GET'])
 def get_coupons():
     if session.get('admin') != 1:
         return jsonify({'error': 'No autorizado'}), 403
@@ -303,6 +303,137 @@ def delete_usuario():
     finally:
         db.close()
 
+@admin_bp.route('/get-ventas', methods=['GET'])
+def get_ventas():
+    if session.get('admin') != 1:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    # Get filter parameters
+    estado = request.args.get('estado', '')
+    metodo = request.args.get('metodo', '')
+    fecha_inicio = request.args.get('fecha_inicio', '')
+    fecha_fin = request.args.get('fecha_fin', '')
+
+    db = DBConnection()
+    try:
+        # Build query with filters - using available tables
+        query = """
+            SELECT
+                lp.id_pago,
+                lp.id_intento_pago,
+                lp.id_metodo_pago,
+                lp.monto,
+                lp.fecha_pago,
+                lp.estado_pago,
+                vp.total_vendido as productos_cantidad
+            FROM costanzo.logpagos lp
+            LEFT JOIN costanzo.ventas_productos vp ON lp.id_pago = vp.id_venta_producto
+            WHERE 1=1
+        """
+
+        params = []
+
+        if estado:
+            query += " AND lp.estado_pago = %s"
+            params.append(estado)
+
+        if metodo:
+            query += " AND lp.id_metodo_pago = %s"
+            params.append(metodo)
+
+        if fecha_inicio:
+            query += " AND DATE(lp.fecha_pago) >= %s"
+            params.append(fecha_inicio)
+
+        if fecha_fin:
+            query += " AND DATE(lp.fecha_pago) <= %s"
+            params.append(fecha_fin)
+
+        query += " ORDER BY lp.fecha_pago DESC"
+
+        ventas = db.query(query, params)
+
+        # Calculate summary statistics
+        total_ventas = sum(float(v['monto']) for v in ventas if v['estado_pago'] == 'exitoso')
+        total_pedidos = len(ventas)
+        pedidos_exitosos = len([v for v in ventas if v['estado_pago'] == 'exitoso'])
+        pedidos_pendientes = len([v for v in ventas if v['estado_pago'] == 'pendiente'])
+
+        return jsonify({
+            'ventas': ventas,
+            'summary': {
+                'total_ventas': total_ventas,
+                'total_pedidos': total_pedidos,
+                'pedidos_exitosos': pedidos_exitosos,
+                'pedidos_pendientes': pedidos_pendientes
+            }
+        })
+
+    except Exception as e:
+        print('Error fetching ventas:', str(e))
+        return jsonify({'error': 'Error al obtener ventas'}), 500
+    finally:
+        db.close()
+
+@admin_bp.route('/get-venta-detalles/<int:venta_id>', methods=['GET'])
+def get_venta_detalles(venta_id):
+    if session.get('admin') != 1:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    db = DBConnection()
+    try:
+        # Get sale details - using available tables
+        venta_query = """
+            SELECT
+                lp.*,
+                vp.total_vendido as productos_cantidad,
+                p.nombre as producto_nombre
+            FROM costanzo.logpagos lp
+            LEFT JOIN costanzo.ventas_productos vp ON lp.id_pago = vp.id_venta_producto
+            LEFT JOIN costanzo.productos p ON vp.id_producto = p.id_producto
+            WHERE lp.id_pago = %s
+        """
+        venta_data = db.query(venta_query, (venta_id,))
+
+        if not venta_data:
+            return jsonify({'error': 'Venta no encontrada'}), 404
+
+        # Structure the response
+        venta = {
+            'id_pago': venta_data[0]['id_pago'],
+            'id_intento_pago': venta_data[0]['id_intento_pago'],
+            'id_metodo_pago': venta_data[0]['id_metodo_pago'],
+            'monto': venta_data[0]['monto'],
+            'fecha_pago': venta_data[0]['fecha_pago'],
+            'estado_pago': venta_data[0]['estado_pago'],
+            'nombre': venta_data[0]['nombre'] or 'Cliente',
+            'apellido': venta_data[0]['apellido'] or 'Anónimo',
+            'correo': venta_data[0]['correo'] or 'N/A',
+            'telefono': venta_data[0]['telefono'] or 'N/A'
+        }
+
+        # Get products - simplified
+        productos = []
+        for item in venta_data:
+            if item['producto_nombre']:
+                productos.append({
+                    'producto_nombre': item['producto_nombre'],
+                    'cantidad': item['productos_cantidad'] or 1,
+                    'precio_unitario': float(item['monto']) / (item['productos_cantidad'] or 1),
+                    'subtotal': float(item['monto'])
+                })
+
+        return jsonify({
+            'venta': venta,
+            'productos': productos
+        })
+
+    except Exception as e:
+        print('Error fetching venta details:', str(e))
+        return jsonify({'error': 'Error al obtener detalles de venta'}), 500
+    finally:
+        db.close()
+
 @admin_bp.route('/get-dashboard-data', methods=['GET'])
 def get_dashboard_data():
     if session.get('admin') != 1:
@@ -378,7 +509,7 @@ def get_dashboard_data():
     finally:
         db.close()
 
-@admin_bp.route('/ireportes', methods=['GET'])
+@admin_bp.route('/get-reportes', methods=['GET'])
 def get_reportes():
     if session.get('admin') != 1:
         return jsonify({'error': 'No autorizado'}), 403

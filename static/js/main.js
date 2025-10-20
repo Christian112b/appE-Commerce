@@ -216,7 +216,9 @@ function loadBestSellers() {
             });
 
             // Re-bind cart events for new elements
-            setupCartEvents();
+            if (typeof setupCartEvents === 'function') {
+                setupCartEvents();
+            }
         })
         .catch(err => {
             console.error('Error loading best sellers:', err);
@@ -651,6 +653,39 @@ function setupLoadingScreen() {
             }, 500);
         }, 800);
     });
+}
+
+// ========================
+// Modal functions for policies
+// ========================
+function openTermsModal() {
+    const modal = document.getElementById('termsModal');
+    modal.style.display = 'flex';
+}
+
+function closeTermsModal() {
+    const modal = document.getElementById('termsModal');
+    modal.style.display = 'none';
+}
+
+function openPrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    modal.style.display = 'flex';
+}
+
+function closePrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    modal.style.display = 'none';
+}
+
+function openReturnsModal() {
+    const modal = document.getElementById('returnsModal');
+    modal.style.display = 'flex';
+}
+
+function closeReturnsModal() {
+    const modal = document.getElementById('returnsModal');
+    modal.style.display = 'none';
 }
 
 // ========================

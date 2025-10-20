@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productosNav && productosNav.classList.contains('active')) {
         // Show the products section
         document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
-        const productosCard = document.getElementById('productosCard');
+        const productosCard = document.getElementById('section-productos');
         if (productosCard) {
             productosCard.style.display = 'block';
         }
@@ -46,9 +46,17 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 document.querySelector('[data-section="productos"]').addEventListener('click', () => {
-    document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
-    const productosCard = document.getElementById('productosCard');
-    productosCard.style.display = 'block';
+    console.log('Products section clicked');
+    document.querySelectorAll('.card-section').forEach(sec => {
+        console.log('Hiding section:', sec.id);
+        sec.style.display = 'none';
+    });
+    const productosCard = document.getElementById('section-productos');
+    console.log('Products card element:', productosCard);
+    if (productosCard) {
+        productosCard.style.display = 'block';
+        console.log('Products section set to display: block');
+    }
 
     // Only load if not already loaded
     if (!allProducts.length) {
@@ -119,6 +127,19 @@ document.querySelector('[data-section="inventario"]').addEventListener('click', 
         const btn = document.getElementById('applyInventarioFiltersBtn');
         if (btn) btn.onclick = applyInventarioFilters;
     }, 100);
+});
+
+document.querySelector('[data-section="ventas"]').addEventListener('click', () => {
+    document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
+    const ventasCard = document.getElementById('section-ventas');
+    ventasCard.style.display = 'block';
+
+    showLoading('loadingVentas')
+
+    loadVentas();
+
+    // Setup filters
+    setupVentasFilters();
 });
 
 document.querySelector('[data-section="usuarios"]').addEventListener('click', () => {
@@ -234,15 +255,28 @@ document.getElementById('productForm').addEventListener('submit', function (e) {
 let allProducts = [];
 
 function loadProducts() {
+    console.log('Loading products...');
 
     fetch('/getProducts')
         .then(res => res.json())
         .then(data => {
+            console.log('Products data received:', data);
             allProducts = data.productos; // Guardamos todos los productos
+            console.log('All products:', allProducts);
             renderProductTable(allProducts);
             renderCategoryFilter(data.categorias);
+
+            // Check if products section is visible
+            const productsSection = document.getElementById('section-productos');
+            console.log('Products section display:', productsSection ? productsSection.style.display : 'not found');
         })
-        .finally(() => hideLoading('loadingProducts'));
+        .catch(err => {
+            console.error('Error loading products:', err);
+        })
+        .finally(() => {
+            console.log('Hiding loading...');
+            hideLoading('loadingProducts');
+        });
 }
 
 
@@ -558,7 +592,7 @@ function hideProductosCard() {
 let allCoupons = [];
 
 function loadCoupons() {
-    fetch('/get-coupons')
+    fetch('/get-discounts')
         .then(res => res.json())
         .then(data => {
             allCoupons = data;
@@ -1276,7 +1310,7 @@ let reportesData = {};
 function generarReportes() {
     const periodo = 'mes'; // Default to current month
 
-    fetch(`/ireportes?periodo=${periodo}`)
+    fetch(`/get-reportes?periodo=${periodo}`)
         .then(res => res.json())
         .then(data => {
             reportesData = data;
@@ -1621,6 +1655,216 @@ function exportarReporte(formato) {
 }
 
 
+
+// ========================
+// Ventas Management
+// ========================
+
+let allVentas = [];
+
+function loadVentas() {
+    const estado = document.getElementById('filtroEstadoVenta')?.value || '';
+    const metodo = document.getElementById('filtroMetodoPago')?.value || '';
+    const fechaInicio = document.getElementById('filtroFechaInicio')?.value || '';
+    const fechaFin = document.getElementById('filtroFechaFin')?.value || '';
+
+    const params = new URLSearchParams();
+    if (estado) params.append('estado', estado);
+    if (metodo) params.append('metodo', metodo);
+    if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+    if (fechaFin) params.append('fecha_fin', fechaFin);
+
+    fetch(`/get-ventas?${params}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error loading ventas:', data.error);
+                return;
+            }
+
+            allVentas = data.ventas;
+            renderVentasTable(data.ventas);
+            updateVentasSummary(data.summary);
+        })
+        .catch(err => {
+            console.error('Error loading ventas:', err);
+        })
+        .finally(() => hideLoading('loadingVentas'));
+}
+
+function renderVentasTable(ventas) {
+    const tbody = document.getElementById('ventasTableBody');
+    tbody.innerHTML = '';
+
+    if (!ventas || ventas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><small>No hay ventas disponibles</small></td></tr>';
+        return;
+    }
+
+    const metodoMap = {
+        1: 'Tarjeta de Crédito',
+        4: 'Transferencia Bancaria',
+        5: 'Efectivo en Tienda',
+        6: 'OXXO',
+        7: 'SPEI'
+    };
+
+    ventas.forEach(venta => {
+        const row = document.createElement('tr');
+        const fecha = venta.fecha_pago ? new Date(venta.fecha_pago).toLocaleString('es-MX') : 'N/A';
+        const metodo = metodoMap[venta.id_metodo_pago] || `Método ${venta.id_metodo_pago}`;
+        const estadoClass = venta.estado_pago === 'exitoso' ? 'text-success' : venta.estado_pago === 'pendiente' ? 'text-warning' : 'text-danger';
+        const estadoText = venta.estado_pago === 'exitoso' ? 'Exitoso' : venta.estado_pago === 'pendiente' ? 'Pendiente' : 'Fallido';
+
+        row.innerHTML = `
+            <td>${venta.id_pago}</td>
+            <td>${fecha}</td>
+            <td>${metodo}</td>
+            <td><span class="${estadoClass}">${estadoText}</span></td>
+            <td>$${parseFloat(venta.monto).toFixed(2)}</td>
+            <td>${venta.productos_cantidad || 0}</td>
+            <td>
+                <button class="btn btn-sm btn-info me-1" onclick="verDetallesVenta(${venta.id_pago})">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateVentasSummary(summary) {
+    document.getElementById('ventasTotales').textContent = `$${summary.total_ventas.toFixed(2)}`;
+    document.getElementById('totalPedidos').textContent = summary.total_pedidos;
+    document.getElementById('pedidosExitosos').textContent = summary.pedidos_exitosos;
+    document.getElementById('pedidosPendientes').textContent = summary.pedidos_pendientes;
+}
+
+function setupVentasFilters() {
+    // Setup filter event listeners
+    ['filtroEstadoVenta', 'filtroMetodoPago', 'filtroFechaInicio', 'filtroFechaFin'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', () => {
+                showLoading('loadingVentas');
+                loadVentas();
+            });
+        }
+    });
+}
+
+function verDetallesVenta(ventaId) {
+    fetch(`/get-venta-detalles/${ventaId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error al cargar detalles de venta');
+                return;
+            }
+
+            mostrarDetallesVenta(data);
+        })
+        .catch(err => {
+            console.error('Error loading venta details:', err);
+            alert('Error al cargar detalles de venta');
+        });
+}
+
+function mostrarDetallesVenta(data) {
+    const venta = data.venta;
+    const productos = data.productos;
+
+    let html = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Información de Venta</h6>
+                <p><strong>ID:</strong> ${venta.id_pago}</p>
+                <p><strong>Fecha:</strong> ${new Date(venta.fecha_pago).toLocaleString('es-MX')}</p>
+                <p><strong>Monto:</strong> $${parseFloat(venta.monto).toFixed(2)}</p>
+                <p><strong>Estado:</strong> ${venta.estado_pago}</p>
+                <p><strong>Método:</strong> ${venta.id_metodo_pago}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Información del Cliente</h6>
+                <p><strong>Nombre:</strong> ${venta.nombre || 'N/A'} ${venta.apellido || ''}</p>
+                <p><strong>Correo:</strong> ${venta.correo || 'N/A'}</p>
+                <p><strong>Teléfono:</strong> ${venta.telefono || 'N/A'}</p>
+            </div>
+        </div>
+        <hr>
+        <h6>Productos</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    productos.forEach(producto => {
+        html += `
+            <tr>
+                <td>${producto.producto_nombre}</td>
+                <td>${producto.cantidad}</td>
+                <td>$${parseFloat(producto.precio_unitario).toFixed(2)}</td>
+                <td>$${parseFloat(producto.subtotal).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    document.getElementById('ventaDetails').innerHTML = html;
+
+    const modal = new bootstrap.Modal(document.getElementById('ventaModal'));
+    modal.show();
+}
+
+function exportarVentas(formato) {
+    if (formato === 'excel') {
+        // Simple export - in a real implementation, this would generate actual Excel files
+        const data = allVentas.map(venta => ({
+            ID: venta.id_pago,
+            Fecha: new Date(venta.fecha_pago).toLocaleString('es-MX'),
+            Cliente: `${venta.nombre || ''} ${venta.apellido || ''}`.trim() || 'Cliente Anónimo',
+            Monto: parseFloat(venta.monto).toFixed(2),
+            Estado: venta.estado_pago,
+            Productos: venta.productos_cantidad || 0
+        }));
+
+        // Create CSV content - simplified headers
+        const headers = ['ID', 'Fecha', 'Metodo', 'Monto', 'Estado', 'Productos'].join(',');
+        const rows = data.map(row => [
+            row.id_pago,
+            new Date(row.fecha_pago).toLocaleString('es-MX'),
+            row.id_metodo_pago,
+            parseFloat(row.monto).toFixed(2),
+            row.estado_pago,
+            row.productos_cantidad || 0
+        ].join(','));
+        const csvContent = [headers, ...rows].join('\n');
+
+        // Download as CSV (Excel can open CSV files)
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'ventas.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
 
 // ========================
 // Dropdown func
