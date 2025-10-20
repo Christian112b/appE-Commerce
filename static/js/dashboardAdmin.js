@@ -1,3 +1,24 @@
+// Load products immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the products section initially
+    const productosNav = document.querySelector('[data-section="productos"]');
+    if (productosNav && productosNav.classList.contains('active')) {
+        // Show the products section
+        document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
+        const productosCard = document.getElementById('productosCard');
+        if (productosCard) {
+            productosCard.style.display = 'block';
+        }
+
+        showLoading('loadingProducts');
+        loadProducts();
+        setTimeout(() => {
+            const btn = document.getElementById('applyFiltersBtn');
+            if (btn) btn.onclick = applyProductFilters;
+        }, 100);
+    }
+});
+
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function (e) {
         e.preventDefault();
@@ -29,9 +50,11 @@ document.querySelector('[data-section="productos"]').addEventListener('click', (
     const productosCard = document.getElementById('productosCard');
     productosCard.style.display = 'block';
 
-    showLoading('loadingProducts')
-
-    loadProducts();
+    // Only load if not already loaded
+    if (!allProducts.length) {
+        showLoading('loadingProducts');
+        loadProducts();
+    }
 
     // Asegura que los filtros ya están en el DOM antes de asignar el evento
     setTimeout(() => {
@@ -150,13 +173,6 @@ document.querySelector('[data-section="reportes"]').addEventListener('click', ()
     }, 100);
 });
 
-document.querySelector('[data-section="dashboard"]').addEventListener('click', () => {
-    document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
-    const dashboardCard = document.getElementById('section-dashboard');
-    dashboardCard.style.display = 'block';
-
-    loadDashboardData();
-});
 
 document.querySelector('[data-section="productos"]').addEventListener('click', () => {
     document.querySelectorAll('.card-section').forEach(sec => sec.style.display = 'none');
@@ -1258,9 +1274,9 @@ function applyUsuarioFilters() {
 let reportesData = {};
 
 function generarReportes() {
-    const periodo = document.getElementById('reportePeriodo').value;
+    const periodo = 'mes'; // Default to current month
 
-    fetch(`/get-reportes?periodo=${periodo}`)
+    fetch(`/ireportes?periodo=${periodo}`)
         .then(res => res.json())
         .then(data => {
             reportesData = data;
@@ -1391,11 +1407,14 @@ function updateCharts(data) {
         console.log('Payment methods chart not created - element or data missing');
     }
 
-    // Sales trend chart - weekly earnings (LINE CHART)
+    // Sales trend chart - daily earnings (LINE CHART)
     const tendenciaCtx = document.getElementById('chartVentasTendencia');
-    if (tendenciaCtx && data.ganancias_semana && data.ganancias_semana.length > 0) {
-        const tendenciaLabels = data.ganancias_semana.map(g => g.semana);
-        const tendenciaData = data.ganancias_semana.map(g => g.total);
+    if (tendenciaCtx && data.ganancias_dia && data.ganancias_dia.length > 0) {
+        const tendenciaLabels = data.ganancias_dia.map(g => {
+            const date = new Date(g.dia);
+            return date.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' });
+        });
+        const tendenciaData = data.ganancias_dia.map(g => g.total);
 
         if (window.tendenciaChart) window.tendenciaChart.destroy();
         window.tendenciaChart = new Chart(tendenciaCtx, {
@@ -1419,7 +1438,7 @@ function updateCharts(data) {
                     },
                     title: {
                         display: true,
-                        text: 'Ganancias por Semana'
+                        text: 'Ganancias por Día'
                     }
                 },
                 scales: {
@@ -1435,20 +1454,67 @@ function updateCharts(data) {
         });
     }
 
-    // Coupons usage chart - dummy data (keep as is)
-    const cuponesCtx = document.getElementById('chartCuponesUso');
-    if (cuponesCtx) {
-        const cuponesLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'];
-        const cuponesData = [15, 22, 18, 25, 30];
+    // Order status chart - real data
+    const estadoCtx = document.getElementById('chartEstadoPedidos');
+    if (estadoCtx && data.estado_pedidos && data.estado_pedidos.length > 0) {
+        const estadoLabels = data.estado_pedidos.map(e => {
+            const estadoMap = {
+                'exitoso': 'Exitosos',
+                'pendiente': 'Pendientes',
+                'fallido': 'Fallidos'
+            };
+            return estadoMap[e.estado_pago] || e.estado_pago;
+        });
+        const estadoData = data.estado_pedidos.map(e => e.cantidad);
 
-        if (window.cuponesChart) window.cuponesChart.destroy();
-        window.cuponesChart = new Chart(cuponesCtx, {
-            type: 'bar',
+        if (window.estadoChart) window.estadoChart.destroy();
+        window.estadoChart = new Chart(estadoCtx, {
+            type: 'doughnut',
             data: {
-                labels: cuponesLabels,
+                labels: estadoLabels,
                 datasets: [{
-                    data: cuponesData,
-                    backgroundColor: '#FFCE56'
+                    data: estadoData,
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Estado de Pedidos',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10,
+                        left: 10,
+                        right: 10
+                    }
+                }
+            }
+        });
+    } else if (estadoCtx) {
+        // Fallback to dummy data if no real data
+        const estadoLabels = ['Exitosos', 'Pendientes'];
+        const estadoData = [1, 0];
+
+        if (window.estadoChart) window.estadoChart.destroy();
+        window.estadoChart = new Chart(estadoCtx, {
+            type: 'doughnut',
+            data: {
+                labels: estadoLabels,
+                datasets: [{
+                    data: estadoData,
+                    backgroundColor: ['#28a745', '#ffc107']
                 }]
             },
             options: {
@@ -1457,21 +1523,54 @@ function updateCharts(data) {
                     legend: {
                         display: false
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
                 }
             }
         });
     }
 
-    // Top products chart - dummy data (keep as is)
+    // Top products chart - real data
     const productosTopCtx = document.getElementById('chartProductosTop');
-    if (productosTopCtx) {
-        const productosLabels = ['Prod A', 'Prod B', 'Prod C'];
-        const productosData = [45, 32, 28];
+    if (productosTopCtx && data.top_productos && data.top_productos.length > 0) {
+        const productosLabels = data.top_productos.map(p => p.nombre.length > 15 ? p.nombre.substring(0, 15) + '...' : p.nombre);
+        const productosData = data.top_productos.map(p => p.cantidad_vendida);
+
+        if (window.productosTopChart) window.productosTopChart.destroy();
+        window.productosTopChart = new Chart(productosTopCtx, {
+            type: 'bar',
+            data: {
+                labels: productosLabels,
+                datasets: [{
+                    label: 'Unidades Vendidas',
+                    data: productosData,
+                    backgroundColor: '#4BC0C0'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Productos Más Vendidos'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Unidades'
+                        }
+                    }
+                }
+            }
+        });
+    } else if (productosTopCtx) {
+        // Fallback to dummy data if no real data
+        const productosLabels = ['Sin datos'];
+        const productosData = [0];
 
         if (window.productosTopChart) window.productosTopChart.destroy();
         window.productosTopChart = new Chart(productosTopCtx, {
@@ -1521,57 +1620,7 @@ function exportarReporte(formato) {
     }
 }
 
-// ========================
-// Dashboard Data Loading
-// ========================
 
-function loadDashboardData() {
-    fetch('/get-dashboard-data')
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                console.error('Error loading dashboard data:', data.error);
-                return;
-            }
-
-            // Update stat cards
-            document.getElementById('ventasHoyValue').textContent = `$${data.ventas_hoy.toFixed(2)}`;
-            document.getElementById('pedidosValue').textContent = data.pedidos_hoy;
-            document.getElementById('productosValue').textContent = data.total_productos;
-            document.getElementById('clientesValue').textContent = data.total_usuarios;
-
-            // Update recent orders table
-            renderRecentOrders(data.pedidos_recientes);
-        })
-        .catch(err => {
-            console.error('Error loading dashboard data:', err);
-        });
-}
-
-function renderRecentOrders(orders) {
-    const tbody = document.getElementById('recentOrdersTable');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    orders.forEach(order => {
-        const row = document.createElement('tr');
-        const fecha = order.fecha_pago ? new Date(order.fecha_pago).toLocaleString('es-MX') : 'N/A';
-        const cliente = order.nombre && order.apellido ? `${order.nombre} ${order.apellido}` : 'Cliente Anónimo';
-        const estadoClass = order.estado_pago === 'exitoso' ? 'text-success' : 'text-warning';
-        const estadoText = order.estado_pago === 'exitoso' ? 'Completado' : 'Pendiente';
-
-        row.innerHTML = `
-            <td>${order.id_pago}</td>
-            <td>${cliente}</td>
-            <td>${order.productos || 0}</td>
-            <td>$${parseFloat(order.monto).toFixed(2)}</td>
-            <td><span class="${estadoClass}">${estadoText}</span></td>
-            <td>${fecha}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
 
 // ========================
 // Dropdown func

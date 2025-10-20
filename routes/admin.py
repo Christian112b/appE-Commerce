@@ -450,25 +450,53 @@ def get_reportes():
         """
         ventas_detalle = db.query(ventas_detalle_query, (start_date, end_date))
 
-        # Get coupons used
-        cupones_query = """
-            SELECT COUNT(*) as cupones_usados
+        # Get order status distribution
+        estado_pedidos_query = """
+            SELECT estado_pago, COUNT(*) as cantidad
             FROM costanzo.logpagos
-            WHERE fecha_pago BETWEEN %s AND %s AND id_metodo_pago IS NOT NULL
+            WHERE fecha_pago BETWEEN %s AND %s
+            GROUP BY estado_pago
         """
-        cupones_data = db.query(cupones_query, (start_date, end_date))
-        cupones_usados = cupones_data[0]['cupones_usados'] if cupones_data else 0
+        estado_pedidos_data = db.query(estado_pedidos_query, (start_date, end_date))
 
         # Get products sold (simplified - would need more complex query for actual product sales)
         productos_vendidos = sum(item['productos_cantidad'] or 0 for item in ventas_detalle)
+
+        # Get daily sales data for trend chart
+        ganancias_dia_query = """
+            SELECT
+                DATE(fecha_pago) as dia,
+                SUM(monto) as total
+            FROM costanzo.logpagos
+            WHERE fecha_pago BETWEEN %s AND %s AND estado_pago = 'exitoso'
+            GROUP BY DATE(fecha_pago)
+            ORDER BY dia
+        """
+        ganancias_dia = db.query(ganancias_dia_query, (start_date, end_date))
+
+        # Get top products sold in the period from ventas_productos table
+        top_productos_query = """
+            SELECT
+                p.nombre,
+                vp.total_vendido as cantidad_vendida,
+                (vp.total_vendido * p.precio_unitario) as total_ventas
+            FROM costanzo.ventas_productos vp
+            JOIN costanzo.productos p ON vp.id_producto = p.id_producto
+            WHERE vp.fecha_ultima_venta BETWEEN %s AND %s
+            ORDER BY vp.total_vendido DESC
+            LIMIT 5
+        """
+        top_productos = db.query(top_productos_query, (start_date, end_date))
 
         return jsonify({
             'ventas_totales': float(ventas_summary['total_ventas'] or 0),
             'pedidos_completados': int(ventas_summary['pedidos_completados'] or 0),
             'productos_vendidos': productos_vendidos,
-            'cupones_usados': cupones_usados,
+            'estado_pedidos': estado_pedidos_data,
             'metodos_pago': metodos_data,
-            'ventas_detalle': ventas_detalle
+            'ventas_detalle': ventas_detalle,
+            'ganancias_dia': ganancias_dia,
+            'top_productos': top_productos
         })
 
     except Exception as e:
