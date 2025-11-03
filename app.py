@@ -14,6 +14,8 @@ from routes.cart import cart_bp
 load_dotenv()
 
 app = Flask(__name__)
+
+# Test  CORS configuration
 CORS(app, 
      origins=["https://backend-app-x7k2.zeabur.app"],
      supports_credentials=True,
