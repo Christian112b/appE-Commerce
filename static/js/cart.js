@@ -979,12 +979,70 @@ function validateAndApplyCoupon(code) {
     const loading = document.getElementById('couponLoadingModal');
     if (loading) loading.style.display = 'flex';
 
-    // Call new validate-coupon endpoint
-    return fetch('/validate-coupon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ coupon_name: code })
-    })
+    // Get current user ID first
+    return fetch('/check-session')
+        .then(res => res.json())
+        .then(sessionData => {
+            if (!sessionData.ok || !sessionData.user_id) {
+                throw new Error('Usuario no autenticado');
+            }
+            const userId = sessionData.user_id;
+
+            // Now validate the coupon code first to get coupon_id
+            return fetch('/validate-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coupon_name: code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok) {
+                    messageEl.textContent = data.mensaje || 'Cupón no válido';
+                    messageEl.classList.add('invalid');
+                    window.selectedCoupon = null;
+                    return;
+                }
+
+                const coupon = data.cupon;
+
+                // Now check if user has already used this coupon
+                return fetch('/check-coupon-usage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        coupon_id: coupon.id_descuento
+                    })
+                })
+                .then(res => res.json())
+                .then(usageData => {
+                    if (usageData.used && usageData.usage_date) {
+                        messageEl.textContent = `Ya has usado este cupón anteriormente (${new Date(usageData.usage_date).toLocaleDateString('es-MX')})`;
+                        messageEl.classList.add('invalid');
+                        window.selectedCoupon = null;
+                        return;
+                    }
+
+                    // Coupon is valid and not used before - apply it
+                    const subtotal = parseFloat(getCartSubtotal()) || 0;
+                    let descuento = 0;
+                    if (coupon.tipo === 'porcentaje') descuento = subtotal * (coupon.valor / 100);
+                    else descuento = parseFloat(coupon.valor || 0);
+
+                    messageEl.textContent = `Descuento aplicado: $${descuento.toFixed(2)}`;
+                    messageEl.classList.remove('invalid');
+                    window.selectedCoupon = coupon.id_descuento;
+                });
+            });
+        })
+    .then(res => res.json())
+    .then(usageData => {
+        // Now validate the coupon code
+        return fetch('/validate-coupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupon_name: code })
+        })
         .then(res => res.json())
         .then(data => {
             if (!data.ok) {
@@ -995,6 +1053,15 @@ function validateAndApplyCoupon(code) {
             }
 
             const coupon = data.cupon;
+
+            // Check if user has already used this coupon
+            if (usageData.used && usageData.usage_date) {
+                messageEl.textContent = `Ya has usado este cupón anteriormente (${new Date(usageData.usage_date).toLocaleDateString('es-MX')})`;
+                messageEl.classList.add('invalid');
+                window.selectedCoupon = null;
+                return;
+            }
+
             // Calculate discount for display
             const subtotal = parseFloat(getCartSubtotal()) || 0;
             let descuento = 0;
@@ -1004,17 +1071,18 @@ function validateAndApplyCoupon(code) {
             messageEl.textContent = `Descuento aplicado: $${descuento.toFixed(2)}`;
             messageEl.classList.remove('invalid');
             window.selectedCoupon = coupon.id_descuento;
-        })
-        .catch(err => {
-            console.error('Error validating coupon', err);
-            messageEl.textContent = 'Error validando cupón';
-            messageEl.classList.add('invalid');
-            window.selectedCoupon = null;
-            throw err;
-        })
-        .finally(() => {
-            if (loading) loading.style.display = 'none';
         });
+    })
+    .catch(err => {
+        console.error('Error validating coupon', err);
+        messageEl.textContent = 'Error validando cupón';
+        messageEl.classList.add('invalid');
+        window.selectedCoupon = null;
+        throw err;
+    })
+    .finally(() => {
+        if (loading) loading.style.display = 'none';
+    });
 }
 
 function buildConfirmSummary() {
@@ -1100,6 +1168,18 @@ function recalcCheckoutTotals() {
 
 // Load coupons on modal open
 document.addEventListener('DOMContentLoaded', loadCoupons);
+
+// Get current user ID for coupon usage tracking
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/check-session')
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok && data.user_id) {
+                window.currentUserId = data.user_id;
+            }
+        })
+        .catch(err => console.warn('Could not get user session:', err));
+});
 
 function showAddAddressForm() {
     const nueva = document.getElementById('nuevaDireccionForm') || document.getElementById('addAddressForm') || document.getElementById('addAddressForm');
@@ -1517,6 +1597,23 @@ async function submitCheckout() {
 
         // Caso offline (pendiente)
         if (data && data.status === 'pendiente') {
+            // Record coupon usage if payment was successful (even if pending)
+            if (window.selectedCoupon) {
+                try {
+                    await fetch('/record-coupon-usage', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: window.currentUserId || null,
+                            coupon_id: window.selectedCoupon,
+                            payment_id: data.payment_id || null
+                        })
+                    });
+                } catch (e) {
+                    console.warn('Error recording coupon usage:', e);
+                }
+            }
+
             showNotification('Pedido creado y pendiente de pago. Revisa las instrucciones para completar el pago.', 'info');
             // ocultar loading y cerrar modal(s)
             if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = originalBtnHtml; }
@@ -1562,6 +1659,24 @@ async function submitCheckout() {
             if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = originalBtnHtml; }
             hideBlockingOverlay();
             return;
+        }
+
+        // Pago exitoso: Record coupon usage
+        if (window.selectedCoupon) {
+            try {
+                const paymentIntentId = result.paymentIntent ? result.paymentIntent.id : null;
+                await fetch('/record-coupon-usage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: window.currentUserId || null,
+                        coupon_id: window.selectedCoupon,
+                        payment_id: paymentIntentId
+                    })
+                });
+            } catch (e) {
+                console.warn('Error recording coupon usage:', e);
+            }
         }
 
         // Pago exitoso: intentar extraer últimos 4 dígitos (si aplica)

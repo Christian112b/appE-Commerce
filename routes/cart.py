@@ -92,6 +92,10 @@ def addCart():
 
 @cart_bp.route('/getItemsCart', methods=['GET'])
 def getItemsCart():
+
+    print('Accessing getItemsCart endpoint')
+    print('Session data in getItemsCart:', dict(session))
+
     if not session.get('autenticado'):
         return jsonify({'ok': False, 'mensaje': 'Debes iniciar sesión para ver tu carrito.'}), 401
 

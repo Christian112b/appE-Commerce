@@ -5,6 +5,29 @@ from pytz import timezone
 
 admin_bp = Blueprint('admin', __name__)
 
+# Initialize coupon usage tracking table
+def init_coupon_usage_table():
+    db = DBConnection()
+    try:
+        schema = """
+            id_uso_cupon INT AUTO_INCREMENT PRIMARY KEY,
+            id_usuario INT NOT NULL,
+            id_descuento INT NOT NULL,
+            fecha_uso DATETIME DEFAULT CURRENT_TIMESTAMP,
+            id_pago INT,
+            FOREIGN KEY (id_usuario) REFERENCES costanzo.usuarios(id_usuario),
+            FOREIGN KEY (id_descuento) REFERENCES costanzo.descuentospromociones(id_descuento),
+            FOREIGN KEY (id_pago) REFERENCES costanzo.logpagos(id_pago),
+            UNIQUE KEY unique_coupon_usage (id_usuario, id_descuento)
+        """
+    except Exception as e:
+        print('Error creating coupon usage table:', str(e))
+    finally:
+        db.close()
+
+# Initialize table on import
+init_coupon_usage_table()
+
 @admin_bp.route('/adminPanel')
 def adminPanel():
     if session.get('admin') == 1:
@@ -300,6 +323,113 @@ def delete_usuario():
     except Exception as e:
         print('Error deleting usuario:', str(e))
         return jsonify({'success': False, 'message': 'Error al eliminar el usuario'}), 500
+    finally:
+        db.close()
+
+# ========================
+# Coupon Usage Tracking
+# ========================
+
+@admin_bp.route('/check-coupon-usage', methods=['POST'])
+def check_coupon_usage():
+    """Check if a user has already used a specific coupon"""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    coupon_id = data.get('coupon_id')
+
+    if not user_id or not coupon_id:
+        return jsonify({'success': False, 'message': 'ID de usuario y cupón requeridos'}), 400
+
+    db = DBConnection()
+    try:
+        # Check if user has used this coupon
+        usage = db.query("""
+            SELECT id_uso_cupon, fecha_uso
+            FROM costanzo.cupon_uso
+            WHERE id_usuario = %s AND id_descuento = %s
+        """, (user_id, coupon_id))
+
+        if usage:
+            return jsonify({
+                'success': True,
+                'used': True,
+                'usage_date': usage[0]['fecha_uso'].isoformat() if usage[0]['fecha_uso'] else None
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'used': False
+            })
+
+    except Exception as e:
+        print('Error checking coupon usage:', str(e))
+        return jsonify({'success': False, 'message': 'Error al verificar uso del cupón'}), 500
+    finally:
+        db.close()
+
+@admin_bp.route('/record-coupon-usage', methods=['POST'])
+def record_coupon_usage():
+    """Record that a user has used a coupon"""
+    data = request.get_json()
+    user_id = data.get('user_id')
+    coupon_id = data.get('coupon_id')
+    payment_id = data.get('payment_id')
+
+    if not user_id or not coupon_id:
+        return jsonify({'success': False, 'message': 'ID de usuario y cupón requeridos'}), 400
+
+    db = DBConnection()
+    try:
+        # Insert coupon usage record
+        db.execute("""
+            INSERT INTO costanzo.cupon_uso (id_usuario, id_descuento, id_pago, fecha_uso)
+            VALUES (%s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                fecha_uso = VALUES(fecha_uso),
+                id_pago = VALUES(id_pago)
+        """, (user_id, coupon_id, payment_id, datetime.now()))
+
+        return jsonify({'success': True, 'message': 'Uso del cupón registrado correctamente'})
+
+    except Exception as e:
+        print('Error recording coupon usage:', str(e))
+        return jsonify({'success': False, 'message': 'Error al registrar uso del cupón'}), 500
+    finally:
+        db.close()
+
+@admin_bp.route('/get-coupon-usage', methods=['GET'])
+def get_coupon_usage():
+    """Get coupon usage statistics for admin"""
+    if session.get('admin') != 1:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    db = DBConnection()
+    try:
+        # Get all coupon usage records with user and coupon details
+        usage_records = db.query("""
+            SELECT
+                cu.id_uso_cupon,
+                cu.fecha_uso,
+                u.nombre,
+                u.apellido,
+                u.correo,
+                dp.nombre as nombre_cupon,
+                dp.tipo,
+                dp.valor,
+                lp.monto as monto_pago,
+                lp.estado_pago
+            FROM costanzo.cupon_uso cu
+            JOIN costanzo.usuarios u ON cu.id_usuario = u.id_usuario
+            JOIN costanzo.descuentospromociones dp ON cu.id_descuento = dp.id_descuento
+            LEFT JOIN costanzo.logpagos lp ON cu.id_pago = lp.id_pago
+            ORDER BY cu.fecha_uso DESC
+        """)
+
+        return jsonify(usage_records)
+
+    except Exception as e:
+        print('Error fetching coupon usage:', str(e))
+        return jsonify([]), 500
     finally:
         db.close()
 

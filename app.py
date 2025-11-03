@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_mail import Mail
+from flask_cors import CORS
 
 from routes.main import main_bp
 from routes.auth import auth_bp
@@ -13,6 +14,14 @@ from routes.cart import cart_bp
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, 
+     origins=["https://backend-app-x7k2.zeabur.app"],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
+
 app.secret_key = os.getenv('SECRET_KEY')
 
 # Configuración de Flask-Mail

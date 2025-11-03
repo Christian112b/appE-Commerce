@@ -171,6 +171,10 @@ def validationLogin():
                 usuario['tipo_usuario'] == 1
             )
 
+            print("Login exitoso para el usuario:", session['user'])
+            print("JWT Token generado:", jwt_token)
+            print("Datos de sesión:", dict(session))
+
             return jsonify({
                 'status': 200,
                 'message': 'Login exitoso',
