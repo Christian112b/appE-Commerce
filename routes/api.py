@@ -39,7 +39,7 @@ def getProducts():
             'categorias': list(categoriaSet)
         }
 
-        print(jsonify(data))
+        print(productos)
 
         return jsonify(data)
 
