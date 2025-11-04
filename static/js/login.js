@@ -32,6 +32,10 @@ function submitForm() {
     .then(data => {
 
         if(data['status'] == 200){
+            // Store JWT token in localStorage
+            if (data.token) {
+                localStorage.setItem('jwt_token', data.token);
+            }
             showNotification('¡Bienvenido! Iniciando sesión...', 'success');
             setTimeout(() => {
                 window.location.href = '/';

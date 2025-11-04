@@ -1,6 +1,7 @@
 
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request
+from routes.auth import jwt_required
 
 api_bp = Blueprint('api', __name__)
 
@@ -244,15 +245,11 @@ def deleteContactMessage():
 
 # Agregar nueva dirección
 @api_bp.route('/api/address/add', methods=['POST'])
+@jwt_required
 def addAddress():
-  
+
     try:
-        from flask import session
-
-        if not session.get('autenticado'):
-            return jsonify({'ok': False, 'message': 'Usuario no autenticado'}), 401
-
-        id_usuario = session.get('id_user')
+        id_usuario = request.user_id
         data = request.get_json()
 
         alias = data.get('alias', '').strip()

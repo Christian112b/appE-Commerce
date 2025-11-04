@@ -15,9 +15,32 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Test  CORS configuration
-CORS(app, 
-     origins=["https://backend-app-x7k2.zeabur.app"],
+# CORS configuration - Allow local development only
+cors_origins = []
+
+# Add localhost origins for development
+if os.getenv('FLASK_ENV') != 'production':
+    cors_origins.extend([
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "http://localhost:8100",  # Ionic dev server
+        "http://127.0.0.1:8100",  # Ionic dev server
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+        "capacitor://localhost",  # For Capacitor apps
+        "ionic://localhost",      # For Ionic apps
+        "http://10.0.2.2:5000",   # Android emulator
+        "http://192.168.100.12:5000",  # Your specific local IP
+        "http://192.168.1.*:5000" # Local network
+    ])
+else:
+    # Production origins
+    cors_origins = ["https://backend-app-x7k2.zeabur.app"]
+
+CORS(app,
+     origins=cors_origins,
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -52,4 +75,9 @@ app.register_blueprint(cart_bp)
 
 
 if __name__ == '__main__':
+    # Development mode - allow all origins for local testing
+    if os.getenv('FLASK_ENV') != 'production':
+        print("Running in development mode - CORS enabled for local development")
+        print("Allowed origins:", cors_origins)
+
     app.run(host='0.0.0.0', port=5000, debug=True)

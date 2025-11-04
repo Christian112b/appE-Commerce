@@ -16,6 +16,10 @@ function submitRegisterForm() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 200) {
+            // Store JWT token in localStorage if provided
+            if (data.token) {
+                localStorage.setItem('jwt_token', data.token);
+            }
             alert("Usuario registrado correctamente.");
             window.location.href = '/login';
         } else {

@@ -44,9 +44,13 @@ function addToCart(product) {
     showNotification('Producto agregado al carrito', 'success');
 
     // Sync with server in background (don't wait for response)
+    const token = localStorage.getItem('jwt_token');
     fetch('/addCart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({
             id_producto: product.id,
         })
@@ -138,7 +142,17 @@ function getCartItemCount() {
 // Toggle del carrito
 // ========================
 function toggleCart() {
-    fetch('/check-session')
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        showNotification('Debes iniciar sesión para ver tu carrito.', 'warning');
+        return;
+    }
+
+    fetch('/check-session', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
         .then(res => res.json())
         .then(data => {
             if (!data.ok) {
@@ -184,9 +198,13 @@ function closeCart() {
 }
 
 function persistCartToBackend() {
+    const token = localStorage.getItem('jwt_token');
     return fetch('/saveCart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ items: cart })
     })
         .then(res => res.json())
@@ -224,7 +242,12 @@ function updateCartUI() {
         checkoutBtnEl.classList.add('disabled');
     }
 
-    fetch('/getItemsCart')
+    const token = localStorage.getItem('jwt_token');
+    fetch('/getItemsCart', {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    })
         .then(res => res.json())
         .then(data => {
             if (loader) loader.style.display = 'none';
@@ -979,14 +1002,24 @@ function validateAndApplyCoupon(code) {
     const loading = document.getElementById('couponLoadingModal');
     if (loading) loading.style.display = 'flex';
 
-    // Get current user ID first
-    return fetch('/check-session')
+    // Get current user ID from JWT token
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        throw new Error('Usuario no autenticado');
+    }
+    return fetch('/check-session', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
         .then(res => res.json())
         .then(sessionData => {
-            if (!sessionData.ok || !sessionData.user_id) {
+            if (!sessionData.ok) {
                 throw new Error('Usuario no autenticado');
             }
-            const userId = sessionData.user_id;
+            // Decode JWT to get user_id (or assume it's available)
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.user_id;
 
             // Now validate the coupon code first to get coupon_id
             return fetch('/validate-coupon', {
@@ -1171,14 +1204,15 @@ document.addEventListener('DOMContentLoaded', loadCoupons);
 
 // Get current user ID for coupon usage tracking
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('/check-session')
-        .then(res => res.json())
-        .then(data => {
-            if (data.ok && data.user_id) {
-                window.currentUserId = data.user_id;
-            }
-        })
-        .catch(err => console.warn('Could not get user session:', err));
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            window.currentUserId = payload.user_id;
+        } catch (e) {
+            console.warn('Could not decode JWT token:', e);
+        }
+    }
 });
 
 function showAddAddressForm() {
@@ -1348,7 +1382,12 @@ function getAddresses(force = false) {
         return;
     }
 
-    fetch('/getAddresses')
+    const token = localStorage.getItem('jwt_token');
+    fetch('/getAddresses', {
+        headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+        }
+    })
         .then(res => res.json())
         .then(data => {
             const addresses = data.direcciones || [];
@@ -1481,9 +1520,13 @@ function submitNewAddress() {
     }
 
     // Envío al backend (ruta correcta)
+    const token = localStorage.getItem('jwt_token');
     fetch('/api/address/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify(payload)
     })
         .then(res => res.json())
@@ -1587,9 +1630,13 @@ async function submitCheckout() {
     try {
         const payload = { amount: amountInCents, method_id: methodMap[paymentMethod] || null };
         if (window.selectedCoupon) payload.cupon_id = window.selectedCoupon;
+        const token = localStorage.getItem('jwt_token');
         const res = await fetch('/create-payment-intent', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
             body: JSON.stringify(payload)
         });
 

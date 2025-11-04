@@ -9,6 +9,7 @@ from pytz import timezone
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request, session
 from flask_mail import Message
+from routes.auth import jwt_required
 
 load_dotenv()
 stripe_api_key = os.getenv("STRIPE_PRIVATE_KEY")
@@ -19,14 +20,9 @@ stripe_api_key = stripe_api_key
 
 # Agregar producto en carrito
 @cart_bp.route('/addCart', methods=['POST'])
+@jwt_required
 def addCart():
-    if not session.get('autenticado'):
-        return jsonify({
-            'ok': False,
-            'mensaje': 'Debes iniciar sesión para agregar productos al carrito.'
-        }), 401
-
-    id_usuario = session.get('id_user')
+    id_usuario = request.user_id
     data = request.get_json()
     id_producto = data.get('id_producto')
 
@@ -91,15 +87,13 @@ def addCart():
 
 
 @cart_bp.route('/getItemsCart', methods=['GET'])
+@jwt_required
 def getItemsCart():
 
     print('Accessing getItemsCart endpoint')
-    print('Session data in getItemsCart:', dict(session))
+    print('JWT user_id:', request.user_id)
 
-    if not session.get('autenticado'):
-        return jsonify({'ok': False, 'mensaje': 'Debes iniciar sesión para ver tu carrito.'}), 401
-
-    id_usuario = session.get('id_user')
+    id_usuario = request.user_id
 
     db = DBConnection()
 
@@ -147,18 +141,16 @@ def getItemsCart():
     return jsonify({'ok': True, 'items': items})
 
 @cart_bp.route('/check-session', methods=['GET'])
+@jwt_required
 def verificar_sesion():
-    autenticado = session.get('autenticado', False)
-    return jsonify({'ok': autenticado})
+    return jsonify({'ok': True})
 
 @cart_bp.route('/saveCart', methods=['POST'])
+@jwt_required
 def saveCart():
-    if not session.get('autenticado'):
-        return jsonify({'ok': False, 'mensaje': 'No autenticado'}), 401
-
     data = request.get_json()
     items = data.get('items', [])
-    id_usuario = session.get('id_user')
+    id_usuario = request.user_id
 
     db = DBConnection()
 
@@ -184,11 +176,9 @@ def saveCart():
     return jsonify({'ok': True})
 
 @cart_bp.route('/getAddresses', methods=['GET'])
+@jwt_required
 def getAddresses():
-    if not session.get('autenticado'):
-        return jsonify({'direcciones': []})
-
-    id_usuario = session.get('id_user')
+    id_usuario = request.user_id
     db = DBConnection()
 
     direcciones = db.query("""
@@ -208,10 +198,11 @@ def getAddresses():
     return jsonify({'direcciones': direcciones})
 
 @cart_bp.route('/create-payment-intent', methods=['POST'])
+@jwt_required
 def create_payment():
     data = request.json
     db = DBConnection()
-    id_usuario = session.get('id_user') if session.get('autenticado') else None
+    id_usuario = request.user_id
     # Obtener IP de origen (X-Forwarded-For si está presente, sino remote_addr)
     xff = request.headers.get('X-Forwarded-For', '')
     ip_origen = xff.split(',')[0].strip() if xff else request.remote_addr

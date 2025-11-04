@@ -128,7 +128,9 @@ def validationLogin():
     try:
         # Get and validate form data
         user_email = request.form.get('email', '').strip()
+        print("Correo recibido:", user_email)
         password = request.form.get('password', '')
+        print("Contraseña recibida:", '*' * len(password))  # No imprimir la contraseña real
 
         # Validate email format
         normalized_email, email_error = validate_email(user_email)
