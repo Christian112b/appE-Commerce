@@ -27,7 +27,12 @@ def getProducts():
 
         db.close()
 
+        
+        newList = []
+
         for p in productos:
+            newList.append(p['nombre'])
+            
             p['precio_unitario'] = float(p['precio_unitario'])
         
         categoriaSet = set()
@@ -39,9 +44,7 @@ def getProducts():
             'categorias': list(categoriaSet)
         }
 
-        test = productos[0]
-        
-        print(test['id_producto'], test['nombre'])
+        print(newList)
 
         return jsonify(data)
 
