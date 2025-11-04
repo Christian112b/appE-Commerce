@@ -124,12 +124,18 @@ def validationLogin():
 
     print("Iniciando proceso de login")
 
-
     try:
-        # Get and validate form data
-        user_email = request.form.get('email', '').strip()
+        # Support both form data and JSON
+        if request.is_json:
+            data = request.get_json()
+            user_email = data.get('email', '').strip()
+            password = data.get('password', '')
+        else:
+            # Get and validate form data
+            user_email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
+
         print("Correo recibido:", user_email)
-        password = request.form.get('password', '')
         print("Contraseña recibida:", '*' * len(password))  # No imprimir la contraseña real
 
         # Validate email format
@@ -215,20 +221,22 @@ def verify_token():
         })
     else:
         return jsonify({'valid': False, 'message': 'Token inválido o expirado'}), 401
-
 @auth_bp.route('/registerUser', methods=['POST'])
 def validationRegister():
     try:
-
-
-
-        # Get and sanitize form data
-        name = sanitize_input(request.form.get('name', ''), 100)
-        email_raw = request.form.get('email', '').strip()
-        phone = sanitize_input(request.form.get('phone', ''), 20)
-        password = request.form.get('password', '')
-
-
+        # Support both form data and JSON
+        if request.is_json:
+            data = request.get_json()
+            name = data.get('name', '').strip()
+            email_raw = data.get('email', '').strip()
+            phone = data.get('phone', '').strip()
+            password = data.get('password', '')
+        else:
+            # Get and sanitize form data
+            name = sanitize_input(request.form.get('name', ''), 100)
+            email_raw = request.form.get('email', '').strip()
+            phone = sanitize_input(request.form.get('phone', ''), 20)
+            password = request.form.get('password', '')
 
         # Validate required fields
         if not name:
@@ -243,15 +251,15 @@ def validationRegister():
             return jsonify({'status': 400, 'message': email_error}), 400
 
         # Validate password requirements
-            password_valid, password_error = validate_password(password)
-            if not password_valid:
-                return jsonify({'status': 400, 'message': password_error}), 400
-            print("Iniciando proceso de registro")
+        password_valid, password_error = validate_password(password)
+        if not password_valid:
+            return jsonify({'status': 400, 'message': password_error}), 400
+
+        print("Iniciando proceso de registro")
 
         # Additional phone validation (basic)
         if not re.match(r'^\+?\d{10,15}$', phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')):
             return jsonify({'status': 400, 'message': 'Formato de teléfono inválido'}), 400
-
 
         db = DBConnection()
 
