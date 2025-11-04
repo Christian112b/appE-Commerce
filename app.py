@@ -64,20 +64,3 @@ if __name__ == '__main__':
         print("Allowed origins:", cors_origins)
 
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-
-# Registrar Blueprints
-app.register_blueprint(main_bp)
-app.register_blueprint(auth_bp)
-app.register_blueprint(admin_bp)
-app.register_blueprint(api_bp)
-app.register_blueprint(cart_bp)
-
-
-if __name__ == '__main__':
-    # Development mode - allow all origins for local testing
-    if os.getenv('FLASK_ENV') != 'production':
-        print("Running in development mode - CORS enabled for local development")
-        print("Allowed origins:", cors_origins)
-
-    app.run(host='0.0.0.0', port=5000, debug=True)
