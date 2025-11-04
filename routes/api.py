@@ -39,7 +39,9 @@ def getProducts():
             'categorias': list(categoriaSet)
         }
 
-        print(productos)
+        test = productos[0]
+        
+        print(test['id_producto'], test['nombre'])
 
         return jsonify(data)
 
