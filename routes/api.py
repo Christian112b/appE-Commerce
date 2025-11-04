@@ -9,6 +9,8 @@ api_bp = Blueprint('api', __name__)
 @api_bp.route('/getProducts', methods=['GET'])
 def getProducts():
 
+    print("Proceso de Get Products")
+
     try:
         db = DBConnection()
 
@@ -26,7 +28,12 @@ def getProducts():
 
         db.close()
 
+        
+        newList = []
+
         for p in productos:
+            newList.append(p['nombre'])
+            
             p['precio_unitario'] = float(p['precio_unitario'])
         
         categoriaSet = set()
@@ -37,6 +44,8 @@ def getProducts():
             'productos': productos,
             'categorias': list(categoriaSet)
         }
+
+        print(newList)
 
         return jsonify(data)
 
