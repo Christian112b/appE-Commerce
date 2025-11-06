@@ -293,3 +293,59 @@ def addAddress():
     except Exception as e:
         print("Error al agregar dirección:", e)
         return jsonify({'ok': False, 'message': 'Error interno del servidor'}), 500
+
+# Obtener comentarios
+@api_bp.route('/getComments', methods=['GET'])
+def getComments():
+    try:
+        db = DBConnection()
+        comments = db.query("""
+            SELECT id_comentario, nombre, comentario,
+                   DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i:%s') as fecha_creacion
+            FROM costanzo.comentarios
+            WHERE activo = 1
+            ORDER BY fecha_creacion DESC
+        """)
+        db.close()
+
+        return jsonify({'success': True, 'comentarios': comments})
+
+    except Exception as e:
+        print("Error al obtener comentarios:", e)
+        return jsonify({'success': False, 'message': 'Error al obtener comentarios'})
+
+# Agregar comentario
+@api_bp.route('/addComment', methods=['POST'])
+def addComment():
+    try:
+        data = request.get_json()
+        
+        nombre = data.get('nombre', '').strip()
+        comentario = data.get('comentario', '').strip()
+
+        # Validaciones
+        if not nombre:
+            return jsonify({'success': False, 'message': 'El nombre es requerido'}), 400
+        
+        if not comentario:
+            return jsonify({'success': False, 'message': 'El comentario es requerido'}), 400
+
+        if len(nombre) > 100:
+            return jsonify({'success': False, 'message': 'El nombre es muy largo (máximo 100 caracteres)'}), 400
+
+        if len(comentario) > 1000:
+            return jsonify({'success': False, 'message': 'El comentario es muy largo (máximo 1000 caracteres)'}), 400
+
+        db = DBConnection()
+        db.execute("""
+            INSERT INTO costanzo.comentarios (nombre, comentario, fecha_creacion, activo)
+            VALUES (%s, %s, NOW(), 1)
+        """, (nombre, comentario))
+        
+        db.close()
+
+        return jsonify({'success': True, 'message': 'Comentario agregado correctamente'})
+
+    except Exception as e:
+        print("Error al agregar comentario:", e)
+        return jsonify({'success': False, 'message': 'Error al agregar comentario'})
