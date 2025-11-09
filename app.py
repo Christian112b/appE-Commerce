@@ -15,15 +15,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# CORS configuration
-if os.getenv('FLASK_ENV') == 'production':
-    cors_origins = ["https://backend-app-x7k2.zeabur.app"]
-else:
-    # Allow all origins in development for easier testing
-    cors_origins = ["*"]
-
 CORS(app,
-     origins=cors_origins,
+     origins=["*"],
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
