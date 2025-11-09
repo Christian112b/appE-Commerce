@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from pytz import timezone
 from controllers.dbConnection import DBConnection
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request
 from flask_mail import Message
 from routes.auth import jwt_required
 

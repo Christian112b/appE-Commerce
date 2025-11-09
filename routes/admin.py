@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, session, redirect, url_for, jsonify, request
+from flask import Blueprint, render_template, redirect, url_for, jsonify, request
 from controllers.dbConnection import DBConnection
 from datetime import datetime
 from pytz import timezone
+from routes.auth import jwt_required
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -29,14 +30,16 @@ def init_coupon_usage_table():
 init_coupon_usage_table()
 
 @admin_bp.route('/adminPanel')
+@jwt_required
 def adminPanel():
-    if session.get('admin') == 1:
+    if request.is_admin:
         return render_template('admin/dashboard.html')
     return redirect(url_for('main.index'))
 
 @admin_bp.route('/get-discounts', methods=['GET'])
+@jwt_required
 def get_coupons():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -50,8 +53,9 @@ def get_coupons():
         db.close()
 
 @admin_bp.route('/save-coupon', methods=['POST'])
+@jwt_required
 def save_coupon():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -95,8 +99,9 @@ def save_coupon():
         db.close()
 
 @admin_bp.route('/delete-coupon', methods=['POST'])
+@jwt_required
 def delete_coupon():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -117,8 +122,9 @@ def delete_coupon():
         db.close()
 
 @admin_bp.route('/get-pagos', methods=['GET'])
+@jwt_required
 def get_pagos():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -132,8 +138,9 @@ def get_pagos():
         db.close()
 
 @admin_bp.route('/get-inventario', methods=['GET'])
+@jwt_required
 def get_inventario():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -153,8 +160,9 @@ def get_inventario():
         db.close()
 
 @admin_bp.route('/get-productos-simple', methods=['GET'])
+@jwt_required
 def get_productos_simple():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -168,8 +176,9 @@ def get_productos_simple():
         db.close()
 
 @admin_bp.route('/save-inventario', methods=['POST'])
+@jwt_required
 def save_inventario():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -209,8 +218,9 @@ def save_inventario():
         db.close()
 
 @admin_bp.route('/delete-inventario', methods=['POST'])
+@jwt_required
 def delete_inventario():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -230,8 +240,9 @@ def delete_inventario():
         db.close()
 
 @admin_bp.route('/get-usuarios', methods=['GET'])
+@jwt_required
 def get_usuarios():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -245,8 +256,9 @@ def get_usuarios():
         db.close()
 
 @admin_bp.route('/save-usuario', methods=['POST'])
+@jwt_required
 def save_usuario():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -302,8 +314,9 @@ def save_usuario():
         db.close()
 
 @admin_bp.route('/delete-usuario', methods=['POST'])
+@jwt_required
 def delete_usuario():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'success': False, 'message': 'No autorizado'}), 403
 
     data = request.get_json()
@@ -313,7 +326,7 @@ def delete_usuario():
         return jsonify({'success': False, 'message': 'ID de usuario requerido'}), 400
 
     # Prevent deleting self
-    if usuario_id == session.get('id_user'):
+    if usuario_id == request.user_id:
         return jsonify({'success': False, 'message': 'No puedes eliminar tu propia cuenta'}), 400
 
     db = DBConnection()
@@ -398,9 +411,10 @@ def record_coupon_usage():
         db.close()
 
 @admin_bp.route('/get-coupon-usage', methods=['GET'])
+@jwt_required
 def get_coupon_usage():
     """Get coupon usage statistics for admin"""
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -434,8 +448,9 @@ def get_coupon_usage():
         db.close()
 
 @admin_bp.route('/get-ventas', methods=['GET'])
+@jwt_required
 def get_ventas():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     # Get filter parameters
@@ -506,8 +521,9 @@ def get_ventas():
         db.close()
 
 @admin_bp.route('/get-venta-detalles/<int:venta_id>', methods=['GET'])
+@jwt_required
 def get_venta_detalles(venta_id):
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -565,8 +581,9 @@ def get_venta_detalles(venta_id):
         db.close()
 
 @admin_bp.route('/get-dashboard-data', methods=['GET'])
+@jwt_required
 def get_dashboard_data():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
@@ -640,8 +657,9 @@ def get_dashboard_data():
         db.close()
 
 @admin_bp.route('/get-reportes', methods=['GET'])
+@jwt_required
 def get_reportes():
-    if session.get('admin') != 1:
+    if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     periodo = request.args.get('periodo', 'mes')

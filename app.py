@@ -55,6 +55,5 @@ if __name__ == '__main__':
     # Development mode - allow all origins for local testing
     if os.getenv('FLASK_ENV') != 'production':
         print("Running in development mode - CORS enabled for local development")
-        print("Allowed origins:", cors_origins)
 
     app.run(host='0.0.0.0', port=5000, debug=True)

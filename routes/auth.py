@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from controllers.dbConnection import DBConnection
-from flask import Blueprint, request, session, jsonify, redirect, url_for, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -165,28 +165,26 @@ def validationLogin():
 
         # Verificar contraseña con bcrypt
         if bcrypt.checkpw(password.encode('utf-8'), usuario['contraseña_hash'].encode('utf-8')):
-            # Usar sesiones tradicionales de Flask
-            session['user'] = f"{usuario['nombre']} {usuario['apellido']}"
-            session['autenticado'] = True
-            session['correo'] = usuario['correo']
-            session['id_user'] = usuario['id_usuario']
-            session['admin'] = 1 if usuario['tipo_usuario'] == 1 else 0
-
-            # Generate JWT token for API access
+            # Generate JWT token for API access (no Flask sessions for mobile compatibility)
             jwt_token = generate_jwt_token(
                 usuario['id_usuario'],
                 usuario['correo'],
                 usuario['tipo_usuario'] == 1
             )
 
-            print("Login exitoso para el usuario:", session['user'])
+            print("Login exitoso para el usuario:", f"{usuario['nombre']} {usuario['apellido']}")
             print("JWT Token generado:", jwt_token)
-            print("Datos de sesión:", dict(session))
 
             return jsonify({
                 'status': 200,
                 'message': 'Login exitoso',
-                'token': jwt_token
+                'token': jwt_token,
+                'user': {
+                    'id': usuario['id_usuario'],
+                    'name': f"{usuario['nombre']} {usuario['apellido']}",
+                    'email': usuario['correo'],
+                    'is_admin': usuario['tipo_usuario'] == 1
+                }
             })
         else:
             return jsonify({'status': 403, 'message': 'Contraseña incorrecta'}), 403
