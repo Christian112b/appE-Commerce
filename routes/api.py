@@ -16,20 +16,12 @@ def getProducts():
         # En lugar de enviar imagen_base64 completo, podrías tener una versión comprimida
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo, 
-                   CONCAT('data:image/jpeg;base64,', 
-                          CASE 
-                              WHEN LENGTH(p.imagen_base64) > 10000 
-                              THEN compress_image_function(p.imagen_base64)
-                              ELSE p.imagen_base64 
-                          END
-                   ) as imagen_base64,
-                   COALESCE(i.cantidad_actual, 0) as stock
+                    CONCAT('data:image/png;base64,', p.imagen_base64) as imagen_base64,
+                    COALESCE(i.cantidad_actual, 0) as stock
             FROM costanzo.productos p
             LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
             WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
         """)
-
-
 
         categorias = db.query("""
             SELECT categoria FROM costanzo.productos
