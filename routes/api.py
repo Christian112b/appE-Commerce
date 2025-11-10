@@ -14,12 +14,14 @@ def getProducts():
         db = DBConnection()
 
         productos = db.query("""
-            SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo, p.imagen_base64,
-                   COALESCE(i.cantidad_actual, 0) as stock
+            SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo, 
+               CONCAT('data:image/png;base64,', p.imagen_base64) as imagen_base64,
+               COALESCE(i.cantidad_actual, 0) as stock
             FROM costanzo.productos p
-            LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
-            WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
+                LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
+                WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
         """)
+
 
         categorias = db.query("""
             SELECT categoria FROM costanzo.productos
