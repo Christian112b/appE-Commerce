@@ -5,7 +5,7 @@ from routes.auth import jwt_required
 
 api_bp = Blueprint('api', __name__)
 
-def convert_to_webp(image_data):
+def compress_image_function(image_data):
     """Convierte imagen a WebP para mejor compresión"""
     try:
         image_bytes = base64.b64decode(image_data)
