@@ -5,6 +5,19 @@ from routes.auth import jwt_required
 
 api_bp = Blueprint('api', __name__)
 
+def convert_to_webp(image_data):
+    """Convierte imagen a WebP para mejor compresión"""
+    try:
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+        
+        output = io.BytesIO()
+        image.save(output, format='WebP', quality=75)
+        
+        return base64.b64encode(output.getvalue()).decode()
+    except:
+        return image_data
+
 #Obtener productos de DB
 @api_bp.route('/getProducts', methods=['GET'])
 def getProducts():
@@ -13,14 +26,22 @@ def getProducts():
     try:
         db = DBConnection()
 
+        # En lugar de enviar imagen_base64 completo, podrías tener una versión comprimida
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo, 
-               CONCAT('data:image/png;base64,', p.imagen_base64) as imagen_base64,
-               COALESCE(i.cantidad_actual, 0) as stock
+                   CONCAT('data:image/jpeg;base64,', 
+                          CASE 
+                              WHEN LENGTH(p.imagen_base64) > 10000 
+                              THEN compress_image_function(p.imagen_base64)
+                              ELSE p.imagen_base64 
+                          END
+                   ) as imagen_base64,
+                   COALESCE(i.cantidad_actual, 0) as stock
             FROM costanzo.productos p
-                LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
-                WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
+            LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
+            WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
         """)
+
 
 
         categorias = db.query("""
