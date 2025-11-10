@@ -122,7 +122,6 @@ def sanitize_input(text, max_length=255):
 @auth_bp.route('/validationLogin', methods=['POST'])
 def validationLogin():
 
-    print("Iniciando proceso de login")
 
     try:
         # Support both form data and JSON
@@ -134,9 +133,6 @@ def validationLogin():
             # Get and validate form data
             user_email = request.form.get('email', '').strip()
             password = request.form.get('password', '')
-
-        print("Correo recibido:", user_email)
-        print("Contraseña recibida:", '*' * len(password))  # No imprimir la contraseña real
 
         # Validate email format
         normalized_email, email_error = validate_email(user_email)
@@ -172,8 +168,6 @@ def validationLogin():
                 usuario['tipo_usuario'] == 1
             )
 
-            print("Login exitoso para el usuario:", f"{usuario['nombre']} {usuario['apellido']}")
-            print("JWT Token generado:", jwt_token)
 
             return jsonify({
                 'status': 200,
@@ -253,7 +247,6 @@ def validationRegister():
         if not password_valid:
             return jsonify({'status': 400, 'message': password_error}), 400
 
-        print("Iniciando proceso de registro")
 
         # Additional phone validation (basic)
         if not re.match(r'^\+?\d{10,15}$', phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')):

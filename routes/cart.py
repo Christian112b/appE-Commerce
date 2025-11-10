@@ -90,8 +90,6 @@ def addCart():
 @jwt_required
 def getItemsCart():
 
-    print('Accessing getItemsCart endpoint')
-    print('JWT user_id:', request.user_id)
 
     id_usuario = request.user_id
 
@@ -178,6 +176,8 @@ def saveCart():
 @cart_bp.route('/getAddresses', methods=['GET'])
 @jwt_required
 def getAddresses():
+
+
     id_usuario = request.user_id
     db = DBConnection()
 
@@ -195,6 +195,7 @@ def getAddresses():
         """, (id_usuario,))
 
     db.close()
+
     return jsonify({'direcciones': direcciones})
 
 @cart_bp.route('/create-payment-intent', methods=['POST'])
