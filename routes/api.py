@@ -5,19 +5,6 @@ from routes.auth import jwt_required
 
 api_bp = Blueprint('api', __name__)
 
-def compress_image_function(image_data):
-    """Convierte imagen a WebP para mejor compresión"""
-    try:
-        image_bytes = base64.b64decode(image_data)
-        image = Image.open(io.BytesIO(image_bytes))
-        
-        output = io.BytesIO()
-        image.save(output, format='WebP', quality=75)
-        
-        return base64.b64encode(output.getvalue()).decode()
-    except:
-        return image_data
-
 #Obtener productos de DB
 @api_bp.route('/getProducts', methods=['GET'])
 def getProducts():
@@ -75,6 +62,19 @@ def getProducts():
         print("Error al obtener productos:", e)
         return jsonify([])
     
+
+def compress_image_function(image_data):
+    """Convierte imagen a WebP para mejor compresión"""
+    try:
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+        
+        output = io.BytesIO()
+        image.save(output, format='WebP', quality=75)
+        
+        return base64.b64encode(output.getvalue()).decode()
+    except:
+        return image_data
 
 # Editar producto en DB
 @api_bp.route('/updateProduct', methods=['POST'])
