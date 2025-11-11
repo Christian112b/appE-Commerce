@@ -1588,7 +1588,9 @@ function setupStripeCardForm() {
     if (cardFormContainer) cardFormContainer.style.display = 'block';
 
     try {
-        stripe = Stripe('pk_test_51SJ5IND5jXc8vsskASQHUOlNCi1LBwPW7IuA9j4zf2LkgrTEdkhEPLsGAoApMhmefbN2NOwavsEzKv0jTqJzivOy00CS00jL4x'); // public key
+        stripe = Stripe('pk_test_51SJ5IND5jXc8vsskASQHUOlNCi1LBwPW7IuA9j4zf2LkgrTEdkhEPLsGAoApMhmefbN2NOwavsEzKv0jTqJzivOy00CS00jL4x', {
+            betas: ['no_analytics_beta_1']
+        }); // public key with no analytics
         const elements = stripe.elements();
         cardElement = elements.create('card');
         cardElement.mount('#card-element');
