@@ -109,10 +109,10 @@ def getItemsCart():
 
     # Obtener los productos del carrito con info visual
     raw_items = db.query("""
-        SELECT 
+        SELECT
             ci.id_producto AS id,
             p.nombre AS name,
-            p.imagen_base64 AS image,
+            '/static/assets/productos.jpg' AS image,
             ci.cantidad,
             ci.precio_unitario AS price
         FROM costanzo.carrito_items ci
@@ -122,16 +122,13 @@ def getItemsCart():
 
     db.close()
 
-    # Agregar encabezado base64 a cada imagen
+    # Usar imagen por defecto
     items = []
     for item in raw_items:
-        imagen_base64 = item['image']
-        imagen_final = f"data:image/png;base64,{imagen_base64}" if imagen_base64 else None
-
         items.append({
             'id': item['id'],
             'name': item['name'],
-            'image': imagen_final,
+            'image': item['image'],
             'price': item['price'],
             'quantity': item['cantidad']
         })
