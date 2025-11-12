@@ -31,16 +31,12 @@
                         <i class="fas fa-user"></i>
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
-                        {% if session.get('autenticado') %}
-                        {% if session.get('admin') == 1 %}
+
                         <a href="{{ url_for('admin.adminPanel') }}">Panel de administrador</a>
-                        {% endif %}
                         <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-                        {% else %}
                         <a href="{{ url_for('main.login') }}">Iniciar sesión</a>
                         <a href="{{ url_for('main.register') }}">Registrarse</a>
 
-                        {% endif %}
                     </div>
                 </div>
 
