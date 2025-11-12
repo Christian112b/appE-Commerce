@@ -314,7 +314,7 @@ function renderProductTable(products) {
             <td>${prod.id_producto}</td>
             <td>
                 <div class="image-container">
-                    <img src="${prod.image_url}" alt="${prod.nombre}" class="product-img" onerror="showIcon(this)">
+                    <img src="/image/${prod.id_producto}" alt="${prod.nombre}" class="product-img" onerror="showIcon(this)">
                     <i class="fas fa-image product-icon" style="display:none; font-size: 2rem; color: #ccc;"></i>
                 </div>
             </td>
@@ -371,8 +371,8 @@ function openProductForm(product = null) {
 
     const preview = document.getElementById('productPreview');
 
-    if (product?.image_url) {
-        preview.src = product.image_url;
+    if (product?.id_producto) {
+        preview.src = `/image/${product.id_producto}`;
         preview.style.display = 'block';
     } else {
         preview.src = '';

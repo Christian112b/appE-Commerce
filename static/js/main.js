@@ -190,7 +190,7 @@ function loadBestSellers() {
                 const card = document.createElement('div');
                 card.className = 'product-card';
 
-                const imageSrc = product.image || '/static/assets/default-product.png';
+                const imageSrc = `/image/${product.id}` || '/static/assets/default-product.png';
 
                 card.innerHTML = `
                     <div class="product-image">

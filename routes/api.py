@@ -15,7 +15,6 @@ def getProducts():
 
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo,
-                    CONCAT('/image/', p.id_producto) as image_url,
                     COALESCE(i.cantidad_actual, 0) as stock
             FROM costanzo.productos p
             LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
@@ -94,31 +93,36 @@ def updateProduct():
         db = DBConnection()
 
         # Update product
-        if imagen_data is not None:
-            product_query = """
-                UPDATE costanzo.productos
-                SET nombre = %s,
-                    descripcion = %s,
-                    categoria = %s,
-                    precio_unitario = %s,
-                    activo = %s,
-                    imagen = %s
-                WHERE id_producto = %s
-            """
-            product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_data, id_producto]
-        else:
-            product_query = """
-                UPDATE costanzo.productos
-                SET nombre = %s,
-                    descripcion = %s,
-                    categoria = %s,
-                    precio_unitario = %s,
-                    activo = %s
-                WHERE id_producto = %s
-            """
-            product_params = [nombre, descripcion, categoria, precio_unitario, activo, id_producto]
+        product_query = """
+            UPDATE costanzo.productos
+            SET nombre = %s,
+                descripcion = %s,
+                categoria = %s,
+                precio_unitario = %s,
+                activo = %s
+            WHERE id_producto = %s
+        """
+        product_params = [nombre, descripcion, categoria, precio_unitario, activo, id_producto]
 
         db.execute(product_query, product_params)
+
+        # Update or insert image
+        if imagen_data is not None:
+            # Check if image exists
+            image_check = db.query("SELECT id FROM costanzo.images WHERE product_id = %s", (id_producto,))
+            if image_check:
+                # Update existing image
+                db.execute("""
+                    UPDATE costanzo.images
+                    SET image = %s
+                    WHERE product_id = %s
+                """, (imagen_data, id_producto))
+            else:
+                # Insert new image
+                db.execute("""
+                    INSERT INTO costanzo.images (product_id, image)
+                    VALUES (%s, %s)
+                """, (id_producto, imagen_data))
 
         # Update or insert inventory
         inventory_check = db.query("SELECT id_inventario FROM costanzo.inventario WHERE id_producto = %s", (id_producto,))
@@ -170,13 +174,20 @@ def insertProduct():
         # Insert product
         product_query = """
             INSERT INTO costanzo.productos
-            (nombre, descripcion, categoria, precio_unitario, activo, imagen)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (nombre, descripcion, categoria, precio_unitario, activo)
+            VALUES (%s, %s, %s, %s, %s)
         """
-        product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_data]
+        product_params = [nombre, descripcion, categoria, precio_unitario, activo]
 
         db.execute(product_query, product_params)
         product_id = db.cursor.lastrowid
+
+        # Insert image if provided
+        if imagen_data:
+            db.execute("""
+                INSERT INTO costanzo.images (product_id, image)
+                VALUES (%s, %s)
+            """, (product_id, imagen_data))
 
         # Insert inventory record
         if cantidad_actual > 0 or cantidad_minima > 0:
@@ -315,16 +326,16 @@ def addAddress():
         print("Error al agregar dirección:", e)
         return jsonify({'ok': False, 'message': 'Error interno del servidor'}), 500
 
-# Servir imagen desde BLOB
+# Servir imagen desde tabla images (BLOB)
 @api_bp.route('/image/<int:product_id>')
 def get_image(product_id):
     try:
         db = DBConnection()
-        image_data = db.query("SELECT imagen FROM costanzo.productos WHERE id_producto = %s", (product_id,))
+        image_data = db.query("SELECT image FROM costanzo.images WHERE product_id = %s", (product_id,))
         db.close()
 
-        if image_data and image_data[0]['imagen']:
-            return Response(image_data[0]['imagen'], mimetype='image/jpeg')
+        if image_data and image_data[0]['image']:
+            return Response(image_data[0]['image'], mimetype='image/jpeg')
         else:
             return '', 404
     except Exception as e:
