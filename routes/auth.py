@@ -41,10 +41,15 @@ def jwt_required(f):
     """Decorator to protect routes with JWT authentication"""
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization', '')
-        if not auth_header.startswith('Bearer '):
+        token = None
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        else:
+            token = request.cookies.get('jwt_token')
+
+        if not token:
             return jsonify({'error': 'Token de autorización requerido'}), 401
 
-        token = auth_header.split(' ')[1]
         payload = verify_jwt_token(token)
         if not payload:
             return jsonify({'error': 'Token inválido o expirado'}), 401
@@ -187,10 +192,65 @@ def validationLogin():
         print("Error en login:", e)
         return jsonify({'status': 500, 'message': 'Error interno del servidor'}), 500
 
+@auth_bp.route('/web-login', methods=['POST'])
+def web_login():
+    try:
+        # Get and validate form data
+        user_email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+
+        # Validate email format
+        normalized_email, email_error = validate_email(user_email)
+        if email_error:
+            return redirect(url_for('main.login'))
+
+        # Validate password presence
+        if not password:
+            return redirect(url_for('main.login'))
+
+        db = DBConnection()
+
+        # Buscar usuario por correo normalizado
+        result = db.query("""
+            SELECT id_usuario, nombre, apellido, correo, contraseña_hash, tipo_usuario, telefono
+            FROM usuarios
+            WHERE LOWER(correo) = %s
+        """, (normalized_email,))
+
+        db.close()
+
+        if not result:
+            return redirect(url_for('main.login'))
+
+        usuario = result[0]
+
+        # Verificar contraseña con bcrypt
+        if bcrypt.checkpw(password.encode('utf-8'), usuario['contraseña_hash'].encode('utf-8')):
+            # Generate JWT token
+            jwt_token = generate_jwt_token(
+                usuario['id_usuario'],
+                usuario['correo'],
+                usuario['tipo_usuario'] == 1
+            )
+
+            # Set cookie and redirect
+            from flask import make_response
+            resp = make_response(redirect(url_for('admin.adminPanel') if usuario['tipo_usuario'] == 1 else url_for('main.index')))
+            resp.set_cookie('jwt_token', jwt_token, httponly=False, secure=False, samesite='Lax', max_age=24*60*60)  # 24 hours
+            return resp
+        else:
+            return redirect(url_for('main.login'))
+
+    except Exception as e:
+        print("Error en web login:", e)
+        return redirect(url_for('main.login'))
+
 @auth_bp.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('main.index'))
+    from flask import make_response
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('jwt_token', '', expires=0)
+    return resp
 
 @auth_bp.route('/verify-token', methods=['POST'])
 def verify_token():

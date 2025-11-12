@@ -22,14 +22,14 @@
                 <h1>Iniciar Sesión</h1>
             </div>
             
-            <form class="login-form" id="loginForm">
+            <form class="login-form" id="loginForm" action="{{ url_for('auth.web_login') }}" method="POST">
                 <div class="form-group">
                     <label for="username">
                         <i class="fas fa-user"></i> Correo
                     </label>
                     <input type="text" id="email" name="email" placeholder="Ingresa tu usuario" required autocomplete="email">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">
                         <i class="fas fa-lock"></i> Contraseña
@@ -41,17 +41,17 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="form-options">
                     <label class="checkbox-label">
                         <input type="checkbox" name="remember">
                         <span>Recordar sesión</span>
                     </label>
                     <!-- TODO: Crear esta ruta y hacerla funcionar  -->
-                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a> 
+                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
                 </div>
-                
-                <button type="button" class="btn btn-primary btn-block" onclick="submitForm()">
+
+                <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </button>
                 

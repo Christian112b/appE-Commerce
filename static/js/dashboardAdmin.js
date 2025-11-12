@@ -1,3 +1,10 @@
+// Override fetch to include credentials for JWT authentication
+const originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+    options.credentials = 'include';
+    return originalFetch(url, options);
+};
+
 // Load products immediately when page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Check if we're on the products section initially
@@ -305,6 +312,7 @@ function renderProductTable(products) {
 
         row.innerHTML = `
             <td>${prod.id_producto}</td>
+            <td><img src="${prod.image_url}" alt="${prod.nombre}" class="product-img" onerror="this.src='/static/assets/productos.jpg'"></td>
             <td>${prod.nombre}</td>
             <td>${prod.descripcion}</td>
             <td>${prod.categoria ?? 'Sin categoría'}</td>
@@ -358,8 +366,8 @@ function openProductForm(product = null) {
 
     const preview = document.getElementById('productPreview');
 
-    if (product?.imagen_base64) {
-        preview.src = `data:image/jpeg;base64,${product.imagen_base64}`;
+    if (product?.image_url) {
+        preview.src = product.image_url;
         preview.style.display = 'block';
     } else {
         preview.src = '';
@@ -380,53 +388,40 @@ function updateProduct() {
     const imagenInput = document.getElementById('productImage');
     const file = imagenInput.files[0];
 
-    const producto = {
-        id_producto: id,
-        nombre,
-        categoria,
-        descripcion,
-        precio_unitario: precio,
-        stock,
-        activo
-    };
-
+    const formData = new FormData();
+    formData.append('id_producto', id);
+    formData.append('nombre', nombre);
+    formData.append('categoria', categoria);
+    formData.append('descripcion', descripcion);
+    formData.append('precio_unitario', precio);
+    formData.append('stock', stock);
+    formData.append('activo', activo);
     if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            producto.imagen_base64 = reader.result.split(',')[1];
-            sendUpdate(producto);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        sendUpdate(producto);
+        formData.append('imagen', file);
     }
 
-    function sendUpdate(data) {
-        fetch('/updateProduct', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(async res => {
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
-                }
-                return res.json();
-            })
-            .then(response => {
-                if (!response.success) {
-                    throw new Error(response.message || 'Error desconocido');
-                }
-                loadProducts()
-                bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-            })
-            .catch(err => {
-                console.error('Error al actualizar producto:', err.message || err);
-                alert('Hubo un problema al actualizar el producto.');
-            });
-    }
-
+    fetch('/updateProduct', {
+        method: 'POST',
+        body: formData
+    })
+    .then(async res => {
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text}`);
+        }
+        return res.json();
+    })
+    .then(response => {
+        if (!response.success) {
+            throw new Error(response.message || 'Error desconocido');
+        }
+        loadProducts();
+        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+    })
+    .catch(err => {
+        console.error('Error al actualizar producto:', err.message || err);
+        alert('Hubo un problema al actualizar el producto.');
+    });
 }
 
 
@@ -443,44 +438,32 @@ function insertProduct() {
     const imagenInput = document.getElementById('productImage');
     const file = imagenInput.files[0];
 
-    const producto = {
-        nombre,
-        categoria,
-        descripcion,
-        precio_unitario: precio,
-        stock,
-        activo
-    };
-
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('categoria', categoria);
+    formData.append('descripcion', descripcion);
+    formData.append('precio_unitario', precio);
+    formData.append('stock', stock);
+    formData.append('activo', activo);
     if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            producto.imagen_base64 = reader.result.split(',')[1];
-            sendInsert(producto);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        sendInsert(producto);
+        formData.append('imagen', file);
     }
 
-    function sendInsert(data) {
-        fetch('/insertProduct', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(async res => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const response = await res.json();
-            if (!response.success) throw new Error(response.message);
-            loadProducts()
-            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-        })
-        .catch(err => {
-            console.error('Error al insertar producto:', err.message || err);
-            alert('Hubo un problema al agregar el producto.');
-        });
-    }
+    fetch('/insertProduct', {
+        method: 'POST',
+        body: formData
+    })
+    .then(async res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const response = await res.json();
+        if (!response.success) throw new Error(response.message);
+        loadProducts();
+        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+    })
+    .catch(err => {
+        console.error('Error al insertar producto:', err.message || err);
+        alert('Hubo un problema al agregar el producto.');
+    });
 }
 
 

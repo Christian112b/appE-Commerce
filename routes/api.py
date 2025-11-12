@@ -1,6 +1,6 @@
 
 from controllers.dbConnection import DBConnection
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
 from routes.auth import jwt_required
 
 api_bp = Blueprint('api', __name__)
@@ -13,10 +13,9 @@ def getProducts():
     try:
         db = DBConnection()
 
-        # En lugar de enviar imagen_base64 completo, podrías tener una versión comprimida
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo,
-                    '/static/assets/productos.jpg' as imagen_base64,
+                    CONCAT('/image/', p.id_producto) as image_url,
                     COALESCE(i.cantidad_actual, 0) as stock
             FROM costanzo.productos p
             LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
@@ -75,23 +74,27 @@ def updateProduct():
     print("Estoy aqui")
 
     try:
-        data = request.get_json()
+        id_producto = int(request.form.get('id_producto'))
+        nombre = request.form.get('nombre', '').strip()
+        descripcion = request.form.get('descripcion', '').strip()
+        categoria = request.form.get('categoria', '').strip()
+        precio_unitario = float(request.form.get('precio_unitario', 0))
+        cantidad_actual = int(request.form.get('stock', 0))
+        cantidad_minima = int(request.form.get('cantidad_minima', 0))
+        ubicacion = request.form.get('ubicacion', '').strip()
+        activo = int(request.form.get('activo', 1))
 
-        id_producto = int(data.get('id_producto'))
-        nombre = data.get('nombre', '').strip()
-        descripcion = data.get('descripcion', '').strip()
-        categoria = data.get('categoria', '').strip()
-        precio_unitario = float(data.get('precio_unitario', 0))
-        cantidad_actual = int(data.get('stock', 0))  # Now represents inventory quantity
-        cantidad_minima = int(data.get('cantidad_minima', 0))
-        ubicacion = data.get('ubicacion', '').strip()
-        activo = int(data.get('activo', 1))
-        imagen_base64 = data.get('imagen_base64')  # puede ser None
+        # Handle image file
+        imagen_data = None
+        if 'imagen' in request.files:
+            file = request.files['imagen']
+            if file and file.filename:
+                imagen_data = file.read()
 
         db = DBConnection()
 
-        # Update product (without stock column)
-        if imagen_base64:
+        # Update product
+        if imagen_data is not None:
             product_query = """
                 UPDATE costanzo.productos
                 SET nombre = %s,
@@ -99,10 +102,10 @@ def updateProduct():
                     categoria = %s,
                     precio_unitario = %s,
                     activo = %s,
-                    imagen_base64 = %s
+                    imagen = %s
                 WHERE id_producto = %s
             """
-            product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_base64, id_producto]
+            product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_data, id_producto]
         else:
             product_query = """
                 UPDATE costanzo.productos
@@ -146,27 +149,31 @@ def updateProduct():
 @api_bp.route('/insertProduct', methods=['POST'])
 def insertProduct():
     try:
-        data = request.get_json()
+        nombre = request.form.get('nombre', '').strip()
+        descripcion = request.form.get('descripcion', '').strip()
+        categoria = request.form.get('categoria', '').strip()
+        precio_unitario = float(request.form.get('precio_unitario', 0))
+        cantidad_actual = int(request.form.get('stock', 0))
+        cantidad_minima = int(request.form.get('cantidad_minima', 0))
+        ubicacion = request.form.get('ubicacion', '').strip()
+        activo = int(request.form.get('activo', 1))
 
-        nombre = data.get('nombre', '').strip()
-        descripcion = data.get('descripcion', '').strip()
-        categoria = data.get('categoria', '').strip()
-        precio_unitario = float(data.get('precio_unitario', 0))
-        cantidad_actual = int(data.get('stock', 0))  # Now represents inventory quantity
-        cantidad_minima = int(data.get('cantidad_minima', 0))
-        ubicacion = data.get('ubicacion', '').strip()
-        activo = int(data.get('activo', 1))
-        imagen_base64 = data.get('imagen_base64')  # puede ser None
+        # Handle image file
+        imagen_data = None
+        if 'imagen' in request.files:
+            file = request.files['imagen']
+            if file and file.filename:
+                imagen_data = file.read()
 
         db = DBConnection()
 
-        # Insert product (without stock column)
+        # Insert product
         product_query = """
             INSERT INTO costanzo.productos
-            (nombre, descripcion, categoria, precio_unitario, activo, imagen_base64)
+            (nombre, descripcion, categoria, precio_unitario, activo, imagen)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_base64]
+        product_params = [nombre, descripcion, categoria, precio_unitario, activo, imagen_data]
 
         db.execute(product_query, product_params)
         product_id = db.cursor.lastrowid
@@ -307,3 +314,19 @@ def addAddress():
     except Exception as e:
         print("Error al agregar dirección:", e)
         return jsonify({'ok': False, 'message': 'Error interno del servidor'}), 500
+
+# Servir imagen desde BLOB
+@api_bp.route('/image/<int:product_id>')
+def get_image(product_id):
+    try:
+        db = DBConnection()
+        image_data = db.query("SELECT imagen FROM costanzo.productos WHERE id_producto = %s", (product_id,))
+        db.close()
+
+        if image_data and image_data[0]['imagen']:
+            return Response(image_data[0]['imagen'], mimetype='image/jpeg')
+        else:
+            return '', 404
+    except Exception as e:
+        print("Error al obtener imagen:", e)
+        return '', 500
