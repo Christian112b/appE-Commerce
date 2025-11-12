@@ -32,7 +32,16 @@ init_coupon_usage_table()
 @admin_bp.route('/adminPanel')
 @jwt_required
 def adminPanel():
+
+    print("Verificando Rol")
+
+    try:
+        print(request.is_admin)
+    except Exception as e:
+        print("Erro: ", e)
+    
     if request.is_admin:
+        
         return render_template('admin/dashboard.html')
     return redirect(url_for('main.index'))
 
