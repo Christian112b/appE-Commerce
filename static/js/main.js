@@ -696,6 +696,61 @@ function toggleDropdown() {
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
 
+// ========================
+// Update dropdown menu based on authentication
+// ========================
+function updateDropdownMenu() {
+    // Check if user is logged in by verifying JWT token
+    fetch('/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: getCookie('jwt_token') })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const adminLink = document.querySelector('.admin-only');
+        const logoutLink = document.querySelector('.logged-in-only');
+        const loginLinks = document.querySelectorAll('.logged-out-only');
+
+        if (data.valid && data.user) {
+            // User is logged in
+            logoutLink.style.display = 'block';
+            loginLinks.forEach(link => link.style.display = 'none');
+
+            // Show admin panel only for admin users
+            if (data.user.is_admin) {
+                adminLink.style.display = 'block';
+            } else {
+                adminLink.style.display = 'none';
+            }
+        } else {
+            // User is not logged in
+            adminLink.style.display = 'none';
+            logoutLink.style.display = 'none';
+            loginLinks.forEach(link => link.style.display = 'block');
+        }
+    })
+    .catch(err => {
+        console.error('Error checking authentication:', err);
+        // Default to logged out state
+        const adminLink = document.querySelector('.admin-only');
+        const logoutLink = document.querySelector('.logged-in-only');
+        const loginLinks = document.querySelectorAll('.logged-out-only');
+
+        adminLink.style.display = 'none';
+        logoutLink.style.display = 'none';
+        loginLinks.forEach(link => link.style.display = 'block');
+    });
+}
+
+// Helper function to get cookie value
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
+
 
 
 
@@ -715,6 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupLazyLoading();
     setupScrollToTop();
     injectAnimations();
+    updateDropdownMenu(); // Update dropdown based on authentication
 
     // Opcional: descomentar para cursor personalizado
     // setupCustomCursor();
@@ -723,4 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Hacer funciones globales
 window.showNotification = showNotification;
+window.toggleDropdown = toggleDropdown;
+window.updateDropdownMenu = updateDropdownMenu;
 

@@ -312,7 +312,12 @@ function renderProductTable(products) {
 
         row.innerHTML = `
             <td>${prod.id_producto}</td>
-            <td><img src="${prod.image_url}" alt="${prod.nombre}" class="product-img" onerror="this.src='/static/assets/productos.jpg'"></td>
+            <td>
+                <div class="image-container">
+                    <img src="${prod.image_url}" alt="${prod.nombre}" class="product-img" onerror="showIcon(this)">
+                    <i class="fas fa-image product-icon" style="display:none; font-size: 2rem; color: #ccc;"></i>
+                </div>
+            </td>
             <td>${prod.nombre}</td>
             <td>${prod.descripcion}</td>
             <td>${prod.categoria ?? 'Sin categoría'}</td>
@@ -536,6 +541,17 @@ function applyProductFilters() {
 
 
 
+
+// ========================
+// Mostrar icono cuando no hay imagen
+// ========================
+function showIcon(img) {
+    img.style.display = 'none';
+    const icon = img.nextElementSibling;
+    if (icon) {
+        icon.style.display = 'block';
+    }
+}
 
 // ========================
 // Mostrar y quitar loading
@@ -1856,4 +1872,7 @@ function toggleAdminDropdown() {
     const menu = document.getElementById('adminDropdownMenu');
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 }
+
+// Make showIcon global
+window.showIcon = showIcon;
 

@@ -32,10 +32,10 @@
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
 
-                        <a href="{{ url_for('admin.adminPanel') }}">Panel de administrador</a>
-                        <a href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-                        <a href="{{ url_for('main.login') }}">Iniciar sesión</a>
-                        <a href="{{ url_for('main.register') }}">Registrarse</a>
+                        <a href="{{ url_for('admin.adminPanel') }}" class="admin-only" style="display: none;">Panel de administrador</a>
+                        <a href="{{ url_for('auth.logout') }}" class="logged-in-only" style="display: none;">Cerrar sesión</a>
+                        <a href="{{ url_for('main.login') }}" class="logged-out-only">Iniciar sesión</a>
+                        <a href="{{ url_for('main.register') }}" class="logged-out-only">Registrarse</a>
 
                     </div>
                 </div>
