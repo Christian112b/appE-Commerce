@@ -238,6 +238,9 @@ function deleteProduct(id) {
 // Form submit
 document.addEventListener('DOMContentLoaded', function() {
     const productForm = document.getElementById('productForm');
+
+    console.log("Editando un producto")
+    
     if (productForm) {
         productForm.addEventListener('submit', function(e) {
             e.preventDefault();
