@@ -15,7 +15,8 @@ def getProducts():
 
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo,
-                    COALESCE(i.cantidad_actual, 0) as stock
+                    COALESCE(i.cantidad_actual, 0) as stock,
+                    p.imagen
             FROM costanzo.productos p
             LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
             WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
@@ -31,7 +32,7 @@ def getProducts():
         newList = []
 
         for p in productos:
-            newList.append(p['nombre'])
+            newList.append(p['imagen'])
             
             p['precio_unitario'] = float(p['precio_unitario'])
         
@@ -44,7 +45,7 @@ def getProducts():
             'categorias': list(categoriaSet)
         }
 
-        print(productos[0])
+        print(newList[0])
 
         return jsonify(data)
 
