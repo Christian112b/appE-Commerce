@@ -21,6 +21,18 @@ class Order:
         """Create a new order from cart items"""
         db = DBConnection()
         try:
+            # Check if pedidos table exists
+            table_check = db.query("""
+                SELECT TABLE_NAME
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = 'costanzo'
+                AND TABLE_NAME = 'pedidos'
+            """)
+
+            if not table_check:
+                print("Error: pedidos table does not exist")
+                return None, None
+
             # Generate order number
             numero_pedido = f"CC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
@@ -51,6 +63,18 @@ class Order:
         """Get all orders for a user"""
         db = DBConnection()
         try:
+            # Check if pedidos table exists
+            table_check = db.query("""
+                SELECT TABLE_NAME
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = 'costanzo'
+                AND TABLE_NAME = 'pedidos'
+            """)
+
+            if not table_check:
+                # Table doesn't exist, return empty list
+                return []
+
             orders = db.query("""
                 SELECT
                     p.id_pedido,
@@ -73,19 +97,26 @@ class Order:
 
             # Get items for each order
             for order in orders:
-                items = db.query("""
-                    SELECT
-                        pi.cantidad,
-                        pi.precio_unitario,
-                        pr.nombre,
-                        pr.imagen_base64
-                    FROM costanzo.pedido_items pi
-                    JOIN costanzo.productos pr ON pi.id_producto = pr.id_producto
-                    WHERE pi.id_pedido = %s
-                """, (order['id_pedido'],))
-                order['items'] = items
+                try:
+                    items = db.query("""
+                        SELECT
+                            pi.cantidad,
+                            pi.precio_unitario,
+                            pr.nombre,
+                            pr.imagen_base64
+                        FROM costanzo.pedido_items pi
+                        JOIN costanzo.productos pr ON pi.id_producto = pr.id_producto
+                        WHERE pi.id_pedido = %s
+                    """, (order['id_pedido'],))
+                    order['items'] = items
+                except Exception as e:
+                    print(f"Error getting items for order {order['id_pedido']}: {e}")
+                    order['items'] = []
 
             return orders
+        except Exception as e:
+            print(f"Error getting user orders: {e}")
+            return []
         finally:
             db.close()
 
