@@ -345,12 +345,9 @@ def get_image(product_id):
         return '', 500
 
 # Crear pedido
-@api_bp.route('/create-order', methods=['POST', 'OPTIONS'])
+@api_bp.route('/create-order', methods=['POST'])
 @jwt_required
 def create_order():
-    if request.method == 'OPTIONS':
-        return '', 200
-
     try:
         user_id = request.user_id
         data = request.get_json()
@@ -380,12 +377,9 @@ def create_order():
         return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
 
 # Obtener pedidos del usuario
-@api_bp.route('/user-orders', methods=['GET', 'OPTIONS'])
+@api_bp.route('/user-orders', methods=['GET'])
 @jwt_required
 def get_user_orders():
-    if request.method == 'OPTIONS':
-        return '', 200
-
     try:
         user_id = request.user_id
         orders = Order.get_user_orders(user_id)
@@ -397,12 +391,9 @@ def get_user_orders():
         return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
 
 # Actualizar estado del pedido
-@api_bp.route('/update-order/<int:order_id>', methods=['PUT', 'OPTIONS'])
+@api_bp.route('/update-order/<int:order_id>', methods=['PUT'])
 @jwt_required
 def update_order_status(order_id):
-    if request.method == 'OPTIONS':
-        return '', 200
-
     try:
         data = request.get_json()
         new_status = data.get('status', '')
