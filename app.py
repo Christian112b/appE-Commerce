@@ -22,6 +22,28 @@ CORS(app,
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 )
 
+# CORS para blueprints específicos
+CORS(api_bp,
+     origins=["*"],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
+CORS(auth_bp,
+     origins=["*"],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
+CORS(cart_bp,
+     origins=["*"],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
 
 app.secret_key = os.getenv('SECRET_KEY')
 
