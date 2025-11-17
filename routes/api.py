@@ -46,7 +46,6 @@ def getProducts():
             'categorias': list(categoriaSet)
         }
 
-        print(newList[0])
 
         return jsonify(data)
 
@@ -72,7 +71,6 @@ def compress_image_function(image_data):
 @api_bp.route('/updateProduct', methods=['POST'])
 def updateProduct():
 
-    print("Estoy aqui")
 
     try:
         id_producto = int(request.form.get('id_producto'))
