@@ -354,13 +354,13 @@ def create_order():
 
         cart_items = data.get('cart_items', [])
         total = float(data.get('total', 0))
-        address_id = int(data.get('address_id', 0))
+        shipping_address = data.get('shipping_address', '')
         payment_method = data.get('payment_method', '')
 
-        if not cart_items or total <= 0 or not address_id:
+        if not cart_items or total <= 0 or not shipping_address:
             return jsonify({'success': False, 'message': 'Datos incompletos para crear el pedido'}), 400
 
-        order_id, order_number = Order.create_order(user_id, cart_items, total, address_id, payment_method)
+        order_id, order_number = Order.create_order(user_id, cart_items, total, shipping_address, payment_method)
 
         if order_id:
             return jsonify({

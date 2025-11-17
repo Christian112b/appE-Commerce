@@ -17,41 +17,27 @@ class Order:
         self.numero_pedido = numero_pedido
 
     @staticmethod
-    def create_order(id_usuario, cart_items, total, id_direccion, metodo_pago):
+    def create_order(id_usuario, cart_items, total, direccion_envio, metodo_pago):
         """Create a new order from cart items"""
         db = DBConnection()
         try:
-            # Check if pedidos table exists
-            table_check = db.query("""
-                SELECT TABLE_NAME
-                FROM information_schema.TABLES
-                WHERE TABLE_SCHEMA = 'costanzo'
-                AND TABLE_NAME = 'pedidos'
-            """)
-
-            if not table_check:
-                print("Error: pedidos table does not exist")
-                return None, None
-
-            # Generate order number
-            numero_pedido = f"CC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-
             # Insert order
             db.execute("""
-                INSERT INTO costanzo.pedidos (id_usuario, fecha_pedido, estado, total, id_direccion, metodo_pago, numero_pedido)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (id_usuario, datetime.now(), 'pendiente', total, id_direccion, metodo_pago, numero_pedido))
+                INSERT INTO costanzo.pedidos (id_usuario, fecha_pedido, estado, total, direccion_envio, metodo_pago)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (id_usuario, datetime.now(), 'pendiente', total, direccion_envio, metodo_pago))
 
             order_id = db.cursor.lastrowid
 
             # Insert order items
             for item in cart_items:
+                subtotal = item['quantity'] * item['price']
                 db.execute("""
-                    INSERT INTO costanzo.pedido_items (id_pedido, id_producto, cantidad, precio_unitario)
-                    VALUES (%s, %s, %s, %s)
-                """, (order_id, item['id'], item['quantity'], item['price']))
+                    INSERT INTO costanzo.pedido_detalle (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (order_id, item['id'], item['quantity'], item['price'], subtotal))
 
-            return order_id, numero_pedido
+            return order_id, f"Pedido-{order_id}"
         except Exception as e:
             print(f"Error creating order: {e}")
             return None, None
@@ -63,34 +49,16 @@ class Order:
         """Get all orders for a user"""
         db = DBConnection()
         try:
-            # Check if pedidos table exists
-            table_check = db.query("""
-                SELECT TABLE_NAME
-                FROM information_schema.TABLES
-                WHERE TABLE_SCHEMA = 'costanzo'
-                AND TABLE_NAME = 'pedidos'
-            """)
-
-            if not table_check:
-                # Table doesn't exist, return empty list
-                return []
-
             orders = db.query("""
                 SELECT
                     p.id_pedido,
-                    p.numero_pedido,
                     p.fecha_pedido,
                     p.estado,
                     p.total,
                     p.metodo_pago,
-                    d.alias as direccion_alias,
-                    d.calle,
-                    d.colonia,
-                    d.ciudad,
-                    d.estado,
-                    d.cp
+                    p.direccion_envio,
+                    p.notas
                 FROM costanzo.pedidos p
-                LEFT JOIN costanzo.direcciones d ON p.id_direccion = d.id_direccion
                 WHERE p.id_usuario = %s
                 ORDER BY p.fecha_pedido DESC
             """, (user_id,))
@@ -100,13 +68,14 @@ class Order:
                 try:
                     items = db.query("""
                         SELECT
-                            pi.cantidad,
-                            pi.precio_unitario,
+                            pd.cantidad,
+                            pd.precio_unitario,
+                            pd.subtotal,
                             pr.nombre,
                             pr.imagen_base64
-                        FROM costanzo.pedido_items pi
-                        JOIN costanzo.productos pr ON pi.id_producto = pr.id_producto
-                        WHERE pi.id_pedido = %s
+                        FROM costanzo.pedido_detalle pd
+                        JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
+                        WHERE pd.id_pedido = %s
                     """, (order['id_pedido'],))
                     order['items'] = items
                 except Exception as e:
@@ -128,20 +97,13 @@ class Order:
             order = db.query("""
                 SELECT
                     p.id_pedido,
-                    p.numero_pedido,
                     p.fecha_pedido,
                     p.estado,
                     p.total,
                     p.metodo_pago,
-                    p.id_usuario,
-                    d.alias as direccion_alias,
-                    d.calle,
-                    d.colonia,
-                    d.ciudad,
-                    d.estado,
-                    d.cp
+                    p.direccion_envio,
+                    p.id_usuario
                 FROM costanzo.pedidos p
-                LEFT JOIN costanzo.direcciones d ON p.id_direccion = d.id_direccion
                 WHERE p.id_pedido = %s
             """, (order_id,))
 
@@ -149,13 +111,14 @@ class Order:
                 # Get items
                 items = db.query("""
                     SELECT
-                        pi.cantidad,
-                        pi.precio_unitario,
+                        pd.cantidad,
+                        pd.precio_unitario,
+                        pd.subtotal,
                         pr.nombre,
                         pr.imagen_base64
-                    FROM costanzo.pedido_items pi
-                    JOIN costanzo.productos pr ON pi.id_producto = pr.id_producto
-                    WHERE pi.id_pedido = %s
+                    FROM costanzo.pedido_detalle pd
+                    JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
+                    WHERE pd.id_pedido = %s
                 """, (order_id,))
                 order[0]['items'] = items
                 return order[0]
