@@ -2,6 +2,7 @@
 from controllers.dbConnection import DBConnection
 from flask import Blueprint, jsonify, request, Response
 from routes.auth import jwt_required
+from models.order import Order
 
 api_bp = Blueprint('api', __name__)
 
@@ -342,3 +343,83 @@ def get_image(product_id):
     except Exception as e:
         print("Error al obtener imagen:", e)
         return '', 500
+
+# Crear pedido
+@api_bp.route('/create-order', methods=['POST'])
+@jwt_required
+def create_order():
+    try:
+        user_id = request.user_id
+        data = request.get_json()
+
+        cart_items = data.get('cart_items', [])
+        total = float(data.get('total', 0))
+        address_id = int(data.get('address_id', 0))
+        payment_method = data.get('payment_method', '')
+
+        if not cart_items or total <= 0 or not address_id:
+            return jsonify({'success': False, 'message': 'Datos incompletos para crear el pedido'}), 400
+
+        order_id, order_number = Order.create_order(user_id, cart_items, total, address_id, payment_method)
+
+        if order_id:
+            return jsonify({
+                'success': True,
+                'message': 'Pedido creado exitosamente',
+                'order_id': order_id,
+                'order_number': order_number
+            })
+        else:
+            return jsonify({'success': False, 'message': 'Error al crear el pedido'}), 500
+
+    except Exception as e:
+        print("Error al crear pedido:", e)
+        return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
+
+# Obtener pedidos del usuario
+@api_bp.route('/user-orders/<int:user_id>', methods=['GET'])
+@jwt_required
+def get_user_orders(user_id):
+    try:
+        # Verify that the user is requesting their own orders
+        if request.user_id != user_id:
+            return jsonify({'success': False, 'message': 'No autorizado'}), 403
+
+        orders = Order.get_user_orders(user_id)
+
+        return jsonify({'success': True, 'orders': orders})
+
+    except Exception as e:
+        print("Error al obtener pedidos:", e)
+        return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
+
+# Actualizar estado del pedido
+@api_bp.route('/update-order/<int:order_id>', methods=['PUT'])
+@jwt_required
+def update_order_status(order_id):
+    try:
+        data = request.get_json()
+        new_status = data.get('status', '')
+
+        if new_status not in ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado']:
+            return jsonify({'success': False, 'message': 'Estado inválido'}), 400
+
+        # Check if user owns this order (for non-admin users)
+        order = Order.get_order_by_id(order_id)
+        if not order:
+            return jsonify({'success': False, 'message': 'Pedido no encontrado'}), 404
+
+        # Only allow users to cancel their own orders, admins can update any
+        if new_status == 'cancelado' and order['id_usuario'] != request.user_id:
+            return jsonify({'success': False, 'message': 'No autorizado para cancelar este pedido'}), 403
+
+        success = Order.update_order_status(order_id, new_status)
+
+        if success:
+            return jsonify({'success': True, 'message': 'Estado del pedido actualizado'})
+        else:
+            return jsonify({'success': False, 'message': 'Error al actualizar el estado'}), 500
+
+    except Exception as e:
+        print("Error al actualizar estado del pedido:", e)
+        return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
