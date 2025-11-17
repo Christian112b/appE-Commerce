@@ -287,9 +287,11 @@ def deleteContactMessage():
         return jsonify({'success': False, 'message': 'Error al eliminar mensaje'})
 
 # Agregar nueva dirección
-@api_bp.route('/api/address/add', methods=['POST'])
+@api_bp.route('/api/address/add', methods=['POST', 'OPTIONS'])
 @jwt_required
 def addAddress():
+    if request.method == 'OPTIONS':
+        return '', 200
 
     try:
         id_usuario = request.user_id
@@ -345,9 +347,12 @@ def get_image(product_id):
         return '', 500
 
 # Crear pedido
-@api_bp.route('/create-order', methods=['POST'])
+@api_bp.route('/create-order', methods=['POST', 'OPTIONS'])
 @jwt_required
 def create_order():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     try:
         user_id = request.user_id
         data = request.get_json()
@@ -377,14 +382,14 @@ def create_order():
         return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
 
 # Obtener pedidos del usuario
-@api_bp.route('/user-orders/<int:user_id>', methods=['GET'])
+@api_bp.route('/user-orders', methods=['GET', 'OPTIONS'])
 @jwt_required
-def get_user_orders(user_id):
-    try:
-        # Verify that the user is requesting their own orders
-        if request.user_id != user_id:
-            return jsonify({'success': False, 'message': 'No autorizado'}), 403
+def get_user_orders():
+    if request.method == 'OPTIONS':
+        return '', 200
 
+    try:
+        user_id = request.user_id
         orders = Order.get_user_orders(user_id)
 
         return jsonify({'success': True, 'orders': orders})
@@ -394,9 +399,12 @@ def get_user_orders(user_id):
         return jsonify({'success': False, 'message': 'Error interno del servidor'}), 500
 
 # Actualizar estado del pedido
-@api_bp.route('/update-order/<int:order_id>', methods=['PUT'])
+@api_bp.route('/update-order/<int:order_id>', methods=['PUT', 'OPTIONS'])
 @jwt_required
 def update_order_status(order_id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
     try:
         data = request.get_json()
         new_status = data.get('status', '')
