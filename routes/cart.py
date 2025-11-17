@@ -336,8 +336,8 @@ def create_payment():
                     """, (item['id_producto'], item['cantidad'], now_mexico))
 
                 # Obtener email del usuario para enviar confirmación
-                usuario = db.query("SELECT email FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
-                email_usuario = usuario[0]['email'] if usuario else None
+                usuario = db.query("SELECT correo FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
+                email_usuario = usuario[0]['correo'] if usuario else None
 
                 # Preparar datos del pedido para el correo
                 subtotal = sum(item['price'] * item['quantity'] for item in cart_items)
@@ -382,6 +382,41 @@ def create_payment():
                     'direccion_envio': direccion_envio,
                     'metodo_pago': metodo_pago
                 }
+
+                # Crear pedido automáticamente en la base de datos
+                try:
+                    from models.order import Order
+                    # Preparar items del carrito para el pedido
+                    order_items = []
+                    for item in cart_items:
+                        # Obtener precio unitario del producto
+                        product_price = db.query("SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s", (item['id_producto'],))
+                        if product_price:
+                            price = float(product_price[0]['precio_unitario'])
+                            order_items.append({
+                                'id': item['id_producto'],
+                                'quantity': item['cantidad'],
+                                'price': price
+                            })
+
+                    # Crear el pedido
+                    order_id, order_number = Order.create_order(
+                        id_usuario=id_usuario,
+                        cart_items=order_items,
+                        total=total,
+                        direccion_envio=direccion_envio,
+                        metodo_pago=metodo_pago
+                    )
+
+                    if order_id:
+                        print(f"Pedido creado automáticamente: {order_number}")
+                        # Actualizar datos_pedido con el número de pedido real
+                        datos_pedido['numero_pedido'] = order_number
+                    else:
+                        print("Error creando pedido automáticamente")
+
+                except Exception as order_exc:
+                    print('Error creando pedido automáticamente:', str(order_exc))
 
                 # Borrar items del carrito
                 db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
