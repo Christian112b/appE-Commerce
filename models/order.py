@@ -40,9 +40,11 @@ class Order:
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['id'], item['quantity'], item['price'], subtotal))
 
+            db.commit()
             print(f"DEBUG: Order creation completed successfully: {order_id}")
             return order_id, f"Pedido-{order_id}"
         except Exception as e:
+            db.rollback()
             print(f"DEBUG: Error creating order: {e}")
             return None, None
 
