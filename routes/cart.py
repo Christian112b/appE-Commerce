@@ -254,7 +254,10 @@ def create_payment():
                         id_carrito = carrito[0]['id_carrito']
                         # Obtener items del carrito para actualizar inventario (solo para pagos pendientes)
                         cart_items = db.query("""
-                            SELECT id_producto, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s
+                            SELECT ci.id_producto, ci.cantidad, p.nombre as name, ci.precio_unitario as price
+                            FROM costanzo.carrito_items ci
+                            JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+                            WHERE ci.id_carrito = %s
                         """, (id_carrito,))
 
                         # Actualizar inventario para cada producto vendido (pagos pendientes)
@@ -288,15 +291,11 @@ def create_payment():
                             # Preparar items del carrito para el pedido
                             order_items = []
                             for item in cart_items:
-                                # Obtener precio unitario del producto
-                                product_price = db.query("SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s", (item['id_producto'],))
-                                if product_price:
-                                    price = float(product_price[0]['precio_unitario'])
-                                    order_items.append({
-                                        'id': item['id_producto'],
-                                        'quantity': item['cantidad'],
-                                        'price': price
-                                    })
+                                order_items.append({
+                                    'id': item['id_producto'],
+                                    'quantity': item['cantidad'],
+                                    'price': float(item['price'])
+                                })
 
                             # Crear el pedido
                             order_id, order_number = Order.create_order(
@@ -386,7 +385,10 @@ def create_payment():
 
                 # Obtener items del carrito para actualizar inventario
                 cart_items = db.query("""
-                    SELECT id_producto, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s
+                    SELECT ci.id_producto, ci.cantidad, p.nombre as name, ci.precio_unitario as price
+                    FROM costanzo.carrito_items ci
+                    JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+                    WHERE ci.id_carrito = %s
                 """, (id_carrito,))
 
                 # Actualizar inventario para cada producto vendido
@@ -460,15 +462,11 @@ def create_payment():
                     # Preparar items del carrito para el pedido
                     order_items = []
                     for item in cart_items:
-                        # Obtener precio unitario del producto
-                        product_price = db.query("SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s", (item['id_producto'],))
-                        if product_price:
-                            price = float(product_price[0]['precio_unitario'])
-                            order_items.append({
-                                'id': item['id_producto'],
-                                'quantity': item['cantidad'],
-                                'price': price
-                            })
+                        order_items.append({
+                            'id': item['id_producto'],
+                            'quantity': item['cantidad'],
+                            'price': float(item['price'])
+                        })
 
                     # Crear el pedido
                     order_id, order_number = Order.create_order(
