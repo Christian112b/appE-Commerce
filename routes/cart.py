@@ -343,8 +343,8 @@ def create_payment():
                         email_usuario = usuario[0]['correo'] if usuario else None
 
                         # Enviar correo de confirmación para pagos offline si hay email y datos_pedido
-                        if email_usuario and 'datos_pedido' in locals():
-                            Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
+                        # if email_usuario and 'datos_pedido' in locals():
+                        #     Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
 
                         try:
                             db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
@@ -508,8 +508,8 @@ def create_payment():
                 db.execute("DELETE FROM costanzo.carritocompra WHERE id_carrito = %s", (id_carrito,))
 
                 # Enviar correo de confirmación en background si hay email
-                if email_usuario:
-                    Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
+                # if email_usuario:
+                #     Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
         except Exception as del_exc:
             print('Error borrando carrito (exitoso):', str(del_exc))
 
