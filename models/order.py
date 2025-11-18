@@ -33,7 +33,7 @@ class Order:
             for item in cart_items:
                 subtotal = item['quantity'] * item['price']
                 db.execute("""
-                    INSERT INTO costanzo.pedido_detalle (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
+                    INSERT INTO costanzo.pedido_detalles (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['id'], item['quantity'], item['price'], subtotal))
 
@@ -73,7 +73,7 @@ class Order:
                             pd.subtotal,
                             pr.nombre,
                             pr.imagen_base64
-                        FROM costanzo.pedido_detalle pd
+                        FROM costanzo.pedido_detalles pd
                         JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
                         WHERE pd.id_pedido = %s
                     """, (order['id_pedido'],))
@@ -116,7 +116,7 @@ class Order:
                         pd.subtotal,
                         pr.nombre,
                         pr.imagen_base64
-                    FROM costanzo.pedido_detalle pd
+                    FROM costanzo.pedido_detalles pd
                     JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
                     WHERE pd.id_pedido = %s
                 """, (order_id,))

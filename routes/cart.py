@@ -265,6 +265,77 @@ def create_payment():
                                 WHERE id_producto = %s
                             """, (item['cantidad'], item['id_producto']))
 
+                        # Preparar datos del pedido para pagos offline
+                        subtotal = sum(item['price'] * item['quantity'] for item in cart_items)
+                        iva = subtotal * 0.16
+                        descuento = 0
+                        total = subtotal + iva - descuento
+
+                        # Obtener dirección de envío
+                        direccion_envio = "Dirección no especificada"
+                        if 'direccion_id' in locals() and direccion_id:
+                            direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM costanzo.direcciones WHERE id_direccion = %s", (direccion_id,))
+                            if direccion:
+                                direccion_envio = direccion[0]['full_address']
+
+                        # Mapear método de pago
+                        metodo_map = {4: 'Transferencia Bancaria', 5: 'Efectivo en Tienda', 6: 'OXXO', 7: 'SPEI'}
+                        metodo_pago = metodo_map.get(method_id, f'Método {method_id}')
+
+                        # Crear pedido para pagos offline
+                        try:
+                            from models.order import Order
+                            # Preparar items del carrito para el pedido
+                            order_items = []
+                            for item in cart_items:
+                                # Obtener precio unitario del producto
+                                product_price = db.query("SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s", (item['id_producto'],))
+                                if product_price:
+                                    price = float(product_price[0]['precio_unitario'])
+                                    order_items.append({
+                                        'id': item['id_producto'],
+                                        'quantity': item['cantidad'],
+                                        'price': price
+                                    })
+
+                            # Crear el pedido
+                            order_id, order_number = Order.create_order(
+                                id_usuario=id_usuario,
+                                cart_items=order_items,
+                                total=total,
+                                direccion_envio=direccion_envio,
+                                metodo_pago=metodo_pago
+                            )
+
+                            if order_id:
+                                print(f"Pedido offline creado: {order_number}")
+                                # Preparar datos del pedido para el correo
+                                datos_pedido = {
+                                    'numero_pedido': order_number,
+                                    'fecha_pedido': now_mexico.strftime('%d/%m/%Y %H:%M'),
+                                    'productos': cart_items,
+                                    'subtotal': subtotal,
+                                    'iva': iva,
+                                    'descuento': descuento,
+                                    'descuento_info': "",
+                                    'total': total,
+                                    'direccion_envio': direccion_envio,
+                                    'metodo_pago': metodo_pago
+                                }
+                            else:
+                                print("Error creando pedido offline")
+
+                        except Exception as order_exc:
+                            print('Error creando pedido offline:', str(order_exc))
+
+                        # Obtener email del usuario para enviar confirmación offline
+                        usuario = db.query("SELECT correo FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
+                        email_usuario = usuario[0]['correo'] if usuario else None
+
+                        # Enviar correo de confirmación para pagos offline si hay email y datos_pedido
+                        if email_usuario and 'datos_pedido' in locals():
+                            Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
+
                         try:
                             db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
                             print('Deleted carrito_items rows count:', db.cursor.rowcount)
