@@ -2,7 +2,9 @@
 <section class="productos" id="productos">
     <div class="container">
         <h2 class="section-title">Nuestra Deliciosa y Surtida Variedad</h2>
-        <div class="productos-filter">
+
+        <div class="productos-actions">
+            <div class="productos-filter">
             <button class="filter-btn active" data-filter="todos">Todos</button>
             <button class="filter-btn" data-filter="Chocolate">Chocolate</button>
             <button class="filter-btn" data-filter="Sandwich">Sandwich</button>
@@ -12,6 +14,16 @@
             <button class="filter-btn" data-filter="Tradicionales">Tradicionales</button>
             <button class="filter-btn" data-filter="Temporales">Temporales</button>
             <button class="filter-btn" data-filter="Solubles">Solubles</button>
+        </div>
+
+            <div class="productos-search">
+                <label for="productSearch" class="visually-hidden">Buscar productos</label>
+                <i class="fas fa-search"></i>
+                <input type="search" id="productSearch" placeholder="Busca por nombre, categoría o descripción..." autocomplete="off">
+                <button type="button" id="clearSearch" aria-label="Limpiar búsqueda">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
 
         <div class="productos-grid" id="productosGrid">
