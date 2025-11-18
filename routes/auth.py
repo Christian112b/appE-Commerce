@@ -127,6 +127,8 @@ def sanitize_input(text, max_length=255):
 @auth_bp.route('/validationLogin', methods=['POST'])
 def validationLogin():
 
+    print("Received login request")
+    print("Request data:", request.get_data())
 
     try:
         # Support both form data and JSON
