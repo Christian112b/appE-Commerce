@@ -298,6 +298,7 @@ def create_payment():
                                 })
 
                             # Crear el pedido
+                            print(f"DEBUG: Calling Order.create_order for offline with {len(order_items)} items")
                             order_id, order_number = Order.create_order(
                                 id_usuario=id_usuario,
                                 cart_items=order_items,
@@ -307,7 +308,7 @@ def create_payment():
                             )
 
                             if order_id:
-                                print(f"Pedido offline creado: {order_number}")
+                                print(f"DEBUG: Pedido offline creado: {order_number}")
                                 # Preparar datos del pedido para el correo
                                 datos_pedido = {
                                     'numero_pedido': order_number,
@@ -322,7 +323,7 @@ def create_payment():
                                     'metodo_pago': metodo_pago
                                 }
                             else:
-                                print("Error creando pedido offline")
+                                print("DEBUG: Error creando pedido offline")
 
                         except Exception as order_exc:
                             print('Error creando pedido offline:', str(order_exc))
@@ -469,6 +470,7 @@ def create_payment():
                         })
 
                     # Crear el pedido
+                    print(f"DEBUG: Calling Order.create_order with {len(order_items)} items")
                     order_id, order_number = Order.create_order(
                         id_usuario=id_usuario,
                         cart_items=order_items,
@@ -478,11 +480,11 @@ def create_payment():
                     )
 
                     if order_id:
-                        print(f"Pedido creado automáticamente: {order_number}")
+                        print(f"DEBUG: Pedido creado automáticamente: {order_number}")
                         # Actualizar datos_pedido con el número de pedido real
                         datos_pedido['numero_pedido'] = order_number
                     else:
-                        print("Error creando pedido automáticamente")
+                        print("DEBUG: Error creando pedido automáticamente")
 
                 except Exception as order_exc:
                     print('Error creando pedido automáticamente:', str(order_exc))

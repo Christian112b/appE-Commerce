@@ -21,6 +21,7 @@ class Order:
         """Create a new order from cart items"""
         db = DBConnection()
         try:
+            print(f"DEBUG: Creating order for user {id_usuario}, total {total}, items: {len(cart_items)}")
             # Insert order
             db.execute("""
                 INSERT INTO costanzo.pedidos (id_usuario, fecha_pedido, estado, total, direccion_envio, metodo_pago)
@@ -28,18 +29,21 @@ class Order:
             """, (id_usuario, datetime.now(), 'pendiente', total, direccion_envio, metodo_pago))
 
             order_id = db.cursor.lastrowid
+            print(f"DEBUG: Order inserted with ID {order_id}")
 
             # Insert order items
             for item in cart_items:
                 subtotal = item['quantity'] * item['price']
+                print(f"DEBUG: Inserting item {item['id']}, qty {item['quantity']}, price {item['price']}, subtotal {subtotal}")
                 db.execute("""
                     INSERT INTO costanzo.pedido_detalles (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['id'], item['quantity'], item['price'], subtotal))
 
+            print(f"DEBUG: Order creation completed successfully: {order_id}")
             return order_id, f"Pedido-{order_id}"
         except Exception as e:
-            print(f"Error creating order: {e}")
+            print(f"DEBUG: Error creating order: {e}")
             return None, None
 
     @staticmethod
