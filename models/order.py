@@ -41,8 +41,6 @@ class Order:
         except Exception as e:
             print(f"Error creating order: {e}")
             return None, None
-        finally:
-            db.close()
 
     @staticmethod
     def get_user_orders(user_id):
@@ -86,46 +84,41 @@ class Order:
         except Exception as e:
             print(f"Error getting user orders: {e}")
             return []
-        finally:
-            db.close()
 
     @staticmethod
     def get_order_by_id(order_id):
         """Get order by ID"""
         db = DBConnection()
-        try:
-            order = db.query("""
+        order = db.query("""
+            SELECT
+                p.id_pedido,
+                p.fecha_pedido,
+                p.estado,
+                p.total,
+                p.metodo_pago,
+                p.direccion_envio,
+                p.id_usuario
+            FROM costanzo.pedidos p
+            WHERE p.id_pedido = %s
+        """, (order_id,))
+
+        if order:
+            # Get items
+            items = db.query("""
                 SELECT
-                    p.id_pedido,
-                    p.fecha_pedido,
-                    p.estado,
-                    p.total,
-                    p.metodo_pago,
-                    p.direccion_envio,
-                    p.id_usuario
-                FROM costanzo.pedidos p
-                WHERE p.id_pedido = %s
+                    pd.cantidad,
+                    pd.precio_unitario,
+                    pd.subtotal,
+                    pr.nombre,
+                    pr.imagen_base64
+                FROM costanzo.pedido_detalles pd
+                JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
+                WHERE pd.id_pedido = %s
             """, (order_id,))
+            order[0]['items'] = items
+            return order[0]
 
-            if order:
-                # Get items
-                items = db.query("""
-                    SELECT
-                        pd.cantidad,
-                        pd.precio_unitario,
-                        pd.subtotal,
-                        pr.nombre,
-                        pr.imagen_base64
-                    FROM costanzo.pedido_detalles pd
-                    JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
-                    WHERE pd.id_pedido = %s
-                """, (order_id,))
-                order[0]['items'] = items
-                return order[0]
-
-            return None
-        finally:
-            db.close()
+        return None
 
     @staticmethod
     def update_order_status(order_id, new_status):
@@ -141,5 +134,3 @@ class Order:
         except Exception as e:
             print(f"Error updating order status: {e}")
             return False
-        finally:
-            db.close()
