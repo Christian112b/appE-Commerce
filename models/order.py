@@ -17,16 +17,16 @@ class Order:
         self.numero_pedido = numero_pedido
 
     @staticmethod
-    def create_order(id_usuario, cart_items, total, direccion_envio, metodo_pago):
+    def create_order(id_usuario, cart_items, total, direccion_envio, metodo_pago, estado='pendiente'):
         """Create a new order from cart items"""
         db = DBConnection()
         try:
-            print(f"DEBUG: Creating order for user {id_usuario}, total {total}, items: {len(cart_items)}")
+            print(f"DEBUG: Creating order for user {id_usuario}, total {total}, items: {len(cart_items)}, estado: {estado}")
             # Insert order
             db.execute("""
                 INSERT INTO costanzo.pedidos (id_usuario, fecha_pedido, estado, total, direccion_envio, metodo_pago)
                 VALUES (%s, %s, %s, %s, %s, %s)
-            """, (id_usuario, datetime.now(), 'pendiente', total, direccion_envio, metodo_pago))
+            """, (id_usuario, datetime.now(), estado, total, direccion_envio, metodo_pago))
 
             order_id = db.cursor.lastrowid
             print(f"DEBUG: Order inserted with ID {order_id}")

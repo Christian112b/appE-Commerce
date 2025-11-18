@@ -285,6 +285,15 @@ def create_payment():
                         metodo_map = {4: 'Transferencia Bancaria', 5: 'Efectivo en Tienda', 6: 'OXXO', 7: 'SPEI'}
                         metodo_pago = metodo_map.get(method_id, f'Método {method_id}')
 
+                        # Determinar estado del pedido para pagos offline
+                        estado_map = {
+                            4: 'esperando pago',  # Transferencia
+                            5: 'Empezando envio',  # Efectivo
+                            6: 'esperando pago',  # OXXO
+                            7: 'esperando pago'   # SPEI
+                        }
+                        estado_pedido = estado_map.get(method_id, 'pendiente')
+
                         # Crear pedido para pagos offline
                         try:
                             from models.order import Order
@@ -298,13 +307,14 @@ def create_payment():
                                 })
 
                             # Crear el pedido
-                            print(f"DEBUG: Calling Order.create_order for offline with {len(order_items)} items")
+                            print(f"DEBUG: Calling Order.create_order for offline with {len(order_items)} items, estado: {estado_pedido}")
                             order_id, order_number = Order.create_order(
                                 id_usuario=id_usuario,
                                 cart_items=order_items,
                                 total=total,
                                 direccion_envio=direccion_envio,
-                                metodo_pago=metodo_pago
+                                metodo_pago=metodo_pago,
+                                estado=estado_pedido
                             )
 
                             if order_id:
@@ -469,14 +479,18 @@ def create_payment():
                             'price': float(item['price'])
                         })
 
+                    # Determinar estado del pedido
+                    estado_pedido = "Empezando envio"  # Para tarjeta de crédito
+
                     # Crear el pedido
-                    print(f"DEBUG: Calling Order.create_order with {len(order_items)} items")
+                    print(f"DEBUG: Calling Order.create_order with {len(order_items)} items, estado: {estado_pedido}")
                     order_id, order_number = Order.create_order(
                         id_usuario=id_usuario,
                         cart_items=order_items,
                         total=total,
                         direccion_envio=direccion_envio,
-                        metodo_pago=metodo_pago
+                        metodo_pago=metodo_pago,
+                        estado=estado_pedido
                     )
 
                     if order_id:
