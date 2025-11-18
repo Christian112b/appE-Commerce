@@ -414,7 +414,7 @@ def create_payment():
                 email_usuario = usuario[0]['correo'] if usuario else None
 
                 # Preparar datos del pedido para el correo
-                subtotal = sum(item['price'] * item['quantity'] for item in cart_items)
+                subtotal = sum(float(item['price']) * item['cantidad'] for item in cart_items)
                 iva = subtotal * 0.16
                 descuento = 0
                 descuento_info = ""
@@ -528,9 +528,9 @@ def enviar_correo_confirmacion(email_usuario, datos_pedido):
             productos_html += f"""
             <tr>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">{producto['name']}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{producto['quantity']}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${producto['price']:.2f}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${producto['price'] * producto['quantity']:.2f}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{producto['cantidad']}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${float(producto['price']):.2f}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${float(producto['price']) * producto['cantidad']:.2f}</td>
             </tr>
             """
 
