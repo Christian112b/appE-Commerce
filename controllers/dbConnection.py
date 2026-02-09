@@ -1,19 +1,15 @@
 import os
-import mysql.connector
+import sqlite3
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class DBConnection:
     def __init__(self):
-        self.conn = mysql.connector.connect(
-            host=os.getenv('DB_HOST'),
-            port=os.getenv('DB_PORT'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
-        )
-        self.cursor = self.conn.cursor(dictionary=True)
+        db_path = os.path.join(os.path.dirname(__file__), '..', 'database.db')
+        self.conn = sqlite3.connect(db_path)
+        self.conn.row_factory = sqlite3.Row
+        self.cursor = self.conn.cursor()
 
     def query(self, sql, params=None):
         self.cursor.execute(sql, params or ())

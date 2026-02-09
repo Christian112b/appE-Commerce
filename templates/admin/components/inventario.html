@@ -131,11 +131,39 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="saveInventario()">Guardar</button>
             </div>
+</div>
+    </div>
+</div>
+
+<!-- Confirmation Modal for Delete -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar este registro de inventario?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Loading Modal for Inventario -->
+<!-- Success/Error Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="notificationToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="notificationMessage">
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="loadingInventario" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">

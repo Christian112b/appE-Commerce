@@ -21,7 +21,7 @@ class User:
         db = DBConnection()
         try:
             user = db.query(
-                "SELECT id_usuario, nombre, email, password_hash, activo FROM costanzo.usuarios WHERE email = %s",
+                "SELECT id_usuario, nombre, email, password_hash, activo FROM usuarios WHERE email = %s",
                 (email,)
             )
 
@@ -41,7 +41,7 @@ class User:
         db = DBConnection()
         try:
             # Check if email already exists
-            existing = db.query("SELECT id_usuario FROM costanzo.usuarios WHERE email = %s", (email,))
+            existing = db.query("SELECT id_usuario FROM usuarios WHERE email = %s", (email,))
             if existing:
                 return False, "Email ya registrado"
 
@@ -50,7 +50,7 @@ class User:
 
             # Insert new user
             db.execute(
-                "INSERT INTO costanzo.usuarios (nombre, email, password_hash) VALUES (%s, %s, %s)",
+                "INSERT INTO usuarios (nombre, email, password_hash) VALUES (%s, %s, %s)",
                 (nombre, email, password_hash)
             )
 
@@ -75,7 +75,7 @@ class User:
                     ciudad,
                     estado,
                     cp
-                FROM costanzo.direcciones
+                FROM direcciones
                 WHERE id_usuario = %s
                 ORDER BY alias
             """, (user_id,))
@@ -89,7 +89,7 @@ class User:
         db = DBConnection()
         try:
             db.execute(
-                "INSERT INTO costanzo.direcciones (id_usuario, alias, calle, colonia, ciudad, estado, cp) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO direcciones (id_usuario, alias, calle, colonia, ciudad, estado, cp) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (user_id, alias, calle, colonia, ciudad, estado, cp)
             )
             return True

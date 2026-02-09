@@ -17,19 +17,21 @@ def getProducts():
         productos = db.query("""
             SELECT p.id_producto, p.nombre, p.descripcion, p.categoria, p.precio_unitario, p.activo,
                     COALESCE(i.cantidad_actual, 0) as stock
-            FROM costanzo.productos p
-            LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
-            WHERE p.activo = 1 AND COALESCE(i.cantidad_actual, 0) > 0
+            FROM productos p
+            LEFT JOIN inventario i ON p.id_producto = i.id_producto
+            
         """)
 
+        products_List = [dict(row) for row in productos]
+  
         categorias = db.query("""
-            SELECT categoria FROM costanzo.productos
+            SELECT categoria FROM productos
         """)
 
         db.close()
 
         
-        for p in productos:
+        for p in products_List:
             p['precio_unitario'] = float(p['precio_unitario'])
         
         categoriaSet = set()
@@ -37,7 +39,7 @@ def getProducts():
             categoriaSet.add(c['categoria'])
 
         data = {
-            'productos': productos,
+            'productos': products_List,
             'categorias': list(categoriaSet)
         }
 
@@ -89,13 +91,13 @@ def updateProduct():
 
         # Update product
         product_query = """
-            UPDATE costanzo.productos
-            SET nombre = %s,
-                descripcion = %s,
-                categoria = %s,
-                precio_unitario = %s,
-                activo = %s
-            WHERE id_producto = %s
+            UPDATE productos
+            SET nombre = ?,
+                descripcion = ?,
+                categoria = ?,
+                precio_unitario = ?,
+                activo = ?
+            WHERE id_producto = ?
         """
         product_params = [nombre, descripcion, categoria, precio_unitario, activo, id_producto]
 
@@ -104,35 +106,35 @@ def updateProduct():
         # Update or insert image
         if imagen_data is not None:
             # Check if image exists
-            image_check = db.query("SELECT id FROM costanzo.images WHERE product_id = %s", (id_producto,))
+            image_check = db.query("SELECT id FROM images WHERE product_id = ?", (id_producto,))
             if image_check:
                 # Update existing image
                 db.execute("""
-                    UPDATE costanzo.images
-                    SET image = %s
-                    WHERE product_id = %s
+                    UPDATE images
+                    SET image = ?
+                    WHERE product_id = ?
                 """, (imagen_data, id_producto))
             else:
                 # Insert new image
                 db.execute("""
-                    INSERT INTO costanzo.images (product_id, image)
-                    VALUES (%s, %s)
+                    INSERT INTO images (product_id, image)
+                    VALUES (?, ?)
                 """, (id_producto, imagen_data))
 
         # Update or insert inventory
-        inventory_check = db.query("SELECT id_inventario FROM costanzo.inventario WHERE id_producto = %s", (id_producto,))
+        inventory_check = db.query("SELECT id_inventario FROM inventario WHERE id_producto = ?", (id_producto,))
         if inventory_check:
             # Update existing inventory
             db.execute("""
-                UPDATE costanzo.inventario
-                SET cantidad_actual = %s, cantidad_minima = %s, ubicacion = %s, fecha_actualizacion = NOW()
-                WHERE id_producto = %s
+                UPDATE inventario
+                SET cantidad_actual = ?, cantidad_minima = ?, ubicacion = ?, fecha_actualizacion = datetime('now')
+                WHERE id_producto = ?
             """, (cantidad_actual, cantidad_minima, ubicacion, id_producto))
         else:
             # Insert new inventory record
             db.execute("""
-                INSERT INTO costanzo.inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
-                VALUES (%s, %s, %s, %s, NOW())
+                INSERT INTO inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
+                VALUES (?, ?, ?, ?, datetime('now'))
             """, (id_producto, cantidad_actual, cantidad_minima, ubicacion))
 
         db.close()
@@ -168,9 +170,9 @@ def insertProduct():
 
         # Insert product
         product_query = """
-            INSERT INTO costanzo.productos
+            INSERT INTO productos
             (nombre, descripcion, categoria, precio_unitario, activo)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (?, ?, ?, ?, ?)
         """
         product_params = [nombre, descripcion, categoria, precio_unitario, activo]
 
@@ -180,15 +182,15 @@ def insertProduct():
         # Insert image if provided
         if imagen_data:
             db.execute("""
-                INSERT INTO costanzo.images (product_id, image)
-                VALUES (%s, %s)
+                INSERT INTO images (product_id, image)
+                VALUES (?, ?)
             """, (product_id, imagen_data))
 
         # Insert inventory record
         if cantidad_actual > 0 or cantidad_minima > 0:
             db.execute("""
-                INSERT INTO costanzo.inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
-                VALUES (%s, %s, %s, %s, NOW())
+                INSERT INTO inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
+                VALUES (?, ?, ?, ?, datetime('now'))
             """, (product_id, cantidad_actual, cantidad_minima, ubicacion))
 
         db.close()
@@ -207,7 +209,7 @@ def deleteProduct():
         id_producto = int(data.get('id_producto'))
 
         db = DBConnection()
-        query = "DELETE FROM costanzo.productos WHERE id_producto = %s"
+        query = "DELETE FROM productos WHERE id_producto = ?"
         db.execute(query, [id_producto])
         db.close()
 
@@ -224,15 +226,16 @@ def getContactMessages():
         db = DBConnection()
         messages = db.query("""
             SELECT id_mensaje, nombre, email, asunto, mensaje,
-                   DATE_FORMAT(fecha_envio, '%Y-%m-%d %H:%i:%s') as fecha_envio,
-                   estado
-            FROM costanzo.mensajes_contacto
+                strftime('%Y-%m-%d %H:%M:%S', fecha_envio) as fecha_envio,
+                estado
+            FROM mensajes_contacto
             ORDER BY fecha_envio DESC
         """)
         db.close()
 
-        return jsonify({'success': True, 'messages': messages})
-
+        messages_list = [dict(row) for row in messages]
+        return jsonify({'success': True, 'messages': messages_list})
+    
     except Exception as e:
         print("Error al obtener mensajes de contacto:", e)
         return jsonify({'success': False, 'message': 'Error al obtener mensajes'})
@@ -250,9 +253,9 @@ def updateContactMessageStatus():
 
         db = DBConnection()
         db.execute("""
-            UPDATE costanzo.mensajes_contacto
-            SET estado = %s
-            WHERE id_mensaje = %s
+            UPDATE mensajes_contacto
+            SET estado = ?
+            WHERE id_mensaje = ?
         """, (estado, id_mensaje))
         db.close()
 
@@ -270,7 +273,7 @@ def deleteContactMessage():
         id_mensaje = int(data.get('id_mensaje'))
 
         db = DBConnection()
-        db.execute("DELETE FROM costanzo.mensajes_contacto WHERE id_mensaje = %s", (id_mensaje,))
+        db.execute("DELETE FROM mensajes_contacto WHERE id_mensaje = ?", (id_mensaje,))
         db.close()
 
         return jsonify({'success': True, 'message': 'Mensaje eliminado correctamente'})
@@ -311,8 +314,8 @@ def addAddress():
 
         # Insertar nueva dirección
         db.execute("""
-            INSERT INTO costanzo.direcciones (id_usuario, alias, calle, colonia, ciudad, estado, cp)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO direcciones (id_usuario, alias, calle, colonia, ciudad, estado, cp)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (id_usuario, alias, street, neighborhood, city, state, postalCode))
 
         db.close()
@@ -328,7 +331,7 @@ def addAddress():
 def get_image(product_id):
     try:
         db = DBConnection()
-        image_data = db.query("SELECT image FROM costanzo.images WHERE product_id = %s", (product_id,))
+        image_data = db.query("SELECT image FROM images WHERE product_id = ?", (product_id,))
         db.close()
 
         if image_data and image_data[0]['image']:

@@ -29,7 +29,7 @@ def addCart():
     db = DBConnection()
 
     producto = db.query(
-        "SELECT p.precio_unitario, COALESCE(i.cantidad_actual, 0) as stock_disponible FROM costanzo.productos p LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto WHERE p.id_producto = %s AND p.activo = 1",
+        "SELECT p.precio_unitario, COALESCE(i.cantidad_actual, 0) as stock_disponible FROM productos p LEFT JOIN inventario i ON p.id_producto = i.id_producto WHERE p.id_producto = %s AND p.activo = 1",
         (id_producto,)
     )
 
@@ -47,13 +47,13 @@ def addCart():
 
     # Obtener o crear carrito
     carrito = db.query(
-        "SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s",
+        "SELECT id_carrito FROM carritocompra WHERE id_usuario = %s",
         (id_usuario,)
     )
 
     if not carrito:
         db.execute(
-            "INSERT INTO costanzo.carritocompra (id_usuario, fecha_creacion) VALUES (%s, %s)",
+            "INSERT INTO carritocompra (id_usuario, fecha_creacion) VALUES (%s, %s)",
             (id_usuario, datetime.now())
         )
         id_carrito = db.cursor.lastrowid
@@ -62,19 +62,19 @@ def addCart():
 
     # Verificar si el producto ya está en el carrito
     item = db.query(
-        "SELECT id_item, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s AND id_producto = %s",
+        "SELECT id_item, cantidad FROM carrito_items WHERE id_carrito = %s AND id_producto = %s",
         (id_carrito, id_producto)
     )
 
     if item:
         nueva_cantidad = item[0]['cantidad'] + 1
         db.execute(
-            "UPDATE costanzo.carrito_items SET cantidad = %s WHERE id_item = %s",
+            "UPDATE carrito_items SET cantidad = %s WHERE id_item = %s",
             (nueva_cantidad, item[0]['id_item'])
         )
     else:
         db.execute(
-            "INSERT INTO costanzo.carrito_items (id_carrito, id_producto, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO carrito_items (id_carrito, id_producto, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)",
             (id_carrito, id_producto, 1, precio)
         )
 
@@ -97,7 +97,7 @@ def getItemsCart():
 
     # Obtener el carrito del usuario
     carrito = db.query(
-        "SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s",
+        "SELECT id_carrito FROM carritocompra WHERE id_usuario = ?",
         (id_usuario,)
     )
 
@@ -115,8 +115,8 @@ def getItemsCart():
             '/static/assets/productos.jpg' AS image,
             ci.cantidad,
             ci.precio_unitario AS price
-        FROM costanzo.carrito_items ci
-        JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+        FROM carrito_items ci
+        JOIN productos p ON ci.id_producto = p.id_producto
         WHERE ci.id_carrito = %s
     """, (id_carrito,))
 
@@ -149,20 +149,20 @@ def saveCart():
 
     db = DBConnection()
 
-    carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+    carrito = db.query("SELECT id_carrito FROM carritocompra WHERE id_usuario = %s", (id_usuario,))
     if not carrito:
-        db.execute("INSERT INTO costanzo.carritocompra (id_usuario) VALUES (%s)", (id_usuario,))
-        carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+        db.execute("INSERT INTO carritocompra (id_usuario) VALUES (%s)", (id_usuario,))
+        carrito = db.query("SELECT id_carrito FROM carritocompra WHERE id_usuario = %s", (id_usuario,))
 
     id_carrito = carrito[0]['id_carrito']
 
     # Limpiar carrito actual
-    db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
+    db.execute("DELETE FROM carrito_items WHERE id_carrito = %s", (id_carrito,))
 
     # Insertar nuevos items
     for item in items:
         db.execute("""
-            INSERT INTO costanzo.carrito_items (id_carrito, id_producto, cantidad, precio_unitario)
+            INSERT INTO carrito_items (id_carrito, id_producto, cantidad, precio_unitario)
             VALUES (%s, %s, %s, %s)
         """, (id_carrito, item['id'], item['quantity'], item['price']))
 
@@ -187,7 +187,7 @@ def getAddresses():
             ciudad,
             estado,
             cp
-        FROM costanzo.direcciones
+        FROM direcciones
         WHERE id_usuario = %s
         """, (id_usuario,))
 
@@ -225,7 +225,7 @@ def create_payment():
             try:
                 # Para pagos offline no hay PaymentIntent, guardamos NULL en id_intento_pago
                 db.execute(
-                    "INSERT INTO costanzo.logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
+                    "INSERT INTO logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
                     (None, int(method_id), amount/100.0, now_mexico, 'pendiente')
                 )
             except Exception as log_exc:
@@ -235,7 +235,7 @@ def create_payment():
             try:
                 descripcion_log = f"Pago pendiente creado metodo={method_id} monto={amount/100.0}"
                 db.execute(
-                    "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
+                    "INSERT INTO logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
                     (id_usuario, 'CREACION_PAGO', descripcion_log, now_mexico, ip_origen)
                 )
             except Exception as logact_exc:
@@ -247,7 +247,7 @@ def create_payment():
                 if not id_usuario:
                     print('No id_usuario found; skipping delete')
                 else:
-                    carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+                    carrito = db.query("SELECT id_carrito FROM carritocompra WHERE id_usuario = %s", (id_usuario,))
                     if not carrito:
                         print('No carritocompra found for id_usuario=', id_usuario)
                     else:
@@ -255,15 +255,15 @@ def create_payment():
                         # Obtener items del carrito para actualizar inventario (solo para pagos pendientes)
                         cart_items = db.query("""
                             SELECT ci.id_producto, ci.cantidad, p.nombre as name, ci.precio_unitario as price
-                            FROM costanzo.carrito_items ci
-                            JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+                            FROM carrito_items ci
+                            JOIN productos p ON ci.id_producto = p.id_producto
                             WHERE ci.id_carrito = %s
                         """, (id_carrito,))
 
                         # Actualizar inventario para cada producto vendido (pagos pendientes)
                         for item in cart_items:
                             db.execute("""
-                                UPDATE costanzo.inventario
+                                UPDATE inventario
                                 SET cantidad_actual = cantidad_actual - %s, fecha_actualizacion = NOW()
                                 WHERE id_producto = %s
                             """, (item['cantidad'], item['id_producto']))
@@ -277,7 +277,7 @@ def create_payment():
                         # Obtener dirección de envío
                         direccion_envio = "Dirección no especificada"
                         if 'direccion_id' in locals() and direccion_id:
-                            direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM costanzo.direcciones WHERE id_direccion = %s", (direccion_id,))
+                            direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM direcciones WHERE id_direccion = %s", (direccion_id,))
                             if direccion:
                                 direccion_envio = direccion[0]['full_address']
 
@@ -339,7 +339,7 @@ def create_payment():
                             print('Error creando pedido offline:', str(order_exc))
 
                         # Obtener email del usuario para enviar confirmación offline
-                        usuario = db.query("SELECT correo FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
+                        usuario = db.query("SELECT correo FROM usuarios WHERE id_usuario = %s", (id_usuario,))
                         email_usuario = usuario[0]['correo'] if usuario else None
 
                         # Enviar correo de confirmación para pagos offline si hay email y datos_pedido
@@ -347,12 +347,12 @@ def create_payment():
                         #     Thread(target=enviar_correo_confirmacion, args=(email_usuario, datos_pedido)).start()
 
                         try:
-                            db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
+                            db.execute("DELETE FROM carrito_items WHERE id_carrito = %s", (id_carrito,))
                             print('Deleted carrito_items rows count:', db.cursor.rowcount)
                         except Exception as del_items_exc:
                             print('Error deleting carrito_items (pendiente):', str(del_items_exc))
                         try:
-                            db.execute("DELETE FROM costanzo.carritocompra WHERE id_carrito = %s", (id_carrito,))
+                            db.execute("DELETE FROM carritocompra WHERE id_carrito = %s", (id_carrito,))
                             print('Deleted carritocompra rows count:', db.cursor.rowcount)
                         except Exception as del_carrito_exc:
                             print('Error deleting carritocompra (pendiente):', str(del_carrito_exc))
@@ -372,7 +372,7 @@ def create_payment():
         try:
             intent_id = getattr(intent, 'id', None)
             db.execute(
-                "INSERT INTO costanzo.logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
                 (intent_id, int(method_id) if method_id else None, amount/100.0, now_mexico, 'exitoso')
             )
         except Exception as log_exc:
@@ -382,7 +382,7 @@ def create_payment():
         try:
             descripcion_log = f"Pago exitoso creado metodo={method_id} monto={amount/100.0} intent_id={getattr(intent, 'id', None)}"
             db.execute(
-                "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
                 (id_usuario, 'CREACION_PAGO', descripcion_log, now_mexico, ip_origen)
             )
         except Exception as logact_exc:
@@ -390,29 +390,29 @@ def create_payment():
 
         # Borrar carrito del usuario al completar el pago y actualizar inventario
         try:
-            carrito = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (id_usuario,))
+            carrito = db.query("SELECT id_carrito FROM carritocompra WHERE id_usuario = %s", (id_usuario,))
             if carrito:
                 id_carrito = carrito[0]['id_carrito']
 
                 # Obtener items del carrito para actualizar inventario
                 cart_items = db.query("""
                     SELECT ci.id_producto, ci.cantidad, p.nombre as name, ci.precio_unitario as price
-                    FROM costanzo.carrito_items ci
-                    JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+                    FROM carrito_items ci
+                    JOIN productos p ON ci.id_producto = p.id_producto
                     WHERE ci.id_carrito = %s
                 """, (id_carrito,))
 
                 # Actualizar inventario para cada producto vendido
                 for item in cart_items:
                     db.execute("""
-                        UPDATE costanzo.inventario
+                        UPDATE inventario
                         SET cantidad_actual = cantidad_actual - %s, fecha_actualizacion = NOW()
                         WHERE id_producto = %s
                     """, (item['cantidad'], item['id_producto']))
 
                     # Actualizar tabla ventas_productos
                     db.execute("""
-                        INSERT INTO costanzo.ventas_productos (id_producto, total_vendido, fecha_ultima_venta)
+                        INSERT INTO ventas_productos (id_producto, total_vendido, fecha_ultima_venta)
                         VALUES (%s, %s, %s)
                         ON DUPLICATE KEY UPDATE
                             total_vendido = total_vendido + VALUES(total_vendido),
@@ -420,7 +420,7 @@ def create_payment():
                     """, (item['id_producto'], item['cantidad'], now_mexico))
 
                 # Obtener email del usuario para enviar confirmación
-                usuario = db.query("SELECT correo FROM costanzo.usuarios WHERE id_usuario = %s", (id_usuario,))
+                usuario = db.query("SELECT correo FROM usuarios WHERE id_usuario = %s", (id_usuario,))
                 email_usuario = usuario[0]['correo'] if usuario else None
 
                 # Preparar datos del pedido para el correo
@@ -431,7 +431,7 @@ def create_payment():
 
                 # Calcular descuento si hay cupón aplicado (desde request data)
                 if cupon_id:
-                    cupon = db.query("SELECT nombre, tipo, valor FROM costanzo.cupones WHERE id_descuento = %s", (cupon_id,))
+                    cupon = db.query("SELECT nombre, tipo, valor FROM cupones WHERE id_descuento = %s", (cupon_id,))
                     if cupon:
                         cupon_data = cupon[0]
                         if cupon_data['tipo'] == 'porcentaje':
@@ -446,7 +446,7 @@ def create_payment():
                 # Obtener dirección de envío
                 direccion_envio = "Dirección no especificada"
                 if direccion_id:
-                    direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM costanzo.direcciones WHERE id_direccion = %s", (direccion_id,))
+                    direccion = db.query("SELECT CONCAT(calle, ', ', colonia, ', ', ciudad, ', ', estado, ' CP:', cp) as full_address FROM direcciones WHERE id_direccion = %s", (direccion_id,))
                     if direccion:
                         direccion_envio = direccion[0]['full_address']
 
@@ -504,8 +504,8 @@ def create_payment():
                     print('Error creando pedido automáticamente:', str(order_exc))
 
                 # Borrar items del carrito
-                db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (id_carrito,))
-                db.execute("DELETE FROM costanzo.carritocompra WHERE id_carrito = %s", (id_carrito,))
+                db.execute("DELETE FROM carrito_items WHERE id_carrito = %s", (id_carrito,))
+                db.execute("DELETE FROM carritocompra WHERE id_carrito = %s", (id_carrito,))
 
                 # Enviar correo de confirmación en background si hay email
                 # if email_usuario:
@@ -520,7 +520,7 @@ def create_payment():
         descripcion = f"Error creando PaymentIntent: {str(e)}"
         try:
             db.execute(
-                "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO logactividad (id_usuario, accion, descripcion, fecha_evento, ip_origen) VALUES (%s, %s, %s, %s, %s)",
                 (id_usuario, 'create_payment_error', descripcion, now_mexico, ip_origen)
             )
         except Exception as log_exc:
@@ -661,7 +661,7 @@ def validate_coupon():
 
         # Buscar cupón activo por nombre (case-insensitive)
         coupon = db.query(
-            "SELECT id_descuento, nombre, tipo, valor FROM costanzo.cupones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
+            "SELECT id_descuento, nombre, tipo, valor FROM cupones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
             (coupon_name, now_mexico, now_mexico)
         )
 
@@ -705,35 +705,35 @@ def get_reportes():
 
         # Ventas totales
         ventas_result = db.query(
-            "SELECT COALESCE(SUM(monto), 0) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
+            "SELECT COALESCE(SUM(monto), 0) as total FROM logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
             (start_date,)
         )
         ventas_totales = float(ventas_result[0]['total']) if ventas_result else 0
 
         # Pedidos completados
         pedidos_result = db.query(
-            "SELECT COUNT(*) as count FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
+            "SELECT COUNT(*) as count FROM logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s",
             (start_date,)
         )
         pedidos_completados = pedidos_result[0]['count'] if pedidos_result else 0
 
         # Productos vendidos (suma de cantidades de carrito_items)
         productos_result = db.query(
-            "SELECT COALESCE(SUM(ci.cantidad), 0) as total FROM costanzo.carrito_items ci JOIN costanzo.carritocompra c ON ci.id_carrito = c.id_carrito WHERE c.fecha_creacion >= %s",
+            "SELECT COALESCE(SUM(ci.cantidad), 0) as total FROM carrito_items ci JOIN carritocompra c ON ci.id_carrito = c.id_carrito WHERE c.fecha_creacion >= %s",
             (start_date,)
         )
         productos_vendidos = productos_result[0]['total'] if productos_result else 0
 
         # Cupones usados
         cupones_result = db.query(
-            "SELECT COUNT(*) as count FROM costanzo.logpagos WHERE cupon_id IS NOT NULL AND estado_pago = 'exitoso' AND fecha_pago >= %s",
+            "SELECT COUNT(*) as count FROM logpagos WHERE cupon_id IS NOT NULL AND estado_pago = 'exitoso' AND fecha_pago >= %s",
             (start_date,)
         )
         cupones_usados = cupones_result[0]['count'] if cupones_result else 0
 
         # Ventas por método de pago
         metodos_result = db.query(
-            "SELECT id_metodo_pago, COUNT(*) as count, SUM(monto) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s GROUP BY id_metodo_pago",
+            "SELECT id_metodo_pago, COUNT(*) as count, SUM(monto) as total FROM logpagos WHERE estado_pago = 'exitoso' AND fecha_pago >= %s GROUP BY id_metodo_pago",
             (start_date,)
         )
         metodos_pago = []
@@ -759,11 +759,11 @@ def get_reportes():
                 lp.fecha_pago,
                 lp.estado_pago,
                 COALESCE(SUM(ci.cantidad), 0) as productos_cantidad
-            FROM costanzo.logpagos lp
-            LEFT JOIN costanzo.carritocompra c ON lp.fecha_pago >= c.fecha_creacion
+            FROM logpagos lp
+            LEFT JOIN carritocompra c ON lp.fecha_pago >= c.fecha_creacion
                 AND lp.fecha_pago <= DATE_ADD(c.fecha_creacion, INTERVAL 1 HOUR)
                 AND lp.id_usuario = c.id_usuario
-            LEFT JOIN costanzo.carrito_items ci ON c.id_carrito = ci.id_carrito
+            LEFT JOIN carrito_items ci ON c.id_carrito = ci.id_carrito
             WHERE lp.fecha_pago >= %s
             GROUP BY lp.id_pago, lp.id_intento_pago, lp.id_metodo_pago, lp.monto, lp.fecha_pago, lp.estado_pago
             ORDER BY lp.fecha_pago DESC
@@ -781,7 +781,7 @@ def get_reportes():
             week_end = week_end.replace(hour=23, minute=59, second=59, microsecond=999999)
 
             week_result = db.query(
-                "SELECT COALESCE(SUM(monto), 0) as total FROM costanzo.logpagos WHERE estado_pago = 'exitoso' AND fecha_pago BETWEEN %s AND %s",
+                "SELECT COALESCE(SUM(monto), 0) as total FROM logpagos WHERE estado_pago = 'exitoso' AND fecha_pago BETWEEN %s AND %s",
                 (week_start, week_end)
             )
             ganancias_semana.append({

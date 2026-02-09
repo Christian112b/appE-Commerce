@@ -18,8 +18,8 @@ class Product:
         try:
             products = db.query("""
                 SELECT p.*, i.cantidad_disponible
-                FROM costanzo.productos p
-                LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
+                FROM productos p
+                LEFT JOIN inventario i ON p.id_producto = i.id_producto
                 WHERE p.activo = 1
                 ORDER BY p.nombre
             """)
@@ -34,8 +34,8 @@ class Product:
         try:
             product = db.query("""
                 SELECT p.*, i.cantidad_disponible
-                FROM costanzo.productos p
-                LEFT JOIN costanzo.inventario i ON p.id_producto = i.id_producto
+                FROM productos p
+                LEFT JOIN inventario i ON p.id_producto = i.id_producto
                 WHERE p.id_producto = %s AND p.activo = 1
             """, (product_id,))
             return product[0] if product else None
@@ -48,16 +48,16 @@ class Product:
         db = DBConnection()
         try:
             # Check if inventory record exists
-            existing = db.query("SELECT id_inventario FROM costanzo.inventario WHERE id_producto = %s", (product_id,))
+            existing = db.query("SELECT id_inventario FROM inventario WHERE id_producto = %s", (product_id,))
 
             if existing:
                 db.execute(
-                    "UPDATE costanzo.inventario SET cantidad_disponible = %s WHERE id_producto = %s",
+                    "UPDATE inventario SET cantidad_disponible = %s WHERE id_producto = %s",
                     (new_quantity, product_id)
                 )
             else:
                 db.execute(
-                    "INSERT INTO costanzo.inventario (id_producto, cantidad_disponible) VALUES (%s, %s)",
+                    "INSERT INTO inventario (id_producto, cantidad_disponible) VALUES (%s, %s)",
                     (product_id, new_quantity)
                 )
             return True
@@ -73,7 +73,7 @@ class Product:
         db = DBConnection()
         try:
             db.execute("""
-                UPDATE costanzo.inventario
+                UPDATE inventario
                 SET cantidad_disponible = cantidad_disponible - %s
                 WHERE id_producto = %s AND cantidad_disponible >= %s
             """, (quantity, product_id, quantity))

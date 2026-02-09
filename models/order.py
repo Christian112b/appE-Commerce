@@ -21,31 +21,26 @@ class Order:
         """Create a new order from cart items"""
         db = DBConnection()
         try:
-            print(f"DEBUG: Creating order for user {id_usuario}, total {total}, items: {len(cart_items)}, estado: {estado}")
             # Insert order
             db.execute("""
-                INSERT INTO costanzo.pedidos (id_usuario, fecha_pedido, estado, total, direccion_envio, metodo_pago)
+                INSERT INTO pedidos (id_usuario, fecha_pedido, estado, total, direccion_envio, metodo_pago)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (id_usuario, datetime.now(), estado, total, direccion_envio, metodo_pago))
 
             order_id = db.cursor.lastrowid
-            print(f"DEBUG: Order inserted with ID {order_id}")
 
             # Insert order items
             for item in cart_items:
                 subtotal = item['quantity'] * item['price']
-                print(f"DEBUG: Inserting item {item['id']}, qty {item['quantity']}, price {item['price']}, subtotal {subtotal}")
                 db.execute("""
-                    INSERT INTO costanzo.pedido_detalles (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
+                    INSERT INTO pedido_detalles (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
                     VALUES (%s, %s, %s, %s, %s)
                 """, (order_id, item['id'], item['quantity'], item['price'], subtotal))
 
             db.commit()
-            print(f"DEBUG: Order creation completed successfully: {order_id}")
             return order_id, f"Pedido-{order_id}"
         except Exception as e:
             db.rollback()
-            print(f"DEBUG: Error creating order: {e}")
             return None, None
 
     @staticmethod
@@ -62,7 +57,7 @@ class Order:
                     p.metodo_pago,
                     p.direccion_envio,
                     p.notas
-                FROM costanzo.pedidos p
+                FROM pedidos p
                 WHERE p.id_usuario = %s
                 ORDER BY p.fecha_pedido DESC
             """, (user_id,))
@@ -77,8 +72,8 @@ class Order:
                             pd.subtotal,
                             pr.nombre,
                             pr.imagen_base64
-                        FROM costanzo.pedido_detalles pd
-                        JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
+                        FROM pedido_detalles pd
+                        JOIN productos pr ON pd.id_producto = pr.id_producto
                         WHERE pd.id_pedido = %s
                     """, (order['id_pedido'],))
                     order['items'] = items
@@ -104,7 +99,7 @@ class Order:
                 p.metodo_pago,
                 p.direccion_envio,
                 p.id_usuario
-            FROM costanzo.pedidos p
+            FROM pedidos p
             WHERE p.id_pedido = %s
         """, (order_id,))
 
@@ -117,8 +112,8 @@ class Order:
                     pd.subtotal,
                     pr.nombre,
                     pr.imagen_base64
-                FROM costanzo.pedido_detalles pd
-                JOIN costanzo.productos pr ON pd.id_producto = pr.id_producto
+                FROM pedido_detalles pd
+                JOIN productos pr ON pd.id_producto = pr.id_producto
                 WHERE pd.id_pedido = %s
             """, (order_id,))
             order[0]['items'] = items
@@ -132,7 +127,7 @@ class Order:
         db = DBConnection()
         try:
             db.execute("""
-                UPDATE costanzo.pedidos
+                UPDATE pedidos
                 SET estado = %s
                 WHERE id_pedido = %s
             """, (new_status, order_id))

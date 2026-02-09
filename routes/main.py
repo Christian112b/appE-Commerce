@@ -46,7 +46,7 @@ def contact():
         db = DBConnection()
         try:
             db.execute("""
-                INSERT INTO costanzo.mensajes_contacto (nombre, email, asunto, mensaje, fecha_envio, estado)
+                INSERT INTO mensajes_contacto (nombre, email, asunto, mensaje, fecha_envio, estado)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, (name, normalized_email, subject, message, datetime.now(), 'nuevo'))
 
@@ -80,8 +80,8 @@ def get_best_sellers():
                 p.precio_unitario,
                 p.imagen_base64,
                 COALESCE(vp.total_vendido, 0) as total_vendido
-            FROM costanzo.productos p
-            LEFT JOIN costanzo.ventas_productos vp ON p.id_producto = vp.id_producto
+            FROM productos p
+            LEFT JOIN ventas_productos vp ON p.id_producto = vp.id_producto
             WHERE p.activo = 1
             ORDER BY total_vendido DESC, p.nombre ASC
             LIMIT 3

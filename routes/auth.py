@@ -1,14 +1,15 @@
-import bcrypt
+import os
 import re
 import jwt
-import datetime
-import os
-
 import sys
-import os
+import bcrypt
+import datetime
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from controllers.dbConnection import DBConnection
-from flask import Blueprint, request, jsonify, redirect, url_for, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app, make_response
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -38,6 +39,7 @@ def verify_jwt_token(token):
         return None  # Invalid token
 
 def jwt_required(f):
+        
     """Decorator to protect routes with JWT authentication"""
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization', '')
@@ -154,9 +156,9 @@ def validationLogin():
 
         # Buscar usuario por correo normalizado
         result = db.query("""
-            SELECT id_usuario, nombre, apellido, correo, contraseña_hash, tipo_usuario, telefono
+            SELECT id_usuario, nombre, email, password_hash, is_admin
             FROM usuarios
-            WHERE LOWER(correo) = %s
+            WHERE LOWER(email) = ? AND activo = 1
         """, (normalized_email,))
 
         db.close()
@@ -167,12 +169,12 @@ def validationLogin():
         usuario = result[0]
 
         # Verificar contraseña con bcrypt
-        if bcrypt.checkpw(password.encode('utf-8'), usuario['contraseña_hash'].encode('utf-8')):
+        if bcrypt.checkpw(password.encode('utf-8'), usuario['password_hash'].encode('utf-8')):
             # Generate JWT token for API access (no Flask sessions for mobile compatibility)
             jwt_token = generate_jwt_token(
                 usuario['id_usuario'],
-                usuario['correo'],
-                usuario['tipo_usuario'] == 1
+                usuario['email'],
+                usuario['is_admin'] == 1
             )
 
 
@@ -182,9 +184,9 @@ def validationLogin():
                 'token': jwt_token,
                 'user': {
                     'id': usuario['id_usuario'],
-                    'name': f"{usuario['nombre']} {usuario['apellido']}",
-                    'email': usuario['correo'],
-                    'is_admin': usuario['tipo_usuario'] == 1
+                    'name': usuario['nombre'],
+                    'email': usuario['email'],
+                    'is_admin': usuario['is_admin'] == 1
                 }
             })
         else:
@@ -206,6 +208,10 @@ def web_login():
         if email_error:
             return redirect(url_for('main.login'))
 
+
+
+
+
         # Validate password presence
         if not password:
             return redirect(url_for('main.login'))
@@ -214,9 +220,9 @@ def web_login():
 
         # Buscar usuario por correo normalizado
         result = db.query("""
-            SELECT id_usuario, nombre, apellido, correo, contraseña_hash, tipo_usuario, telefono
+            SELECT id_usuario, nombre, email, password_hash, is_admin
             FROM usuarios
-            WHERE LOWER(correo) = %s
+            WHERE LOWER(email) = ? AND activo = 1
         """, (normalized_email,))
 
         db.close()
@@ -227,17 +233,16 @@ def web_login():
         usuario = result[0]
 
         # Verificar contraseña con bcrypt
-        if bcrypt.checkpw(password.encode('utf-8'), usuario['contraseña_hash'].encode('utf-8')):
+        if bcrypt.checkpw(password.encode('utf-8'), usuario['password_hash'].encode('utf-8')):
             # Generate JWT token
             jwt_token = generate_jwt_token(
                 usuario['id_usuario'],
-                usuario['correo'],
-                usuario['tipo_usuario'] == 1
+                usuario['email'],
+                usuario['is_admin'] == 1
             )
 
             # Set cookie and redirect
-            from flask import make_response
-            resp = make_response(redirect(url_for('admin.adminPanel') if usuario['tipo_usuario'] == 1 else url_for('main.index')))
+            resp = make_response(redirect(url_for('admin.adminPanel') if usuario['is_admin'] == 1 else url_for('main.index')))
             resp.set_cookie('jwt_token', jwt_token, httponly=False, secure=False, samesite='Lax', max_age=24*60*60)  # 24 hours
             return resp
         else:
@@ -257,11 +262,18 @@ def logout():
 @auth_bp.route('/verify-token', methods=['POST'])
 def verify_token():
     """Verify JWT token for API authentication"""
+    # Check if request has JSON data
+    if not request.is_json:
+        return jsonify({'valid': False, 'message': 'Content-Type must be application/json'}), 400
+    
     data = request.get_json()
+    if data is None:
+        return jsonify({'valid': False, 'message': 'Invalid JSON data'}), 400
+    
     token = data.get('token', '')
 
     if not token:
-        return jsonify({'valid': False, 'message': 'Token requerido'}), 400
+        return jsonify({'valid': False, 'message': 'Token requerido'}), 200
 
     payload = verify_jwt_token(token)
     if payload:
@@ -274,7 +286,7 @@ def verify_token():
             }
         })
     else:
-        return jsonify({'valid': False, 'message': 'Token inválido o expirado'}), 401
+        return jsonify({'valid': False, 'message': 'Token inválido o expirado'}), 200
 @auth_bp.route('/registerUser', methods=['POST'])
 def validationRegister():
     try:
@@ -317,7 +329,7 @@ def validationRegister():
         db = DBConnection()
 
         # Check if email already exists (case-insensitive)
-        existing = db.query("SELECT id_usuario FROM usuarios WHERE LOWER(correo) = %s", (normalized_email,))
+        existing = db.query("SELECT id_usuario FROM usuarios WHERE LOWER(email) = ?", (normalized_email,))
         if existing:
             db.close()
             return jsonify({'status': 409, 'message': 'El correo ya está registrado.'}), 409
@@ -327,16 +339,16 @@ def validationRegister():
 
         # Insert user with normalized email
         db.execute("""
-            INSERT INTO usuarios (nombre, correo, telefono, contraseña_hash, fecha_registro)
-            VALUES (%s, %s, %s, %s, NOW())
-        """, (name, normalized_email, phone, hashed_password.decode('utf-8')))
+            INSERT INTO usuarios (nombre, email, password_hash, fecha_registro, activo, is_admin)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, 1, 0)
+        """, (name, normalized_email, hashed_password.decode('utf-8')))
 
         db.close()
 
         # Get the newly created user ID for JWT token
         db = DBConnection()
         try:
-            user_result = db.query("SELECT id_usuario FROM usuarios WHERE correo = %s", (normalized_email,))
+            user_result = db.query("SELECT id_usuario FROM usuarios WHERE email = ?", (normalized_email,))
             if user_result:
                 user_id = user_result[0]['id_usuario']
                 jwt_token = generate_jwt_token(user_id, normalized_email, False)

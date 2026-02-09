@@ -39,6 +39,27 @@
             width: 100%;
         }
 
+        /* Estilos para credenciales de prueba */
+        .test-credentials {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            font-size: 10px;
+        }
+
+        /* Logo genérico */
+        .login-logo-generic {
+            font-size: 4rem;
+            color: #D2691E;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .login-logo-generic i {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
         @media (max-width: 600px) {
             .form-row {
                 flex-direction: column;
@@ -47,4 +68,5 @@
             .half-width {
                 width: 100%;
             }
+
         }

@@ -105,16 +105,16 @@ let productsData = [];
 function loadProducts() {
     // Simular carga de productos
     productsData = [
-        { id: 1, name: 'Tornillo', category: 'chocolates', price: 25.00, stock: 150, status: 'active', image: '../img/Piezas, Presentaciones, Tablillas y Bolsas/02Tornillo.jpg' },
-        { id: 2, name: 'Princesa Surtida', category: 'chocolates', price: 30.00, stock: 120, status: 'active', image: '../img/Piezas, Presentaciones, Tablillas y Bolsas/09PrincesaSurtida.jpg' },
-        { id: 3, name: 'Duquesa', category: 'chocolates', price: 28.00, stock: 100, status: 'active', image: '../img/Piezas, Presentaciones, Tablillas y Bolsas/DUQUESA-PRESENTACIONES.jpg' },
-        { id: 4, name: 'Esponja Natural', category: 'chocolates', price: 22.00, stock: 200, status: 'active', image: '../img/Chocolates envueltos, sin envolver y semillas cubiertas/Esponja-Natural.jpg' },
-        { id: 5, name: 'Figuras', category: 'chocolates', price: 20.00, stock: 180, status: 'active', image: '../img/Chocolates envueltos, sin envolver y semillas cubiertas/figura.png' },
-        { id: 6, name: 'Menta Blanca', category: 'caramelos', price: 18.00, stock: 250, status: 'active', image: '../img/Caramelos, chiclosos, jaleas y gomitas/Menta-Blanca.jpg' },
-        { id: 7, name: 'Nuez Encanelada', category: 'temporalidades', price: 35.00, stock: 80, status: 'active', image: '../img/Temporalidades/nuez-encanelada.png' },
-        { id: 8, name: 'Púrpura y Oro', category: 'caramelos', price: 32.00, stock: 90, status: 'active', image: '../img/Caramelos, chiclosos, jaleas y gomitas/Purupura-y-Oro-Envuelto.jpg' },
-        { id: 9, name: 'Almendra con Chocolate', category: 'chocolates', price: 38.00, stock: 75, status: 'active', image: '../img/Chocolates envueltos, sin envolver y semillas cubiertas/Almendra-Con-Chocolate.jpg' },
-        { id: 10, name: 'Tablilla Amargo', category: 'presentaciones', price: 45.00, stock: 60, status: 'active', image: '../img/Piezas, Presentaciones, Tablillas y Bolsas/tablilla-amargo.png' }
+        { id: 1, name: 'Tornillo', category: 'chocolates', price: 25.00, stock: 150, status: 'active', image: '/static/assets/presentaciones_tablillas_bolsas/02Tornillo.jpg' },
+        { id: 2, name: 'Princesa Surtida', category: 'chocolates', price: 30.00, stock: 120, status: 'active', image: '/static/assets/presentaciones_tablillas_bolsas/09PrincesaSurtida.jpg' },
+        { id: 3, name: 'Duquesa', category: 'chocolates', price: 28.00, stock: 100, status: 'active', image: '/static/assets/presentaciones_tablillas_bolsas/DUQUESA-PRESENTACIONES.jpg' },
+        { id: 4, name: 'Esponja Natural', category: 'chocolates', price: 22.00, stock: 200, status: 'active', image: '/static/assets/chocolates_envueltos_semillas/Esponja-Natural.jpg' },
+        { id: 5, name: 'Figuras', category: 'chocolates', price: 20.00, stock: 180, status: 'active', image: '/static/assets/chocolates_envueltos_semillas/figura.png' },
+        { id: 6, name: 'Menta Blanca', category: 'caramelos', price: 18.00, stock: 250, status: 'active', image: '/static/assets/caramelos_chiclosos_jaleas_gomitas/Menta-Blanca.jpg' },
+        { id: 7, name: 'Nuez Encanelada', category: 'temporalidades', price: 35.00, stock: 80, status: 'active', image: '/static/assets/temporalidades/nuez-encanelada.png' },
+        { id: 8, name: 'Púrpura y Oro', category: 'caramelos', price: 32.00, stock: 90, status: 'active', image: '/static/assets/caramelos_chiclosos_jaleas_gomitas/Purupura-y-Oro-Envuelto.jpg' },
+        { id: 9, name: 'Almendra con Chocolate', category: 'chocolates', price: 38.00, stock: 75, status: 'active', image: '/static/assets/chocolates_envueltos_semillas/Almendra-Con-Chocolate.jpg' },
+        { id: 10, name: 'Tablilla Amargo', category: 'presentaciones', price: 45.00, stock: 60, status: 'active', image: '/static/assets/presentaciones_tablillas_bolsas/tablilla-amargo.png' }
     ];
     
     renderProductsTable();
@@ -185,7 +185,7 @@ function showProductModal(productId = null) {
     const modal = document.getElementById('productModal');
     const overlay = document.getElementById('modalOverlay');
     const modalTitle = document.getElementById('modalTitle');
-    const form = document.getElementById('productForm');
+    const form = document.querySelector('.product-form');
     
     modal.classList.add('active');
     overlay.classList.add('active');
@@ -197,14 +197,14 @@ function showProductModal(productId = null) {
         
         const product = productsData.find(p => p.id === productId);
         if (product) {
-            document.getElementById('productId').value = product.id;
-            document.getElementById('productName').value = product.name;
-            document.getElementById('productCategory').value = product.category;
-            document.getElementById('productDescription').value = product.description || '';
-            document.getElementById('productPrice').value = product.price;
-            document.getElementById('productStock').value = product.stock;
-            document.getElementById('productImage').value = product.image;
-            document.getElementById('productActive').checked = product.status === 'active';
+            document.querySelector('.product-id').value = product.id;
+            document.querySelector('.product-name').value = product.name;
+            document.querySelector('.product-category').value = product.category;
+            document.querySelector('.product-description').value = product.description || '';
+            document.querySelector('.product-price').value = product.price;
+            document.querySelector('.product-stock').value = product.stock;
+            document.querySelector('.product-image').value = product.image;
+            document.querySelector('.product-active').checked = product.status === 'active';
         }
     } else {
         // Nuevo producto
@@ -237,23 +237,21 @@ function deleteProduct(id) {
 
 // Form submit
 document.addEventListener('DOMContentLoaded', function() {
-    const productForm = document.getElementById('productForm');
+    const productForm = document.querySelector('.product-form');
 
-    console.log("Editando un producto")
-    
     if (productForm) {
         productForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const formData = {
                 id: currentProductId || Date.now(),
-                name: document.getElementById('productName').value,
-                category: document.getElementById('productCategory').value,
-                description: document.getElementById('productDescription').value,
-                price: parseFloat(document.getElementById('productPrice').value),
-                stock: parseInt(document.getElementById('productStock').value),
-                image: document.getElementById('productImage').value,
-                status: document.getElementById('productActive').checked ? 'active' : 'inactive'
+                name: document.querySelector('.product-name').value,
+                category: document.querySelector('.product-category').value,
+                description: document.querySelector('.product-description').value,
+                price: parseFloat(document.querySelector('.product-price').value),
+                stock: parseInt(document.querySelector('.product-stock').value),
+                image: document.querySelector('.product-image').value,
+                status: document.querySelector('.product-active').checked ? 'active' : 'inactive'
             };
             
             if (currentProductId) {
@@ -271,6 +269,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             renderProductsTable();
             closeProductModal();
+        });
+    }
+
+    // Botón de guardar
+    const saveBtn = document.querySelector('.btn-save-product');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            productForm.dispatchEvent(new Event('submit'));
         });
     }
 });

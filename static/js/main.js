@@ -178,7 +178,6 @@ function loadBestSellers() {
         .then(res => res.json())
         .then(data => {
             if (!data.ok || !data.products || data.products.length === 0) {
-                console.log('No best sellers found');
                 return;
             }
 
@@ -759,7 +758,6 @@ function getCookie(name) {
 // Inicialización
 // ========================
 document.addEventListener('DOMContentLoaded', function() {
-    setupLoadingScreen();
     setupNavigation();
     setupHeroSlider();
     loadBestSellers(); // Load top 4 best sellers instead of carousel

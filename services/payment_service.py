@@ -81,7 +81,7 @@ class PaymentService:
             now_mexico = datetime.now(mexico_tz)
 
             coupon = db.query(
-                "SELECT id_descuento, nombre, tipo, valor FROM costanzo.cupones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
+                "SELECT id_descuento, nombre, tipo, valor FROM cupones WHERE LOWER(nombre) = LOWER(%s) AND activo = 1 AND (fecha_inicio IS NULL OR fecha_inicio <= %s) AND (fecha_fin IS NULL OR fecha_fin >= %s)",
                 (coupon_name, now_mexico, now_mexico)
             )
 
@@ -109,14 +109,14 @@ class PaymentService:
         db = DBConnection()
         try:
             db.execute(
-                "INSERT INTO costanzo.logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
+                "INSERT INTO logpagos (id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago) VALUES (%s, %s, %s, %s, %s)",
                 (intent_id, method_id, amount, datetime.now(), status)
             )
 
             # Log activity
             descripcion = f"Pago {status} creado metodo={method_id} monto={amount}" + (f" intent_id={intent_id}" if intent_id else "")
             db.execute(
-                "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento) VALUES (%s, %s, %s, %s)",
+                "INSERT INTO logactividad (id_usuario, accion, descripcion, fecha_evento) VALUES (%s, %s, %s, %s)",
                 (user_id, 'CREACION_PAGO', descripcion, datetime.now())
             )
         except Exception as e:
@@ -129,7 +129,7 @@ class PaymentService:
         db = DBConnection()
         try:
             db.execute(
-                "INSERT INTO costanzo.logactividad (id_usuario, accion, descripcion, fecha_evento) VALUES (%s, %s, %s, %s)",
+                "INSERT INTO logactividad (id_usuario, accion, descripcion, fecha_evento) VALUES (%s, %s, %s, %s)",
                 (user_id, 'create_payment_error', f"Error creando PaymentIntent: {error_msg}", datetime.now())
             )
         except Exception as e:

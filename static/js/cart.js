@@ -248,9 +248,23 @@ function updateCartUI() {
             'Authorization': token ? `Bearer ${token}` : ''
         }
     })
-        .then(res => res.json())
+        .then(res => {
+            // Handle 401 gracefully - user is not logged in
+            if (res.status === 401) {
+                if (loader) loader.style.display = 'none';
+                // User is not logged in, keep local cart data
+                return null;
+            }
+            return res.json();
+        })
         .then(data => {
             if (loader) loader.style.display = 'none';
+            
+            // If user is not logged in, keep local cart data
+            if (data === null) {
+                return;
+            }
+            
             if (!data.ok) {
                 showNotification(data.mensaje, 'error');
                 return;
@@ -983,6 +997,12 @@ let availableCoupons = [];
 async function loadCoupons() {
     try {
         const res = await fetch('/get-discounts');
+
+        // Handle 401/403 gracefully - user is not an admin
+        if (res.status == 401 || res.status === 403) {
+            availableCoupons = [];
+            return;
+        }
         availableCoupons = await res.json();
     } catch (err) {
         console.error('Error loading coupons', err);

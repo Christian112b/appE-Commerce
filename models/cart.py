@@ -14,14 +14,14 @@ class Cart:
         db = DBConnection()
         try:
             # Check if user has an active cart
-            cart = db.query("SELECT id_carrito FROM costanzo.carritocompra WHERE id_usuario = %s", (user_id,))
+            cart = db.query("SELECT id_carrito FROM carritocompra WHERE id_usuario = %s", (user_id,))
 
             if cart:
                 return cart[0]['id_carrito']
             else:
                 # Create new cart
                 db.execute(
-                    "INSERT INTO costanzo.carritocompra (id_usuario, fecha_creacion) VALUES (%s, %s)",
+                    "INSERT INTO carritocompra (id_usuario, fecha_creacion) VALUES (%s, %s)",
                     (user_id, datetime.now())
                 )
                 return db.cursor.lastrowid
@@ -41,8 +41,8 @@ class Cart:
                     ci.precio_unitario,
                     p.nombre,
                     p.imagen_base64
-                FROM costanzo.carrito_items ci
-                JOIN costanzo.productos p ON ci.id_producto = p.id_producto
+                FROM carrito_items ci
+                JOIN productos p ON ci.id_producto = p.id_producto
                 WHERE ci.id_carrito = %s
                 ORDER BY ci.id_item
             """, (cart_id,))
@@ -56,7 +56,7 @@ class Cart:
         db = DBConnection()
         try:
             # Get product price
-            product = db.query("SELECT precio_unitario FROM costanzo.productos WHERE id_producto = %s", (product_id,))
+            product = db.query("SELECT precio_unitario FROM productos WHERE id_producto = %s", (product_id,))
             if not product:
                 return False
 
@@ -64,7 +64,7 @@ class Cart:
 
             # Check if item already exists in cart
             existing = db.query(
-                "SELECT id_item, cantidad FROM costanzo.carrito_items WHERE id_carrito = %s AND id_producto = %s",
+                "SELECT id_item, cantidad FROM carrito_items WHERE id_carrito = %s AND id_producto = %s",
                 (cart_id, product_id)
             )
 
@@ -72,18 +72,17 @@ class Cart:
                 # Update quantity
                 new_quantity = existing[0]['cantidad'] + quantity
                 db.execute(
-                    "UPDATE costanzo.carrito_items SET cantidad = %s WHERE id_item = %s",
+                    "UPDATE carrito_items SET cantidad = %s WHERE id_item = %s",
                     (new_quantity, existing[0]['id_item'])
                 )
             else:
                 # Insert new item
                 db.execute(
-                    "INSERT INTO costanzo.carrito_items (id_carrito, id_producto, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)",
+                    "INSERT INTO carrito_items (id_carrito, id_producto, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)",
                     (cart_id, product_id, quantity, price)
                 )
             return True
         except Exception as e:
-            print(f"Error adding item to cart: {e}")
             return False
         finally:
             db.close()
@@ -96,18 +95,17 @@ class Cart:
             if new_quantity <= 0:
                 # Remove item if quantity is 0 or less
                 db.execute(
-                    "DELETE FROM costanzo.carrito_items WHERE id_carrito = %s AND id_producto = %s",
+                    "DELETE FROM carrito_items WHERE id_carrito = %s AND id_producto = %s",
                     (cart_id, product_id)
                 )
             else:
                 # Update quantity
                 db.execute(
-                    "UPDATE costanzo.carrito_items SET cantidad = %s WHERE id_carrito = %s AND id_producto = %s",
+                    "UPDATE carrito_items SET cantidad = %s WHERE id_carrito = %s AND id_producto = %s",
                     (new_quantity, cart_id, product_id)
                 )
             return True
         except Exception as e:
-            print(f"Error updating cart item: {e}")
             return False
         finally:
             db.close()
@@ -118,12 +116,11 @@ class Cart:
         db = DBConnection()
         try:
             db.execute(
-                "DELETE FROM costanzo.carrito_items WHERE id_carrito = %s AND id_producto = %s",
+                "DELETE FROM carrito_items WHERE id_carrito = %s AND id_producto = %s",
                 (cart_id, product_id)
             )
             return True
         except Exception as e:
-            print(f"Error removing cart item: {e}")
             return False
         finally:
             db.close()
@@ -133,10 +130,9 @@ class Cart:
         """Remove all items from cart"""
         db = DBConnection()
         try:
-            db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (cart_id,))
+            db.execute("DELETE FROM carrito_items WHERE id_carrito = %s", (cart_id,))
             return True
         except Exception as e:
-            print(f"Error clearing cart: {e}")
             return False
         finally:
             db.close()
@@ -150,18 +146,17 @@ class Cart:
             cart_id = Cart.get_or_create_cart(user_id)
 
             # Clear existing items
-            db.execute("DELETE FROM costanzo.carrito_items WHERE id_carrito = %s", (cart_id,))
+            db.execute("DELETE FROM carrito_items WHERE id_carrito = %s", (cart_id,))
 
             # Insert new items
             for item in items:
                 db.execute("""
-                    INSERT INTO costanzo.carrito_items (id_carrito, id_producto, cantidad, precio_unitario)
+                    INSERT INTO carrito_items (id_carrito, id_producto, cantidad, precio_unitario)
                     VALUES (%s, %s, %s, %s)
                 """, (cart_id, item['id'], item['quantity'], item['price']))
 
             return True
         except Exception as e:
-            print(f"Error saving cart: {e}")
             return False
         finally:
             db.close()
@@ -173,7 +168,7 @@ class Cart:
         try:
             result = db.query("""
                 SELECT SUM(ci.cantidad * ci.precio_unitario) as total
-                FROM costanzo.carrito_items ci
+                FROM carrito_items ci
                 WHERE ci.id_carrito = %s
             """, (cart_id,))
 

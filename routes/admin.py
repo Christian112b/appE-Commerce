@@ -16,9 +16,9 @@ def init_coupon_usage_table():
             id_descuento INT NOT NULL,
             fecha_uso DATETIME DEFAULT CURRENT_TIMESTAMP,
             id_pago INT,
-            FOREIGN KEY (id_usuario) REFERENCES costanzo.usuarios(id_usuario),
-            FOREIGN KEY (id_descuento) REFERENCES costanzo.descuentospromociones(id_descuento),
-            FOREIGN KEY (id_pago) REFERENCES costanzo.logpagos(id_pago),
+            FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+            FOREIGN KEY (id_descuento) REFERENCES descuentospromociones(id_descuento),
+            FOREIGN KEY (id_pago) REFERENCES logpagos(id_pago),
             UNIQUE KEY unique_coupon_usage (id_usuario, id_descuento)
         """
     except Exception as e:
@@ -33,13 +33,6 @@ init_coupon_usage_table()
 @jwt_required
 def adminPanel():
 
-    print("Verificando Rol")
-
-    try:
-        print(request.is_admin)
-    except Exception as e:
-        print("Erro: ", e)
-    
     if request.is_admin:
         
         return render_template('admin/dashboard.html')
@@ -48,12 +41,13 @@ def adminPanel():
 @admin_bp.route('/get-discounts', methods=['GET'])
 @jwt_required
 def get_coupons():
+
     if not request.is_admin:
         return jsonify({'error': 'No autorizado'}), 403
 
     db = DBConnection()
     try:
-        coupons = db.query("SELECT id_descuento, nombre, tipo, valor, fecha_inicio, fecha_fin, activo FROM costanzo.descuentospromociones ORDER BY id_descuento DESC")
+        coupons = db.query("SELECT id_descuento, nombre, tipo, valor, fecha_inicio, fecha_fin, activo FROM descuentospromociones ORDER BY id_descuento DESC")
         return jsonify(coupons)
     except Exception as e:
         print('Error fetching coupons:', str(e))
@@ -86,7 +80,7 @@ def save_coupon():
         if coupon_id:
             # Update existing coupon
             query = """
-                UPDATE costanzo.descuentospromociones
+                UPDATE descuentospromociones
                 SET nombre = %s, tipo = %s, valor = %s, fecha_inicio = %s, fecha_fin = %s, activo = %s
                 WHERE id_descuento = %s
             """
@@ -94,7 +88,7 @@ def save_coupon():
         else:
             # Insert new coupon
             query = """
-                INSERT INTO costanzo.descuentospromociones (nombre, tipo, valor, fecha_inicio, fecha_fin, activo)
+                INSERT INTO descuentospromociones (nombre, tipo, valor, fecha_inicio, fecha_fin, activo)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             params = (nombre, tipo, valor, fecha_inicio, fecha_fin, activo)
@@ -122,7 +116,7 @@ def delete_coupon():
     db = DBConnection()
     try:
         # Instead of deleting, set activo to 0 (soft delete)
-        db.execute("UPDATE costanzo.descuentospromociones SET activo = 0 WHERE id_descuento = %s", (coupon_id,))
+        db.execute("UPDATE descuentospromociones SET activo = 0 WHERE id_descuento = %s", (coupon_id,))
         return jsonify({'success': True, 'message': 'Cupón desactivado correctamente'})
     except Exception as e:
         print('Error deactivating coupon:', str(e))
@@ -138,7 +132,7 @@ def get_pagos():
 
     db = DBConnection()
     try:
-        pagos = db.query("SELECT id_pago, id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago FROM costanzo.logpagos ORDER BY fecha_pago DESC")
+        pagos = db.query("SELECT id_pago, id_intento_pago, id_metodo_pago, monto, fecha_pago, estado_pago FROM logpagos ORDER BY fecha_pago DESC")
         return jsonify(pagos)
     except Exception as e:
         print('Error fetching pagos:', str(e))
@@ -157,11 +151,12 @@ def get_inventario():
         inventario = db.query("""
             SELECT i.id_inventario, i.id_producto, i.cantidad_actual, i.cantidad_minima, i.ubicacion, i.fecha_actualizacion,
                    p.nombre as nombre_producto
-            FROM costanzo.inventario i
-            JOIN costanzo.productos p ON i.id_producto = p.id_producto
+            FROM inventario i
+            JOIN productos p ON i.id_producto = p.id_producto
             ORDER BY i.fecha_actualizacion DESC
         """)
-        return jsonify(inventario)
+        inventario_list = [dict(row) for row in inventario]
+        return jsonify(inventario_list)
     except Exception as e:
         print('Error fetching inventario:', str(e))
         return jsonify([])
@@ -176,8 +171,9 @@ def get_productos_simple():
 
     db = DBConnection()
     try:
-        productos = db.query("SELECT id_producto, nombre FROM costanzo.productos WHERE activo = 1 ORDER BY nombre")
-        return jsonify(productos)
+        productos = db.query("SELECT id_producto, nombre FROM productos WHERE activo = 1 ORDER BY nombre")
+        productos_list = [dict(row) for row in productos]
+        return jsonify(productos_list)
     except Exception as e:
         print('Error fetching productos:', str(e))
         return jsonify([])
@@ -205,16 +201,16 @@ def save_inventario():
         if inventario_id:
             # Update existing inventario
             query = """
-                UPDATE costanzo.inventario
-                SET cantidad_actual = %s, cantidad_minima = %s, ubicacion = %s, fecha_actualizacion = %s
-                WHERE id_inventario = %s
+                UPDATE inventario
+                SET cantidad_actual = ?, cantidad_minima = ?, ubicacion = ?, fecha_actualizacion = ?
+                WHERE id_inventario = ?
             """
             params = (cantidad_actual, cantidad_minima, ubicacion, datetime.now(), inventario_id)
         else:
             # Insert new inventario
             query = """
-                INSERT INTO costanzo.inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO inventario (id_producto, cantidad_actual, cantidad_minima, ubicacion, fecha_actualizacion)
+                VALUES (?, ?, ?, ?, ?)
             """
             params = (id_producto, cantidad_actual, cantidad_minima, ubicacion, datetime.now())
 
@@ -240,7 +236,7 @@ def delete_inventario():
 
     db = DBConnection()
     try:
-        db.execute("DELETE FROM costanzo.inventario WHERE id_inventario = %s", (inventario_id,))
+        db.execute("DELETE FROM inventario WHERE id_inventario = ?", (inventario_id,))
         return jsonify({'success': True, 'message': 'Registro de inventario eliminado correctamente'})
     except Exception as e:
         print('Error deleting inventario:', str(e))
@@ -256,8 +252,9 @@ def get_usuarios():
 
     db = DBConnection()
     try:
-        usuarios = db.query("SELECT id_usuario, nombre, apellido, correo, tipo_usuario, telefono, fecha_registro FROM costanzo.usuarios ORDER BY fecha_registro DESC")
-        return jsonify(usuarios)
+        usuarios = db.query("SELECT id_usuario, nombre, email, is_admin as tipo_usuario, fecha_registro FROM usuarios ORDER BY fecha_registro DESC")
+        usuarios_list = [dict(row) for row in usuarios]
+        return jsonify(usuarios_list)
     except Exception as e:
         print('Error fetching usuarios:', str(e))
         return jsonify([])
@@ -273,14 +270,13 @@ def save_usuario():
     data = request.get_json()
     usuario_id = data.get('id_usuario')
     nombre = data.get('nombre', '').strip()
-    apellido = data.get('apellido', '').strip()
     correo = data.get('correo', '').strip()
     telefono = data.get('telefono', '').strip()
     tipo_usuario = int(data.get('tipo_usuario', 0))
     password = data.get('password')
 
-    if not nombre or not apellido or not correo:
-        return jsonify({'success': False, 'message': 'Nombre, apellido y correo son requeridos'}), 400
+    if not nombre or not correo:
+        return jsonify({'success': False, 'message': 'Nombre y correo son requeridos'}), 400
 
     # Validate email format
     import re
@@ -292,11 +288,11 @@ def save_usuario():
         if usuario_id:
             # Update existing user
             query = """
-                UPDATE costanzo.usuarios
-                SET nombre = %s, apellido = %s, correo = %s, telefono = %s, tipo_usuario = %s
-                WHERE id_usuario = %s
+                UPDATE usuarios
+                SET nombre = ?, email = ?, is_admin = ?
+                WHERE id_usuario = ?
             """
-            params = (nombre, apellido, correo, telefono, tipo_usuario, usuario_id)
+            params = (nombre, correo, tipo_usuario, usuario_id)
         else:
             # Insert new user - password required for new users
             if not password or len(password) < 6:
@@ -307,10 +303,10 @@ def save_usuario():
             password_hash = generate_password_hash(password)
 
             query = """
-                INSERT INTO costanzo.usuarios (nombre, apellido, correo, contraseña_hash, tipo_usuario, telefono, fecha_registro)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO usuarios (nombre, email, password_hash, is_admin, fecha_registro)
+                VALUES (?, ?, ?, ?, ?)
             """
-            params = (nombre, apellido, correo, password_hash, tipo_usuario, telefono, datetime.now())
+            params = (nombre, correo, password_hash, tipo_usuario, datetime.now())
 
         db.execute(query, params)
         return jsonify({'success': True, 'message': 'Usuario guardado correctamente'})
@@ -340,7 +336,7 @@ def delete_usuario():
 
     db = DBConnection()
     try:
-        db.execute("DELETE FROM costanzo.usuarios WHERE id_usuario = %s", (usuario_id,))
+        db.execute("DELETE FROM usuarios WHERE id_usuario = ?", (usuario_id,))
         return jsonify({'success': True, 'message': 'Usuario eliminado correctamente'})
     except Exception as e:
         print('Error deleting usuario:', str(e))
@@ -367,7 +363,7 @@ def check_coupon_usage():
         # Check if user has used this coupon
         usage = db.query("""
             SELECT id_uso_cupon, fecha_uso
-            FROM costanzo.cupon_uso
+            FROM cupon_uso
             WHERE id_usuario = %s AND id_descuento = %s
         """, (user_id, coupon_id))
 
@@ -404,7 +400,7 @@ def record_coupon_usage():
     try:
         # Insert coupon usage record
         db.execute("""
-            INSERT INTO costanzo.cupon_uso (id_usuario, id_descuento, id_pago, fecha_uso)
+            INSERT INTO cupon_uso (id_usuario, id_descuento, id_pago, fecha_uso)
             VALUES (%s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 fecha_uso = VALUES(fecha_uso),
@@ -441,10 +437,10 @@ def get_coupon_usage():
                 dp.valor,
                 lp.monto as monto_pago,
                 lp.estado_pago
-            FROM costanzo.cupon_uso cu
-            JOIN costanzo.usuarios u ON cu.id_usuario = u.id_usuario
-            JOIN costanzo.descuentospromociones dp ON cu.id_descuento = dp.id_descuento
-            LEFT JOIN costanzo.logpagos lp ON cu.id_pago = lp.id_pago
+            FROM cupon_uso cu
+            JOIN usuarios u ON cu.id_usuario = u.id_usuario
+            JOIN descuentospromociones dp ON cu.id_descuento = dp.id_descuento
+            LEFT JOIN logpagos lp ON cu.id_pago = lp.id_pago
             ORDER BY cu.fecha_uso DESC
         """)
 
@@ -480,8 +476,8 @@ def get_ventas():
                 lp.fecha_pago,
                 lp.estado_pago,
                 vp.total_vendido as productos_cantidad
-            FROM costanzo.logpagos lp
-            LEFT JOIN costanzo.ventas_productos vp ON lp.id_pago = vp.id_venta_producto
+            FROM logpagos lp
+            LEFT JOIN ventas_productos vp ON lp.id_pago = vp.id_venta_producto
             WHERE 1=1
         """
 
@@ -543,9 +539,9 @@ def get_venta_detalles(venta_id):
                 lp.*,
                 vp.total_vendido as productos_cantidad,
                 p.nombre as producto_nombre
-            FROM costanzo.logpagos lp
-            LEFT JOIN costanzo.ventas_productos vp ON lp.id_pago = vp.id_venta_producto
-            LEFT JOIN costanzo.productos p ON vp.id_producto = p.id_producto
+            FROM logpagos lp
+            LEFT JOIN ventas_productos vp ON lp.id_pago = vp.id_venta_producto
+            LEFT JOIN productos p ON vp.id_producto = p.id_producto
             WHERE lp.id_pago = %s
         """
         venta_data = db.query(venta_query, (venta_id,))
@@ -606,7 +602,7 @@ def get_dashboard_data():
 
         ventas_hoy_query = """
             SELECT SUM(monto) as ventas_hoy
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s AND estado_pago = 'exitoso'
         """
         ventas_hoy_data = db.query(ventas_hoy_query, (today_start, today_end))
@@ -615,19 +611,19 @@ def get_dashboard_data():
         # Get today's orders
         pedidos_hoy_query = """
             SELECT COUNT(*) as pedidos_hoy
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s
         """
         pedidos_hoy_data = db.query(pedidos_hoy_query, (today_start, today_end))
         pedidos_hoy = int(pedidos_hoy_data[0]['pedidos_hoy'] or 0) if pedidos_hoy_data else 0
 
         # Get total products
-        productos_total_query = "SELECT COUNT(*) as total_productos FROM costanzo.productos WHERE activo = 1"
+        productos_total_query = "SELECT COUNT(*) as total_productos FROM productos WHERE activo = 1"
         productos_data = db.query(productos_total_query)
         total_productos = int(productos_data[0]['total_productos'] or 0) if productos_data else 0
 
         # Get total users
-        usuarios_total_query = "SELECT COUNT(*) as total_usuarios FROM costanzo.usuarios"
+        usuarios_total_query = "SELECT COUNT(*) as total_usuarios FROM usuarios"
         usuarios_data = db.query(usuarios_total_query)
         total_usuarios = int(usuarios_data[0]['total_usuarios'] or 0) if usuarios_data else 0
 
@@ -641,10 +637,10 @@ def get_dashboard_data():
                 lp.estado_pago,
                 lp.fecha_pago,
                 COUNT(ci.id_item) as productos
-            FROM costanzo.logpagos lp
-            LEFT JOIN costanzo.usuarios u ON lp.id_usuario = u.id_usuario
-            LEFT JOIN costanzo.carritocompra cc ON lp.id_intento_pago IS NOT NULL
-            LEFT JOIN costanzo.carrito_items ci ON cc.id_carrito = ci.id_carrito
+            FROM logpagos lp
+            LEFT JOIN usuarios u ON lp.id_usuario = u.id_usuario
+            LEFT JOIN carritocompra cc ON lp.id_intento_pago IS NOT NULL
+            LEFT JOIN carrito_items ci ON cc.id_carrito = ci.id_carrito
             GROUP BY lp.id_pago, u.nombre, u.apellido, lp.monto, lp.estado_pago, lp.fecha_pago
             ORDER BY lp.fecha_pago DESC
             LIMIT 10
@@ -705,7 +701,7 @@ def get_reportes():
                 SUM(monto) as total_ventas,
                 COUNT(*) as total_pedidos,
                 SUM(CASE WHEN estado_pago = 'exitoso' THEN 1 ELSE 0 END) as pedidos_completados
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s
         """
         ventas_data = db.query(ventas_query, (start_date, end_date))
@@ -714,7 +710,7 @@ def get_reportes():
         # Get payment methods distribution
         metodos_query = """
             SELECT id_metodo_pago, COUNT(*) as cantidad, SUM(monto) as total
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s
             GROUP BY id_metodo_pago
         """
@@ -729,9 +725,9 @@ def get_reportes():
                 lp.monto,
                 lp.estado_pago,
                 COUNT(ci.id_item) as productos_cantidad
-            FROM costanzo.logpagos lp
-            LEFT JOIN costanzo.carritocompra cc ON lp.id_intento_pago IS NOT NULL
-            LEFT JOIN costanzo.carrito_items ci ON cc.id_carrito = ci.id_carrito
+            FROM logpagos lp
+            LEFT JOIN carritocompra cc ON lp.id_intento_pago IS NOT NULL
+            LEFT JOIN carrito_items ci ON cc.id_carrito = ci.id_carrito
             WHERE lp.fecha_pago BETWEEN %s AND %s
             GROUP BY lp.id_pago, lp.fecha_pago, lp.id_metodo_pago, lp.monto, lp.estado_pago
             ORDER BY lp.fecha_pago DESC
@@ -741,7 +737,7 @@ def get_reportes():
         # Get order status distribution
         estado_pedidos_query = """
             SELECT estado_pago, COUNT(*) as cantidad
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s
             GROUP BY estado_pago
         """
@@ -755,7 +751,7 @@ def get_reportes():
             SELECT
                 DATE(fecha_pago) as dia,
                 SUM(monto) as total
-            FROM costanzo.logpagos
+            FROM logpagos
             WHERE fecha_pago BETWEEN %s AND %s AND estado_pago = 'exitoso'
             GROUP BY DATE(fecha_pago)
             ORDER BY dia
@@ -768,8 +764,8 @@ def get_reportes():
                 p.nombre,
                 vp.total_vendido as cantidad_vendida,
                 (vp.total_vendido * p.precio_unitario) as total_ventas
-            FROM costanzo.ventas_productos vp
-            JOIN costanzo.productos p ON vp.id_producto = p.id_producto
+            FROM ventas_productos vp
+            JOIN productos p ON vp.id_producto = p.id_producto
             WHERE vp.fecha_ultima_venta BETWEEN %s AND %s
             ORDER BY vp.total_vendido DESC
             LIMIT 5

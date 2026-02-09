@@ -22,7 +22,6 @@ function submitForm() {
     const form = document.getElementById('loginForm');
     const formData = new FormData(form);
 
-    console.log("Enviando datos de login...");
 
     fetch('/validationLogin', {
         method: 'POST',

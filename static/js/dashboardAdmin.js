@@ -218,41 +218,75 @@ document.querySelector('[data-section="productos"]').addEventListener('click', (
     }, 100);
 });
 
-const activeSwitch = document.getElementById('productActive');
-const activeLabel = document.getElementById('activeLabel');
+// Variables del formulario de productos - usar clases del modal
+let activeSwitch, activeLabel, productImageInput, productForm;
 
-activeSwitch.addEventListener('change', () => {
-    activeLabel.textContent = activeSwitch.checked ? 'Sí' : 'No';
-    activeLabel.style.color = activeSwitch.checked ? 'green' : 'red';
-});
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener elementos dentro del modal usando clases
+    const modal = document.getElementById('productModal');
+    if (modal) {
+        activeSwitch = modal.querySelector('.product-active');
+        activeLabel = modal.querySelector('.form-check-label');
+        productImageInput = modal.querySelector('.product-image');
+        productForm = modal.querySelector('.product-form');
+    }
 
-document.getElementById('productImage').addEventListener('change', e => {
-    const file = e.target.files[0];
-    const preview = document.getElementById('productPreview');
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            preview.src = reader.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        preview.src = '';
-        preview.style.display = 'none';
+    if (activeSwitch) {
+        activeSwitch.addEventListener('change', () => {
+            if (activeLabel) {
+                activeLabel.textContent = activeSwitch.checked ? 'Sí' : 'No';
+                activeLabel.style.color = activeSwitch.checked ? 'green' : 'red';
+            }
+        });
+    }
+
+    if (productImageInput) {
+        productImageInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            const preview = document.querySelector('#productModal .product-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    if (preview) {
+                        preview.src = reader.result;
+                        preview.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else if (preview) {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        });
+    }
+
+    if (productForm) {
+        productForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const idInput = document.querySelector('#productModal .product-id');
+            const id = idInput?.value || '';
+            if (id) {
+                updateProduct();  // edición
+            } else {
+                insertProduct();  // nuevo
+            }
+        });
+    }
+    
+    // Event listener para el botón Guardar
+    const saveBtn = document.querySelector('#productModal .btn-save-product');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            const idInput = document.querySelector('#productModal .product-id');
+            const id = idInput?.value || '';
+            if (id) {
+                updateProduct();  // edición
+            } else {
+                insertProduct();  // nuevo
+            }
+        });
     }
 });
-
-document.getElementById('productForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const id = document.getElementById('productId').value;
-    if (id) {
-        updateProduct();  // edición
-    } else {
-        insertProduct();  // nuevo
-    }
-});
-
-
 
 
 // ========================
@@ -262,26 +296,21 @@ document.getElementById('productForm').addEventListener('submit', function (e) {
 let allProducts = [];
 
 function loadProducts() {
-    console.log('Loading products...');
 
     fetch('/getProducts')
         .then(res => res.json())
         .then(data => {
-            console.log('Products data received:', data);
             allProducts = data.productos; // Guardamos todos los productos
-            console.log('All products:', allProducts);
             renderProductTable(allProducts);
             renderCategoryFilter(data.categorias);
 
             // Check if products section is visible
             const productsSection = document.getElementById('section-productos');
-            console.log('Products section display:', productsSection ? productsSection.style.display : 'not found');
         })
         .catch(err => {
             console.error('Error loading products:', err);
         })
         .finally(() => {
-            console.log('Hiding loading...');
             hideLoading('loadingProducts');
         });
 }
@@ -309,26 +338,37 @@ function renderProductTable(products) {
     products.forEach(prod => {
         const row = document.createElement('tr');
         const precio = parseFloat(prod.precio_unitario);
+        const stock = prod.stock || 0;
+        const activo = prod.activo === 1 || prod.activo === true;
+        
+        // Determinar clase de stock
+        let stockClass = 'stock-high';
+        if (stock === 0) {
+            stockClass = 'stock-low';
+        } else if (stock < 20) {
+            stockClass = 'stock-low';
+        } else if (stock < 50) {
+            stockClass = 'stock-medium';
+        }
+        
+        // Determinar badge de estado
+        const statusBadge = activo 
+            ? '<span class="badge-status badge-active">Activo</span>'
+            : '<span class="badge-status badge-inactive">Inactivo</span>';
 
         row.innerHTML = `
             <td>${prod.id_producto}</td>
-            <td>
-                <div class="image-container">
-                    <img src="/image/${prod.id_producto}" alt="${prod.nombre}" class="product-img" onerror="showIcon(this)">
-                    <i class="fas fa-image product-icon" style="display:none; font-size: 2rem; color: #ccc;"></i>
-                </div>
-            </td>
-            <td>${prod.nombre}</td>
-            <td>${prod.descripcion}</td>
+            <td class="product-name" title="${prod.nombre}">${prod.nombre}</td>
+            <td class="product-desc" title="${prod.descripcion || ''}">${prod.descripcion || 'Sin descripción'}</td>
             <td>${prod.categoria ?? 'Sin categoría'}</td>
-            <td>$${isNaN(precio) ? 'N/A' : precio.toFixed(2)}</td>
-            <td>${prod.stock}</td>
-            <td>${prod.activo ? 'Sí' : 'No'}</td>
+            <td class="price-badge">${isNaN(precio) ? 'N/A' : precio.toFixed(2)}</td>
+            <td class="stock-badge ${stockClass}">${stock}</td>
+            <td>${statusBadge}</td>
             <td>
-                <button class="btn btn-sm btn-warning me-1" onclick="editProduct(${prod.id_producto})">
+                <button class="btn btn-sm btn-warning btn-action" onclick="editProduct(${prod.id_producto})" title="Editar">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteProduct(${prod.id_producto})">
+                <button class="btn btn-sm btn-danger btn-action" onclick="deleteProduct(${prod.id_producto})" title="Eliminar">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
@@ -356,25 +396,35 @@ function editProduct(id) {
 // ========================
 function openProductForm(product = null) {
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
-    const form = document.getElementById('productForm');
+    const form = document.querySelector('#productModal .product-form');
 
-
-    form.reset();
-    document.getElementById('productId').value = product?.id_producto || '';
-    document.getElementById('productName').value = product?.nombre || '';
-    document.getElementById('productCategory').value = product?.categoria || '';
-    document.getElementById('productDescription').value = product?.descripcion || '';
-    document.getElementById('productPrice').value = product?.precio_unitario || '';
-    document.getElementById('productStock').value = product?.stock || '';
-    activeSwitch.checked = product?.activo === 1;
-    activeSwitch.dispatchEvent(new Event('change'));
-
-    const preview = document.getElementById('productPreview');
-
-    if (product?.id_producto) {
+    if (form) form.reset();
+    
+    // Usar clases del formulario en lugar de IDs
+    const idInput = document.querySelector('#productModal .product-id');
+    const nameInput = document.querySelector('#productModal .product-name');
+    const categoryInput = document.querySelector('#productModal .product-category');
+    const descInput = document.querySelector('#productModal .product-description');
+    const priceInput = document.querySelector('#productModal .product-price');
+    const stockInput = document.querySelector('#productModal .product-stock');
+    const activeSwitch = document.querySelector('#productModal .product-active');
+    const preview = document.querySelector('#productModal .product-preview');
+    
+    if (idInput) idInput.value = product?.id_producto || '';
+    if (nameInput) nameInput.value = product?.nombre || '';
+    if (categoryInput) categoryInput.value = product?.categoria || '';
+    if (descInput) descInput.value = product?.descripcion || '';
+    if (priceInput) priceInput.value = product?.precio_unitario || '';
+    if (stockInput) stockInput.value = product?.stock || '';
+    if (activeSwitch) {
+        activeSwitch.checked = product?.activo === 1 || product?.activo === true;
+        activeSwitch.dispatchEvent(new Event('change'));
+    }
+    
+    if (product?.id_producto && preview) {
         preview.src = `/image/${product.id_producto}`;
         preview.style.display = 'block';
-    } else {
+    } else if (preview) {
         preview.src = '';
         preview.style.display = 'none';
     }
@@ -383,15 +433,23 @@ function openProductForm(product = null) {
 }
 
 function updateProduct() {
-    const id = document.getElementById('productId').value;
-    const nombre = document.getElementById('productName').value.trim();
-    const categoria = document.getElementById('productCategory').value;
-    const descripcion = document.getElementById('productDescription').value.trim();
-    const precio = parseFloat(document.getElementById('productPrice').value);
-    const stock = parseInt(document.getElementById('productStock').value);
-    const activo = document.getElementById('productActive').checked ? 1 : 0;
-    const imagenInput = document.getElementById('productImage');
-    const file = imagenInput.files[0];
+    const idInput = document.querySelector('#productModal .product-id');
+    const nameInput = document.querySelector('#productModal .product-name');
+    const categoryInput = document.querySelector('#productModal .product-category');
+    const descInput = document.querySelector('#productModal .product-description');
+    const priceInput = document.querySelector('#productModal .product-price');
+    const stockInput = document.querySelector('#productModal .product-stock');
+    const activeSwitch = document.querySelector('#productModal .product-active');
+    const imagenInput = document.querySelector('#productModal .product-image');
+    
+    const id = idInput?.value || '';
+    const nombre = nameInput?.value.trim() || '';
+    const categoria = categoryInput?.value || '';
+    const descripcion = descInput?.value.trim() || '';
+    const precio = parseFloat(priceInput?.value) || 0;
+    const stock = parseInt(stockInput?.value) || 0;
+    const activo = activeSwitch?.checked ? 1 : 0;
+    const file = imagenInput?.files[0];
 
     const formData = new FormData();
     formData.append('id_producto', id);
@@ -434,14 +492,17 @@ function updateProduct() {
 // Insertar producto
 // ========================
 function insertProduct() {
-    const nombre = document.getElementById('productName').value.trim();
-    const categoria = document.getElementById('productCategory').value;
-    const descripcion = document.getElementById('productDescription').value.trim();
-    const precio = parseFloat(document.getElementById('productPrice').value);
-    const stock = parseInt(document.getElementById('productStock').value);
-    const activo = document.getElementById('productActive').checked ? 1 : 0;
-    const imagenInput = document.getElementById('productImage');
-    const file = imagenInput.files[0];
+    const modal = document.getElementById('productModal');
+    if (!modal) return;
+    
+    const nombre = modal.querySelector('.product-name')?.value.trim() || '';
+    const categoria = modal.querySelector('.product-category')?.value || '';
+    const descripcion = modal.querySelector('.product-description')?.value.trim() || '';
+    const precio = parseFloat(modal.querySelector('.product-price')?.value) || 0;
+    const stock = parseInt(modal.querySelector('.product-stock')?.value) || 0;
+    const activo = modal.querySelector('.product-active')?.checked ? 1 : 0;
+    const imagenInput = modal.querySelector('.product-image');
+    const file = imagenInput?.files[0];
 
     const formData = new FormData();
     formData.append('nombre', nombre);
@@ -474,7 +535,6 @@ function insertProduct() {
 
 
 
-
 // ========================
 // Borrar producto
 // ========================
@@ -497,8 +557,6 @@ function deleteProduct(id) {
         alert('Hubo un problema al eliminar el producto.');
     });
 }
-
-
 
 
 
@@ -542,6 +600,7 @@ function applyProductFilters() {
 
 
 
+
 // ========================
 // Mostrar icono cuando no hay imagen
 // ========================
@@ -565,12 +624,40 @@ function showLoading(id) {
 
 function hideLoading(id) {
     const modalEl = document.getElementById(id);
+    if (!modalEl) return;
+    
+    // Hide the modal wrapper
+    modalEl.style.display = 'none';
+    
     const modalInstance = bootstrap.Modal.getInstance(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     }
+    
+    // Remove backdrop if stuck
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(bp => bp.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+    }, 100);
 }
 
+function showNotification(message, type = 'success') {
+    const toastEl = document.getElementById('notificationToast');
+    const toastBody = document.getElementById('notificationMessage');
+    
+    // Set message
+    toastBody.textContent = message;
+    
+    // Set color based on type
+    toastEl.classList.remove('text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-info');
+    toastEl.classList.add('text-bg-' + type);
+    
+    // Show toast
+    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    toast.show();
+}
 
 
 
@@ -899,11 +986,17 @@ let allProductos = [];
 
 function loadInventario() {
     fetch('/get-inventario')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
         .then(data => {
             allInventario = data;
             renderInventarioTable(allInventario);
             updateInventarioSummary(allInventario);
+        })
+        .catch(err => {
+            console.error('Error loading inventario:', err);
         })
         .finally(() => hideLoading('loadingInventario'));
 }
@@ -990,24 +1083,25 @@ function openInventarioForm(inventario = null) {
     const modal = new bootstrap.Modal(document.getElementById('inventarioModal'));
     const form = document.getElementById('inventarioForm');
     const title = document.getElementById('inventarioModalTitle');
+    const productoSelect = document.getElementById('inventarioProducto');
 
     form.reset();
     document.getElementById('inventarioId').value = inventario?.id_inventario || '';
 
-    // Load products if not loaded yet
-    if (allProductos.length === 0) {
-        loadProductosForInventario().then(() => {
-            if (inventario) {
-                document.getElementById('inventarioProducto').value = inventario.id_producto;
-            }
-        });
-    } else {
-        document.getElementById('inventarioProducto').value = inventario?.id_producto || '';
-    }
+    // Always refresh products list and ensure options are loaded
+    loadProductosForInventario().then(() => {
+        // Set the product value after options are loaded
+        if (inventario) {
+            productoSelect.value = inventario.id_producto;
+        }
+    });
 
     document.getElementById('inventarioCantidadActual').value = inventario?.cantidad_actual || '';
     document.getElementById('inventarioCantidadMinima').value = inventario?.cantidad_minima || '';
     document.getElementById('inventarioUbicacion').value = inventario?.ubicacion || '';
+
+    // Enable product select for editing
+    productoSelect.disabled = false;
 
     title.textContent = inventario ? 'Editar Registro de Inventario' : 'Nuevo Registro de Inventario';
     modal.show();
@@ -1040,38 +1134,50 @@ function saveInventario() {
         if (response.success) {
             loadInventario();
             bootstrap.Modal.getInstance(document.getElementById('inventarioModal')).hide();
-            alert('Registro de inventario guardado correctamente');
+            showNotification('Registro de inventario guardado correctamente', 'success');
         } else {
-            alert('Error: ' + response.message);
+            showNotification('Error: ' + response.message, 'danger');
         }
     })
     .catch(err => {
         console.error('Error saving inventario:', err);
-        alert('Error al guardar el registro de inventario');
+        showNotification('Error al guardar el registro de inventario', 'danger');
     });
 }
 
 function deleteInventario(id) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este registro de inventario?')) return;
-
-    fetch('/delete-inventario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_inventario: id })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            loadInventario();
-            alert('Registro de inventario eliminado correctamente');
-        } else {
-            alert('Error: ' + response.message);
-        }
-    })
-    .catch(err => {
-        console.error('Error deleting inventario:', err);
-        alert('Error al eliminar el registro de inventario');
+    // Show confirmation modal
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    // Remove previous event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    newConfirmBtn.addEventListener('click', function() {
+        confirmModal.hide();
+        
+        fetch('/delete-inventario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_inventario: id })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                loadInventario();
+                showNotification('Registro de inventario eliminado correctamente', 'success');
+            } else {
+                showNotification('Error: ' + response.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error deleting inventario:', err);
+            showNotification('Error al eliminar el registro de inventario', 'danger');
+        });
     });
+    
+    confirmModal.show();
 }
 
 function applyInventarioFilters() {
@@ -1140,9 +1246,7 @@ function renderUsuarioTable(usuarios) {
         row.innerHTML = `
             <td>${usuario.id_usuario}</td>
             <td>${usuario.nombre}</td>
-            <td>${usuario.apellido}</td>
-            <td>${usuario.correo}</td>
-            <td>${usuario.telefono || 'N/A'}</td>
+            <td>${usuario.email || 'N/A'}</td>
             <td><span class="${tipoClass}">${tipoUsuario}</span></td>
             <td>${fechaRegistro}</td>
             <td>
@@ -1179,7 +1283,13 @@ function updateUsuarioSummary(usuarios) {
 }
 
 function openUsuarioForm(usuario = null) {
-    const modal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+    const modalEl = document.getElementById('usuarioModal');
+    if (!modalEl) {
+        console.error('Modal element not found');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(modalEl);
     const form = document.getElementById('usuarioForm');
     const title = document.getElementById('usuarioModalTitle');
     const passwordSection = document.getElementById('passwordSection');
@@ -1187,9 +1297,7 @@ function openUsuarioForm(usuario = null) {
     form.reset();
     document.getElementById('usuarioId').value = usuario?.id_usuario || '';
     document.getElementById('usuarioNombre').value = usuario?.nombre || '';
-    document.getElementById('usuarioApellido').value = usuario?.apellido || '';
-    document.getElementById('usuarioCorreo').value = usuario?.correo || '';
-    document.getElementById('usuarioTelefono').value = usuario?.telefono || '';
+    document.getElementById('usuarioCorreo').value = usuario?.email || '';
     document.getElementById('usuarioTipo').value = usuario?.tipo_usuario || 0;
 
     // Show password field only for new users
@@ -1217,9 +1325,7 @@ function saveUsuario() {
     const data = {
         id_usuario: document.getElementById('usuarioId').value || null,
         nombre: document.getElementById('usuarioNombre').value.trim(),
-        apellido: document.getElementById('usuarioApellido').value.trim(),
         correo: document.getElementById('usuarioCorreo').value.trim(),
-        telefono: document.getElementById('usuarioTelefono').value.trim(),
         tipo_usuario: parseInt(document.getElementById('usuarioTipo').value),
         password: document.getElementById('usuarioPassword').value
     };
@@ -1234,38 +1340,50 @@ function saveUsuario() {
         if (response.success) {
             loadUsuarios();
             bootstrap.Modal.getInstance(document.getElementById('usuarioModal')).hide();
-            alert('Usuario guardado correctamente');
+            showNotification('Usuario guardado correctamente', 'success');
         } else {
-            alert('Error: ' + response.message);
+            showNotification('Error: ' + response.message, 'danger');
         }
     })
     .catch(err => {
         console.error('Error saving usuario:', err);
-        alert('Error al guardar el usuario');
+        showNotification('Error al guardar el usuario', 'danger');
     });
 }
 
 function deleteUsuario(id) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) return;
-
-    fetch('/delete-usuario', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_usuario: id })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            loadUsuarios();
-            alert('Usuario eliminado correctamente');
-        } else {
-            alert('Error: ' + response.message);
-        }
-    })
-    .catch(err => {
-        console.error('Error deleting usuario:', err);
-        alert('Error al eliminar el usuario');
+    // Show confirmation modal
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    // Remove previous event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    newConfirmBtn.addEventListener('click', function() {
+        confirmModal.hide();
+        
+        fetch('/delete-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_usuario: id })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                loadUsuarios();
+                showNotification('Usuario eliminado correctamente', 'success');
+            } else {
+                showNotification('Error: ' + response.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error deleting usuario:', err);
+            showNotification('Error al eliminar el usuario', 'danger');
+        });
     });
+    
+    confirmModal.show();
 }
 
 function applyUsuarioFilters() {
@@ -1875,4 +1993,3 @@ function toggleAdminDropdown() {
 
 // Make showIcon global
 window.showIcon = showIcon;
-

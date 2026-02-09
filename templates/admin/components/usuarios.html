@@ -40,9 +40,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Nombre</th>
-                                        <th>Apellido</th>
                                         <th>Correo</th>
-                                        <th>Teléfono</th>
                                         <th>Tipo</th>
                                         <th>Fecha Registro</th>
                                         <th>Acciones</th>
@@ -103,29 +101,14 @@
                 <form id="usuarioForm">
                     <input type="hidden" id="usuarioId">
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="usuarioNombre" class="form-label">Nombre *</label>
-                                <input type="text" class="form-control" id="usuarioNombre" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="usuarioApellido" class="form-label">Apellido *</label>
-                                <input type="text" class="form-control" id="usuarioApellido" required>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="usuarioNombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="usuarioNombre" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="usuarioCorreo" class="form-label">Correo Electrónico *</label>
                         <input type="email" class="form-control" id="usuarioCorreo" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="usuarioTelefono" class="form-label">Teléfono</label>
-                        <input type="tel" class="form-control" id="usuarioTelefono">
                     </div>
 
                     <div class="mb-3">

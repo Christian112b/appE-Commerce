@@ -6,6 +6,9 @@ def login_required(f):
     @wraps(f)
     @jwt_required
     def wrapper(*args, **kwargs):
+
+        print("User is logged in.")
+
         # JWT validation is handled by jwt_required decorator
         return f(*args, **kwargs)
     return wrapper
