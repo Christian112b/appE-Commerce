@@ -19,6 +19,9 @@ class DBConnection:
         self.cursor.execute(sql, params or ())
         self.conn.commit()
 
+    def commit(self):
+        self.conn.commit()
+
     def rollback(self):
         self.conn.rollback()
 

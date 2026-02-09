@@ -287,10 +287,10 @@ def create_payment():
 
                         # Determinar estado del pedido para pagos offline
                         estado_map = {
-                            4: 'esperando pago',  # Transferencia
-                            5: 'Empezando envio',  # Efectivo
-                            6: 'esperando pago',  # OXXO
-                            7: 'esperando pago'   # SPEI
+                            4: 'pendiente',  # Transferencia
+                            5: 'procesando',  # Efectivo
+                            6: 'pendiente',  # OXXO
+                            7: 'pendiente'   # SPEI
                         }
                         estado_pedido = estado_map.get(method_id, 'pendiente')
 
@@ -480,7 +480,7 @@ def create_payment():
                         })
 
                     # Determinar estado del pedido
-                    estado_pedido = "Empezando envio"  # Para tarjeta de crédito
+                    estado_pedido = "procesando"  # Para tarjeta de crédito
 
                     # Crear el pedido
                     print(f"DEBUG: Calling Order.create_order with {len(order_items)} items, estado: {estado_pedido}")
